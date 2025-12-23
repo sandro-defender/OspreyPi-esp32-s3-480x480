@@ -1,4 +1,3 @@
-# OspreyPi-esp32-s3-480x480
 # ESPHome Modular LVGL Buttons
 
 This project provides a modular configuration for ESPHome using LVGL for creating interactive buttons on a touchscreen display.
