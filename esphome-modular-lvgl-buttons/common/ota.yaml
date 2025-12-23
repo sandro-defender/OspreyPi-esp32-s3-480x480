@@ -1,0 +1,109 @@
+---
+ota:
+  - platform: web_server
+  - platform: esphome
+    id: ota_state
+    on_begin: 
+      - logger.log: "OTA Start"
+      - light.turn_on: display_backlight
+      - lambda: "id(display_backlight).loop();"
+      - lvgl.resume:
+      - lvgl.widget.redraw:
+      - lvgl.label.update:
+          id: ota_label_primary
+          text: 'Starting OTA!'
+      - lvgl.label.update:
+          id: ota_label_secondary
+          text: 'Wait...'
+      - lvgl.widget.show: ota_widget
+      - lvgl.resume:
+      - lvgl.widget.redraw:
+      - lambda: "id(lvgl_component).loop();"
+      - lambda: "id(lvgl_component).loop();"
+      - logger.log: "OTA widget shown"
+
+    on_progress: 
+      - lvgl.bar.update:
+          id: ota_bar_value
+          value: !lambda return (int)x;
+      - lvgl.label.update:
+          id: ota_label_primary
+          text: " "
+      - lvgl.label.update:
+          id: ota_label_secondary
+          text: !lambda |-
+            static char buffer[64];
+            snprintf(buffer, sizeof(buffer), "Firmware uploading %.1f%%", x);
+            return buffer;
+      - lambda: "id(lvgl_component).loop();"
+
+    on_end:
+      - logger.log: "OTA End"
+      - lvgl.bar.update:
+          id: ota_bar_value
+          value: 100
+      - lvgl.label.update:
+          id: ota_label_primary
+          text: 'Update complete!'
+      - lvgl.label.update:
+          id: ota_label_secondary
+          text: 'Rebooting...'
+      - lambda: |-
+          id(lvgl_component).loop();
+
+    on_error:
+      - logger.log:
+            format: "OTA update error %d"
+            args: ["x"]
+      - lvgl.label.update:
+          id: ota_label_primary
+          text: 'Update ERROR!'
+      - lvgl.label.update:
+          id: ota_label_secondary
+          text: 'Rebooting...'
+      - lambda: |-
+          id(lvgl_component).loop();   
+
+lvgl:
+  id: lvgl_component
+  top_layer:
+    widgets:
+      - obj:
+          id: ota_widget
+          hidden: true
+          width: $screen_width
+          height: $screen_height
+          align: center
+          clickable: false
+          #bg_color: slate_blue_gray
+          bg_image_src: screensaver_bg_image2
+          opa: COVER
+          bg_opa: COVER
+          radius: 0
+          widgets:
+            - label:
+                id: ota_label_primary
+                y: -50
+                align: center
+                text_font: nunito_20
+                text_color: misty_blue
+                text: "Starting OTA!"
+            - label:
+                id: ota_label_secondary
+                y: -20
+                align: center
+                text_font: nunito_18
+                text_color: misty_blue
+                text: "Wait..."
+            - bar:
+                id: ota_bar_value
+                y: 20
+                width: 300
+                value: 0
+                align: center
+                min_value: 0
+                max_value: 100
+                animated: true
+                bg_color: steel_blue
+                indicator:
+                  bg_color: misty_blue

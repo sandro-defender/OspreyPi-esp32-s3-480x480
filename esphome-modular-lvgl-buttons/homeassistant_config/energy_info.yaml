@@ -1,0 +1,88 @@
+---
+# Home Assistant Solar and Energy stats for ESPHome
+# Include this in your configuration.yaml
+#
+# Replace XXXXXXXXXXXX with your Envoy ID
+#
+sensor:
+  - platform: template
+    sensors:
+      envoy_lifetime_net_energy_consumption_kwh:
+        unique_id: cd370fcf-a5d3-4e88-b609-9c98f7f8b64a
+        friendly_name: "Lifetime Net Energy Consumption in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_net_energy_consumption') | float * 1000.0 }}
+  - platform: template
+    sensors:
+      envoy_lifetime_net_energy_production_kwh:
+        unique_id: 4e663a0b-1620-4f63-86e7-2ecb61359627
+        friendly_name: "Lifetime Net Energy Production in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_net_energy_production') | float * 1000.0 }}
+  - platform: template
+    sensors:
+      envoy_lifetime_energy_consumption_kwh:
+        unique_id: cd370fcf-a5d3-4e88-b609-9c98f7f8b64b
+        friendly_name: "Lifetime Energy Consumption in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_energy_consumption') | float * 1000.0 }}
+  - platform: template
+    sensors:
+      envoy_lifetime_energy_production_kwh:
+        unique_id: da6420da-ba5d-4708-88c8-247b53b21f77
+        friendly_name: "Lifetime Energy Production in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_energy_production') | float * 1000.0 }}
+  - platform: template
+    sensors:
+      envoy_lifetime_battery_energy_charged_kwh:
+        unique_id: 7fd365db-bdc5-4ed1-a2cf-490c51c91b8f
+        friendly_name: "Lifetime battery energy charged in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_battery_energy_charged') | float * 1000.0 }}
+  - platform: template
+    sensors:
+      envoy_lifetime_battery_energy_discharged_kwh:
+        unique_id: 1cd8b191-0ee9-4421-bd84-bee685a82775
+        friendly_name: "Lifetime battery energy discharged in kWh"
+        unit_of_measurement: 'kWh'
+        value_template: >-
+          {{ states('sensor.envoy_XXXXXXXXXXXX_lifetime_battery_energy_discharged') | float * 1000.0 }}          
+
+
+utility_meter:
+  daily_energy_net_import:
+    unique_id: 9911c006-93ce-400f-90ba-1640041fe4cc
+    source: sensor.envoy_lifetime_net_energy_consumption_kwh
+    name: daily_energy_net_import
+    cycle: daily
+  daily_energy_net_export:
+    unique_id: 9525dcd6-cd1f-4ffe-a945-f24f97c5222e
+    source: sensor.envoy_lifetime_net_energy_production_kwh
+    name: daily_energy_net_export
+    cycle: daily
+  daily_energy_consumption:
+    unique_id: a1ad25f4-606e-4904-890f-8a2df3521419
+    source: sensor.envoy_lifetime_energy_consumption_kwh
+    name: daily_energy_consumption
+    cycle: daily
+  daily_energy_production:
+    unique_id: a1ad25f4-606e-4904-890f-8a2df3521410
+    source: sensor.envoy_lifetime_energy_production_kwh
+    name: daily_energy_production
+    cycle: daily
+  daily_battery_energy_charged:
+    unique_id: b67f0e05-2bc3-42e7-80f9-e5e05642f28d
+    source: sensor.envoy_lifetime_battery_energy_charged_kwh
+    name: daily_battery_energy_charged
+    cycle: daily
+  daily_battery_energy_discharged:
+    unique_id: 3f3443f0-7110-4129-a583-16d69fd76174
+    source: sensor.envoy_lifetime_battery_energy_discharged_kwh
+    name: daily_battery_energy_discharged
+    cycle: daily

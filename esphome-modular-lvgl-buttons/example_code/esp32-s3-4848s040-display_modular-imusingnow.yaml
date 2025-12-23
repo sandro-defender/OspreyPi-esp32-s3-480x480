@@ -1,0 +1,285 @@
+# Substitution variables used through the codebase
+substitutions:
+  icon_font: mdi_icons_40
+  text_font: nunito_24
+  text_color: white
+  bg_color: black
+  button_on_color: "ep_orange"
+  button_off_color: "very_dark_gray"
+  icon_on_color: "yellow"
+  icon_off_color: "gray"
+  label_on_color: "white"
+  label_off_color: "gray"
+  button_text_color: "white"
+  button_height_single: '109px'
+  button_height_double: '228px'
+  button_width: '150px'
+  touchscreen_idle_timeout: "30s"
+  touchscreen_daytime_brightness: "100%"
+  touchscreen_nighttime_brightness: "50%"
+  # Boot screen configuration
+  boot_screen_delay: 60s
+
+  # LCD backlight modes - Code in backlight.yaml
+  # Day mode is set to Sunrise
+  # Evening mode is set to sunset
+  # Set Night mode  at Mightnight here
+  screen_night_hour: '0'
+  screen_night_minute: '0'
+
+  # Screen Size
+  screen_height: '480'
+  screen_width: '480'
+  byte_order: big_endian  
+
+esphome:
+  name: "display01"
+  friendly_name: "Display 01"
+  comment: "ESP32-S3-4848S040 480px * 480px Smart Screen"
+  includes:
+    - <sstream>
+    - <algorithm>
+  on_boot:
+    - priority: 400
+      then:
+        - script.execute: update_loading_page
+
+logger:
+  level: debug
+
+# Time update script - This is run once per second. Use it to update any time related labels.
+script:
+  - id: time_update
+    then:
+      - lambda: |-
+          // No operation
+
+packages:
+  # Generic configuration for ESP32 screens
+  # SDL has no Wi-Fi
+  wifi: !include esphome-modular-lvgl-buttons/common/wifi.yaml
+  # Enable OTA updates with a status screen
+  ota_screen: !include esphome-modular-lvgl-buttons/common/ota.yaml
+  # All the colors
+  colors: !include esphome-modular-lvgl-buttons/common/color.yaml
+  # Some nice basic fonts
+  fonts: !include esphome-modular-lvgl-buttons/common/fonts.yaml
+  # 1000s of glyphs
+  glyphs: !include esphome-modular-lvgl-buttons/common/mdi_glyph_substitutions.yaml
+  # Some basic sensors
+  sensors: !include esphome-modular-lvgl-buttons/sensors/sensors_base.yaml
+  # Styles + Themes
+  theme_style: !include esphome-modular-lvgl-buttons/common/theme_style.yaml
+  # Include if your touch screen has a backlight. Also sets the time from HA
+  backlight: !include esphome-modular-lvgl-buttons/common/backlignt_time.yaml
+
+  # Harware description file
+  hardware: !include esphome-modular-lvgl-buttons/hardware/guition-esp32-s3-4848s040.yaml
+  
+  # Basic boot screen with ESPHome logo and device diagnostic info
+  loading_screen: !include esphome-modular-lvgl-buttons/pages/loading_480px.yaml
+  info_screen: !include esphome-modular-lvgl-buttons/pages/info.yaml
+
+  # RGB color picker for WLED light (Button 4)
+  wled_color_picker: !include
+    file: esphome-modular-lvgl-buttons/pages/light_color.yaml
+    vars:
+      widget_name: wled
+      light_entity: light.wled
+
+  # RGB color picker for WLED NEW light (Button 7)
+  wled_new_color_picker: !include
+    file: esphome-modular-lvgl-buttons/pages/light_color.yaml
+    vars:
+      widget_name: wled_new
+      light_entity: light.wled_new
+
+  # This section will Update button state and relay state from Home Assistant
+  # Any button that has real time updates needs a section here
+  #
+  # ┌─────────────────────────────────────────────┐
+  # │  Button Layout (480x480 screen - 3x3 grid) │
+  # ├──────────────┬──────────────┬──────────────┤
+  # │   Button 1   │   Button 4   │   Button 7   │
+  # │ Local Light  │  wled light  │   (empty)    │
+  # │   (double)   │   (double)   │              │
+  # ├──────────────┼──────────────┼──────────────┤
+  # │   Button 2   │   Button 5   │   Button 8   │
+  # │pantry light  │  Good Night  │   (empty)    │
+  # │   (single)   │   (single)   │              │
+  # ├──────────────┼──────────────┼──────────────┤
+  # │   Button 3   │   Button 6   │   Button 9   │
+  # │Bedroom Light │   (empty)    │   (empty)    │
+  # │   (single)   │              │              │
+  # └──────────────┴──────────────┴──────────────┘
+
+  # Button 1 - Remote switch controller (controls HA switch, doesn't create new entity)
+  button_1_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_1
+      entity_id: "light.bedroom_lights"
+
+  # Button 2 - Remote switch controller (controls HA switch, doesn't create new entity)
+  button_2_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_2
+      entity_id: "switch.pantry_switch_center"
+
+  button_3_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/local_relay_button_state.yaml
+    vars:
+      uid: button_3
+      ha_name: Light 3
+      entity_id: internal_relay_3
+  # Button 4 - Dimmer light button with state updates
+  wled_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/dimmer_light_state.yaml
+    vars:
+      uid: wled
+      entity_id: light.wled
+  # Button 7 - Dimmer light button with state updates
+  wled_new_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/dimmer_light_state.yaml
+    vars:
+      uid: wled_new
+      entity_id: light.wled_new
+  # Button 9 - Scene button (Exit)
+  button_9_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_9
+      entity_id: scene.exit
+# -------------------------------------------------------------------------
+# LVGL pages and buttons
+# -------------------------------------------------------------------------
+lvgl:
+# Main Page
+  pages:
+    - id: main_page
+      layout:
+        type: flex
+        flex_flow: COLUMN_WRAP
+      width: 100%
+      styles: page_style
+      bg_color: black
+      bg_opa: cover
+      <<: !include
+        file: esphome-modular-lvgl-buttons/widgets/swipe_navigation.yaml
+      widgets:
+        # Button 1 - Local relay button
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/light_button.yaml
+            vars:
+              uid: button_1
+              height: $button_height_double
+              text: bedroom
+              icon: $mdi_lightbulb
+              entity_id: "light.bedroom_lights" 
+        # Button 2 - Standard light button with state updates
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/switch_button.yaml
+            vars:
+              uid: button_2
+              height: $button_height_single
+              text: pantry light
+              icon: $mdi_lightbulb
+              entity_id: "switch.pantry_switch_center"
+        # Button 3 - Virtual relay button
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/local_relay_button.yaml
+            vars:
+              uid: button_3
+              height: $button_height_single
+              text: Bedroom Light
+              icon: $mdi_bed
+        # Button 4 - Dimming (double hight) light button with state updates
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/dimmer_light_button.yaml
+            vars:
+              uid: wled
+              height: $button_height_double
+              text: wled bed
+              icon: $mdi_bed
+              entity_id: light.wled
+
+        # Button 5 - Empty button moves the buttons below it down one
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/transparent_empty_button.yaml
+            vars:
+              uid: empty_5
+              height: $button_height_single
+        # Button 6 - Empty button moves the buttons below it down one
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/transparent_empty_button.yaml
+            vars:
+              uid: empty_6
+              height: $button_height_single
+        # Button 7 - Dimming light button (wled_new)
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/dimmer_light_button.yaml
+            vars:
+              uid: wled_new
+              height: $button_height_double
+              text: wled
+              icon: $mdi_string_lights
+              entity_id: light.wled_new
+        # Button 8 - Empty button moves the buttons below it down one
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/transparent_empty_button.yaml
+            vars:
+              uid: empty_8
+              height: $button_height_single
+        # Button 9 - Scene button (Exit) - LONG-PRESS to activate
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/scene_button_longpress.yaml
+            vars:
+              uid: button_9
+              height: $button_height_single
+              text: Exit
+              icon: $mdi_weather_night
+              entity_id: scene.exit
+
+
+
+# -------------------------------------------------------------------------
+# Fonts and graphics
+# -------------------------------------------------------------------------
+
+# I you want to use other MDI icons add them to the list here
+font:
+  # http://materialdesignicons.com/cdn/7.4.47/
+  - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+    id: mdi_icons_40
+    size: 40
+    bpp: 8
+    glyphs: [
+      $mdi_lightbulb,  # mdi-lightbulb
+      $mdi_ceiling_light,  # mdi-ceiling-light
+      $mdi_lamp,  # mdi-lamp
+      $mdi_floor_lamp,  # mdi-floor-lamp
+      $mdi_string_lights,  # mdi-string-lights
+      $mdi_track_light,  # mdi-track-light
+      $mdi_bulkhead_light,  # mdi-bulkhead_light
+      $mdi_led_strip,  # mdi-led-strip
+      $mdi_coach_lamp,  # mdi-coach-lamp
+      $mdi_ceiling_fan_light,  # mdi-ceiling-fan-light
+      $mdi_bed,  # mdi-bed
+      $mdi_white_balance_sunny,  # mdi-white-balance-sunny
+      $mdi_brightness_6,  # mdi-brightness-6
+      $mdi_home,  # mdi-home (for color picker back button)
+      $mdi_weather_night,  # mdi-weather-night (for good night scene)
+      $mdi_movie,  # mdi-movie (for movie scene)
+      $mdi_sofa,  # mdi-sofa (for relax scene)
+      $mdi_silverware_fork_knife,  # mdi-silverware-fork-knife (for dinner scene)
+
+    ]
+
+# Images (must be in main YAML for global visibility)
+image:
+  - file: esphome-modular-lvgl-buttons/assets/images/light/lightbulb.png
+    id: lightbulb_image
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel

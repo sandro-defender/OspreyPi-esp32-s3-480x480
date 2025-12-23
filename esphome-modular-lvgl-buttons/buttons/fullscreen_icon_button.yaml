@@ -1,0 +1,20 @@
+# Fullscreen Icon Button (No Text, Large Centered Icon)
+# vars:
+#   uid:
+#   height:
+#   icon:
+#   entity_id:
+#   font: (Optional, defaults to standard icon font if not provided)
+            height: ${height}
+            id: button_${uid}
+            widgets:
+              - label:
+                  text_font: ${font}
+                  align: center
+                  id: icon_${uid}
+                  text: ${icon}
+            on_short_click:
+                - homeassistant.service:
+                    service: switch.toggle
+                    data:
+                      entity_id: ${entity_id}

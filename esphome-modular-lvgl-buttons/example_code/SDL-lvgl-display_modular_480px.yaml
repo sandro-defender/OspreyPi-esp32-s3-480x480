@@ -1,0 +1,131 @@
+# Substitution variables used through the codebase
+substitutions:
+  icon_font: mdi_icons_40
+  text_font: nunito_24
+  text_color: white
+  bg_color: black
+  button_on_color: "ep_orange"
+  button_off_color: "very_dark_gray"
+  icon_on_color: "yellow"
+  icon_off_color: "gray"
+  label_on_color: "white"
+  label_off_color: "gray"
+  button_text_color: "white"
+  button_height_single: '109px'
+  button_height_double: '228px'
+  button_width: '150px'
+  touchscreen_idle_timeout: "30s"
+  touchscreen_daytime_brightness: "100%"
+  touchscreen_nighttime_brightness: "50%"
+  # Boot screen configuration
+  boot_screen_delay: 60s
+
+  # LCD backlight modes - Code in backlight.yaml
+  # Day mode is set to Sunrise
+  # Evening mode is set to sunset
+  # Set Night mode  at Mightnight here
+  screen_night_hour: '0'
+  screen_night_minute: '0'
+
+  # Screen Size
+  screen_height: '480'
+  screen_width: '480'
+  byte_order: big_endian
+
+esphome:
+  name: sdl-480px-test
+  friendly_name: SDL 480px-test
+  includes:
+    - <sstream>
+    - <algorithm>
+  on_boot:
+    - priority: 400
+      then:
+        - script.execute: update_loading_page
+
+logger:
+  level: debug
+
+time:
+  - platform: homeassistant
+    id: system_time
+          
+packages:
+  # Generic configuration for ESP32 screens
+  # All the colors
+  colors: !include esphome-modular-lvgl-buttons/common/color.yaml
+  # Fonts you need
+  fonts: !include esphome-modular-lvgl-buttons/common/fonts.yaml
+  # 1000s of glyphs
+  glyphs: !include esphome-modular-lvgl-buttons/common/mdi_glyph_substitutions.yaml
+  # Some basic sensors
+  sensors: !include esphome-modular-lvgl-buttons/sensors/sensors_base-SDL.yaml
+  # Styles + Themes
+  theme_style: !include esphome-modular-lvgl-buttons/common/theme_style.yaml
+
+  # Harware description file
+  hardware: !include esphome-modular-lvgl-buttons/hardware/SDL-lvgl.yaml
+  
+  # Basic boot screen with ESPHome logo and device diagnostic info
+  loading_screen: !include esphome-modular-lvgl-buttons/pages/loading_480px.yaml
+  info_screen: !include esphome-modular-lvgl-buttons/pages/info.yaml
+
+  # This section will Update button and relay state from Home Assistant
+  # Any button that has real time updates needs a section here
+
+  # Button 1 - Standard light button with state updates
+  button_1_state: !include
+    file: esphome-modular-lvgl-buttons/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_1
+      entity_id: "switch.athom_smart_plug_v3_50ebc0_switch"
+
+# LVGL pages
+lvgl:
+
+# Main Page
+  pages:
+    - id: main_page
+      bg_color: black
+      scrollable: false
+      layout:
+        type: flex
+        flex_flow: COLUMN_WRAP
+      width: 100%
+      styles: page_style
+      <<: !include
+        file: esphome-modular-lvgl-buttons/widgets/swipe_navigation.yaml
+      widgets:
+        # Button 1 - Standard (double hight) light button with state updates
+        - button: !include
+            file: esphome-modular-lvgl-buttons/buttons/switch_button.yaml
+            vars:
+              uid: button_1
+              height: $button_height_double
+              text: Button 1
+              icon: $mdi_lightbulb
+              entity_id: "switch.athom_smart_plug_v3_50ebc0_switch"
+
+# I you want to use other icons add them to the list here
+font:
+  # http://materialdesignicons.com/cdn/7.4.47/
+  - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+    id: mdi_icons_40
+    size: 40
+    bpp: 8
+    glyphs: [
+      "\U000F0335",  # mdi-lightbulb
+      "\U000F0769",  # mdi-ceiling-light
+      "\U000F06B5",  # mdi-lamp
+      "\U000F08DD",  # mdi-floor-lamp
+      "\U000F12BA",  # mdi-string-lights
+      "\U000F0914",  # mdi-track-light
+      "\U000F1A2F",  # mdi-bulkhead_light:
+      "\U000F07D6",  # mdi-led-strip
+      "\U000F1020",  # mdi-coach-lamp
+      "\U000F1798",  # mdi-ceiling-fan-light
+      "\U000F02E3",  # mdi-bed
+      "\U000F05A8",  # mdi-white-balance-sunny
+      "\U000F00DF",  # mdi-brightness-6
+    ]
+ 

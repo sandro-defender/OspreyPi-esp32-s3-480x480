@@ -1,0 +1,225 @@
+#ospreypi-esp32-s3 480px X 480px Smart Screen
+#
+# Hardware configuration file
+
+
+esphome:
+  min_version: 2024.11.0
+
+      
+  project:
+    name: "ospreypi-esp32-s3.display01"
+    version: "1.0"
+  platformio_options:
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      COMPILER_OPTIMIZATION_SIZE: y
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y    
+      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "60"
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+preferences:
+  flash_write_interval: 5min
+
+# -------------------------------------------
+# Internal outputs
+# -------------------------------------------
+output:
+  # Backlight LED
+  - platform: ledc
+    pin: GPIO13
+    id: gpio_backlight_pwm
+    frequency: 1000Hz
+    max_power: 1.0
+
+  # Buzzer (GPIO42)
+  - platform: ledc
+    id: buzzer_output
+    pin: GPIO42
+    frequency: 1000Hz
+
+  # Virtual relays (no physical GPIO) - for devices without built-in relays
+  - id: internal_relay_1
+    platform: template
+    type: binary
+    write_action:
+      - logger.log: "Virtual relay 1 toggled"
+  - id: internal_relay_2
+    platform: template
+    type: binary
+    write_action:
+      - logger.log: "Virtual relay 2 toggled"
+  - id: internal_relay_3
+    platform: template
+    type: binary
+    write_action:
+      - logger.log: "Virtual relay 3 toggled"
+
+
+
+light:
+  - platform: monochromatic
+    output: gpio_backlight_pwm
+    name: Display Backlight
+    id: display_backlight
+    restore_mode: ALWAYS_ON
+    on_turn_off:
+      - lvgl.pause:
+          show_snow: true
+    on_turn_on:
+      - lvgl.resume:
+      - lvgl.widget.redraw:
+
+# -------------------------------------------
+# Touchscreen FT6336 I2C
+# -------------------------------------------
+i2c:
+  - id: bus_a
+    sda: GPIO5
+    scl: GPIO4
+    frequency: 400kHz
+
+touchscreen:
+  platform: ft63x6
+  id: my_touchscreen
+  display: my_display
+  transform:
+    mirror_x: false
+    mirror_y: false
+
+# -------------------------------------------
+# Display st7701s spi
+# -------------------------------------------
+spi:
+  - id: lcd_spi
+    clk_pin: GPIO38
+    mosi_pin: GPIO39
+
+display:
+  - platform: st7701s
+    id: my_display
+    update_interval: never
+    auto_clear_enabled: false
+    data_rate: 2MHz
+    spi_mode: MODE0
+    color_order: RGB
+    invert_colors: false
+    dimensions:
+      width: 480
+      height: 480
+    transform:
+      mirror_x: false
+      mirror_y: false
+    cs_pin:
+      number: 45
+      ignore_strapping_warning: true
+    de_pin: 47
+    hsync_pin: 14
+    vsync_pin: 21
+    pclk_pin: 48
+    pclk_frequency: 16MHz
+    pclk_inverted: false
+    hsync_pulse_width: 10
+    hsync_back_porch: 10
+    hsync_front_porch: 20
+    vsync_pulse_width: 10
+    vsync_back_porch: 10
+    vsync_front_porch: 10
+    data_pins:
+      red:
+        - 17         # R0 (Index 11)
+        - 16         # R1 (Index 12)
+        - 15         # R2 (Index 13)
+        - 7          # R3 (Index 14)
+        - 6          # R4 (Index 15)
+      green:
+        - 46         # G0 (Index 5)
+        - 3          # G1 (Index 6)
+        - 20         # G2 (Index 7)
+        - 19         # G3 (Index 8)
+        - 8          # G4 (Index 9)
+        - 18         # G5 (Index 10)
+      blue:
+        - 0          # B0 (Index 0)
+        - 12         # B1 (Index 1)
+        - 11         # B2 (Index 2)
+        - 10         # B3 (Index 3)
+        - 9          # B4 (Index 4)
+    
+    init_sequence:
+      - [0xFF, 0x77, 0x01, 0x00, 0x00, 0x13]
+      - [0xEF, 0x08]
+      - [0xFF, 0x77, 0x01, 0x00, 0x00, 0x10]
+      - [0xC0, 0x3B, 0x00]
+      - [0xC1, 0x0B, 0x02]
+      - [0xC2, 0x37, 0x02]
+      - [0xCC, 0x10]
+      - [0xB0, 0x00, 0x0F, 0x16, 0x0E, 0x11, 0x07, 0x09, 0x09, 0x08, 0x23, 0x05, 0x11, 0x0F, 0x28, 0x2D, 0x18]
+      - [0xB1, 0x00, 0x0F, 0x16, 0x0E, 0x11, 0x07, 0x09, 0x08, 0x09, 0x23, 0x05, 0x11, 0x0F, 0x28, 0x2D, 0x18]
+      - [0xFF, 0x77, 0x01, 0x00, 0x00, 0x11]
+      - [0xB0, 0x4D]
+      - [0xB1, 0x33]
+      - [0xB2, 0x87]
+      - [0xB5, 0x4B]
+      - [0xB7, 0x8C]
+      - [0xB8, 0x20]
+      - [0xC1, 0x78]
+      - [0xC2, 0x78]
+      - [0xD0, 0x88]
+      - [0xE0, 0x00, 0x00, 0x02]
+      - [0xE1, 0x02, 0xF0, 0x00, 0x00, 0x03, 0xF0, 0x00, 0x00, 0x00, 0x44, 0x44]
+      - [0xE2, 0x10, 0x10, 0x40, 0x40, 0xF2, 0xF0, 0x00, 0x00, 0xF2, 0xF0, 0x00, 0x00]
+      - [0xE3, 0x00, 0x00, 0x11, 0x11]
+      - [0xE4, 0x44, 0x44]
+      - [0xE5, 0x07, 0xEF, 0xF0, 0xF0, 0x09, 0xF1, 0xF0, 0xF0, 0x03, 0xF3, 0xF0, 0xF0, 0x05, 0xED, 0xF0, 0xF0]
+      - [0xE6, 0x00, 0x00, 0x11, 0x11]
+      - [0xE7, 0x44, 0x44]
+      - [0xE8, 0x08, 0xF0, 0xF0, 0xF0, 0x0A, 0xF2, 0xF0, 0xF0, 0x04, 0xF4, 0xF0, 0xF0, 0x06, 0xEE, 0xF0, 0xF0]
+      - [0xEB, 0x00, 0x00, 0xE4, 0xE4, 0x44, 0x88, 0x40]
+      - [0xEC, 0x78, 0x00]
+      - [0xED, 0x20, 0xF9, 0x87, 0x76, 0x65, 0x54, 0x4F, 0xFF, 0xFF, 0xF4, 0x45, 0x56, 0x67, 0x78, 0x9F, 0x02]
+      - [0xEF, 0x10, 0x0D, 0x04, 0x08, 0x3F, 0x1F]
+      - [0x11]
+      - delay 120ms
+      - [0x29]
+
+
+
+# -------------------------------------------
+# RS485 Modbus (Experimental / Testing Only)
+# -------------------------------------------
+# The following configuration is for testing RS485 Modbus support.
+# Pin assignments are based on schematic analysis but are NOT verified to work for certain.
+# UART0 (GPIO 43/44) is used, which will conflict with default UART logging.
+
+# uart:
+#   - id: modbus_uart
+#     tx_pin: 
+#       number: 43
+#       inverted: true
+#     rx_pin: 
+#       number: 44
+#       inverted: true
+#     baud_rate: 9600
+#     stop_bits: 1
+
+# modbus:
+#   id: modbus_bus
+#   uart_id: modbus_uart
+#   flow_control_pin: 
+#     number: 40
+#     inverted: true

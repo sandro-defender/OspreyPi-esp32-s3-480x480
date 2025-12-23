@@ -1,0 +1,71 @@
+image:
+  - file: esphome-modular-lvgl-buttons/assets/weather/clear_night.png
+    id: weather_clear_night
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/cloudy.png
+    id: weather_cloudy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/fog.png
+    id: weather_fog
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/hail.png
+    id: weather_hail
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/lightning.png
+    id: weather_lightning
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/lightning_rainy.png
+    id: weather_lightning_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/partlycloudy_sun.png
+    id: weather_partlycloudy_sun
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/pouring.png
+    id: weather_pouring
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/rainy.png
+    id: weather_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/snowy.png
+    id: weather_snowy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/snowy_rainy.png
+    id: weather_snowy_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/sunny.png
+    id: weather_sunny
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/windy.png
+    id: weather_windy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - file: esphome-modular-lvgl-buttons/assets/weather/windy_variant.png
+    id: weather_windy_variant
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel

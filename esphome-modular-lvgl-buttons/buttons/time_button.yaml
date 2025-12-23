@@ -1,0 +1,18 @@
+---
+# Change page button
+# vars:
+  # uid:
+  # height:
+  # page:
+height: ${height}
+id: button_${uid}
+bg_opa: TRANSP
+widgets:
+  - label:
+      align: center
+      id: time_label
+      text: '12:00 pm'
+on_short_click:
+    then:
+      lvgl.page.show: ${page}
+

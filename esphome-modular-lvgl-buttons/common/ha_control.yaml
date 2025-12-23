@@ -1,0 +1,49 @@
+# Expose simple buzzer control to Home Assistant
+
+switch:
+  - platform: template
+    name: "Buzzer"
+    id: ha_buzzer_switch
+    icon: mdi:volume-high
+    turn_on_action:
+      # Set to 50% duty cycle for best sound on passive buzzer
+      - output.set_level:
+          id: buzzer_output
+          level: 50%
+    turn_off_action:
+      - output.turn_off: buzzer_output
+
+button:
+  - platform: template
+    name: "Exit Screensaver"
+    id: ha_exit_screensaver
+    icon: mdi:monitor-eye
+    on_press:
+      - logger.log: "Exiting screensaver via HA"
+      - lvgl.resume
+      - lvgl.widget.redraw
+      - lvgl.page.show: main_page
+      # Restore backlight based on current mode
+      - if:
+          condition:
+            - lambda: 'return id(brightness_mode).current_option() == "Day";'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                brightness: ${touchscreen_daytime_brightness}
+      - if:
+          condition:
+            - lambda: 'return id(brightness_mode).current_option() == "Evening";'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                brightness: ${touchscreen_nighttime_brightness}
+      - if:
+          condition:
+            - lambda: 'return id(brightness_mode).current_option() == "Night";'
+          then:
+            - light.turn_on:
+                id: display_backlight
+                brightness: ${touchscreen_nighttime_brightness}
+
+

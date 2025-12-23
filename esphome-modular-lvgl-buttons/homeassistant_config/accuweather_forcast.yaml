@@ -1,0 +1,62 @@
+---
+# Weather forcast from Home Assistant Accuweather plugin
+# Include this in your configuration.yaml
+#
+template:
+  - trigger:
+      - trigger: time_pattern
+        hours: /1
+        # minutes: /1
+    action:
+      - action: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.openweathermap
+        response_variable: hourly
+    sensor:
+      # - name: weather forecast all
+        # unique_id: weather_forecast_all
+        # state: "OK"
+        # attributes:
+          # forecast: "{{ hourly['weather.home']['forecast'] }}"
+
+      - name: Weather Forecast
+        unique_id: weather_forecast
+        state: "OK"
+        attributes:
+          condition_0: >
+            {{ hourly["weather.home"].forecast[0].condition }}
+          temperature_hi_0: >
+            {{ hourly["weather.home"].forecast[0].temperature }}
+          temperature_lo_0: >
+            {{ hourly["weather.home"].forecast[0].templow }}
+          day_0: >
+            {{ as_timestamp(hourly["weather.home"].forecast[0].datetime) | timestamp_custom('%a') }}
+
+          condition_1: >
+            {{ hourly["weather.home"].forecast[1].condition }}
+          temperature_hi_1: >
+            {{ hourly["weather.home"].forecast[1].temperature }}
+          temperature_lo_1: >
+            {{ hourly["weather.home"].forecast[1].templow }}
+          day_1: >
+            {{ as_timestamp(hourly["weather.home"].forecast[1].datetime) | timestamp_custom('%a') }}
+
+          condition_2: >
+            {{ hourly["weather.home"].forecast[2].condition }}
+          temperature_hi_2: >
+            {{ hourly["weather.home"].forecast[2].temperature }}
+          temperature_lo_2: >
+            {{ hourly["weather.home"].forecast[2].templow }}
+          day_2: >
+            {{ as_timestamp(hourly["weather.home"].forecast[2].datetime) | timestamp_custom('%a') }}
+
+          condition_3: >
+            {{ hourly["weather.home"].forecast[3].condition }}
+          temperature_hi_3: >
+            {{ hourly["weather.home"].forecast[3].temperature }}
+          temperature_lo_3: >
+            {{ hourly["weather.home"].forecast[3].templow }}
+          day_3: >
+            {{ as_timestamp(hourly["weather.home"].forecast[3].datetime) | timestamp_custom('%a') }}

@@ -1,0 +1,38 @@
+# Play/Pause button state with dynamic icon
+# vars:
+#   uid: <unique identifer>
+#   entity_id: <entity_id>
+
+binary_sensor:
+  - id: widget_sensor_${uid}
+    platform: homeassistant
+    entity_id: ${entity_id}
+    trigger_on_initial_state: true
+    on_state:
+      - if:
+          condition:
+            - binary_sensor.is_on: widget_sensor_${uid}
+          then:
+            # ON = Playing -> Show Pause icon + Active Color
+            - lvgl.widget.update:
+                id: button_${uid}
+                bg_color: $button_on_color
+            - lvgl.widget.update:
+                id: icon_${uid}
+                text_color: $icon_on_color
+            # Update the icon text separately using label.update
+            - lvgl.label.update:
+                id: icon_${uid}
+                text: $mdi_pause
+          else:
+            # OFF = Paused -> Show Play icon + Inactive Color
+            - lvgl.widget.update:
+                id: button_${uid}
+                bg_color: $button_off_color
+            - lvgl.widget.update:
+                id: icon_${uid}
+                text_color: $icon_off_color
+            # Update the icon text separately using label.update
+            - lvgl.label.update:
+                id: icon_${uid}
+                text: $mdi_play

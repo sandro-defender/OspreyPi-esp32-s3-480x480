@@ -1,0 +1,46 @@
+---
+binary_sensor:
+  - platform: status
+    name: "Status"
+    entity_category: diagnostic
+
+text_sensor:
+  - platform: version
+    id: esphome_version
+    name: "ESPHome Version"
+    hide_timestamp: true
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: esphome_version_label
+            text:
+              format: "%s"
+              args: [ 'id(esphome_version).state.c_str()' ]
+
+  - platform: template
+    name: 'Last Restart'
+    id: device_last_restart
+    icon: mdi:clock
+    entity_category: diagnostic
+
+  - platform: template
+    name: "Device Name"
+    id: device_name
+    internal: true
+    lambda: |-
+      return {App.get_name().c_str()};
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: device_name_label
+            text:
+              format: "%s"
+              args: [ 'id(device_name).state.c_str()' ]
+        - lvgl.qrcode.update:
+            id: cp_login
+            text:
+              format: "WIFI:S:%s;T:WPA;P:password;;"
+              args: [ 'id(device_name).state.c_str()' ]
+        - logger.log:
+            format: "Updated QRcode login info - WIFI:S:%s;T:WPA;P:password;;"
+            args: [ 'id(device_name).state.c_str()' ]

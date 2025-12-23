@@ -1,0 +1,43 @@
+---
+# Simple weather display page
+
+lvgl:
+  pages:
+    - id: weather_page
+      <<: !include
+        file: ../widgets/swipe_navigation.yaml
+      widgets:
+        - obj:
+            x: 0
+            y: 0
+            width: 480
+            height: 480
+            bg_opa: TRANSP
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              flex_align_main: CENTER
+              flex_align_cross: CENTER
+              pad_row: 30
+            widgets:
+              # Weather icon
+              - image:
+                  id: weather_condition_icon
+                  src: sunny_60
+                  align: CENTER
+              
+              # Temperature
+              - label:
+                  id: weather_temperature_today
+                  text: "--°"
+                  text_font: nunito_72
+                  text_align: CENTER
+                  align: CENTER
+              
+              # Condition text
+              - label:
+                  id: weather_condition_today
+                  text: "Loading..."
+                  text_font: nunito_24
+                  text_align: CENTER
+                  align: CENTER
