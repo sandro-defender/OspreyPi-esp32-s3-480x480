@@ -11,11 +11,11 @@ This project is based on: [https://github.com/agillis/esphome-modular-lvgl-butto
 ### Datasheet
 *   **Screen & Touch IC**: [osptek 4-inch 480x480 Smart Screen](https://yuyinglcd.com/products/1/4/245)
 
-Detailed hardware configuration can be found in `hardware/osptek-esp32-s3-48x48.yaml`.
+Detailed hardware configuration can be found in `hardware/ospreypi-esp32-s3-48x48.yaml`.
 
 **Device**: ESP32-S3 (480x480 Smart Screen)
 
-*   **MCU**: ESP32-S3-WROOM-1 (16MB Flash, 8MB Octal PSRAM)
+*   **MCU**: ESP32-S3-1-N16R8 (16MB Flash, 8MB Octal PSRAM)
 *   **Display Driver**: ST7701S (RGB interface)
 *   **Touch Driver**: FT6336 (I2C)
 
