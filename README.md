@@ -17,9 +17,16 @@ Detailed hardware configuration can be found in `hardware/ospreypi-esp32-s3-48x4
 
 ### Device Gallery
 <p align="center">
+  <b>Schematics</b><br>
   <img src="hardware/img/Image.jpg" width="30%" />
   <img src="hardware/img/Image 1.jpg" width="30%" />
   <img src="hardware/img/Image 2.jpg" width="30%" />
+</p>
+<p align="center">
+  <b>Device Photos</b><br>
+  <img src="hardware/img/IMG_4671.jpeg" width="30%" />
+  <img src="hardware/img/IMG_4672.jpeg" width="30%" />
+  <img src="hardware/img/IMG_4678.jpeg" width="30%" />
 </p>
 
 **Device**: ESP32-S3 (480x480 Smart Screen)
