@@ -39,7 +39,7 @@ substitutions:
 esphome:
   name: "display01"
   friendly_name: "Display 01"
-  comment: "ospreypi-esp32-s3 480px * 480px Smart Screen"
+  comment: "osptek-esp32-s3 480px * 480px Smart Screen"
   includes:
     - <sstream>
     - <algorithm>
@@ -79,7 +79,7 @@ packages:
   backlight: !include esphome-modular-lvgl-buttons/common/backlignt_time.yaml
 
   # Harware description file
-  hardware: !include esphome-modular-lvgl-buttons/hardware/ospreypi-esp32-s3-48x48.yaml
+  hardware: !include esphome-modular-lvgl-buttons/hardware/osptek-esp32-s3-48x48.yaml
   
   # Basic boot screen with ESPHome logo and device diagnostic info
   loading_screen: !include esphome-modular-lvgl-buttons/pages/loading_480px.yaml

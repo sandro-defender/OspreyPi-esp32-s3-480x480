@@ -1,4 +1,4 @@
-# OspreyPi esp32-s3-48x48 Device Specifications
+# osptek esp32-s3-48x48 Device Specifications
 
 ## Hardware Overview
 - **MCU**: ESP32-S3 (16MB Flash, PSRAM)

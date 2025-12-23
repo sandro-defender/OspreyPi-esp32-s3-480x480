@@ -1,4 +1,4 @@
-#ospreypi-esp32-s3 480px X 480px Smart Screen
+#osptek-esp32-s3 480px X 480px Smart Screen
 #
 # Hardware configuration file
 
@@ -8,7 +8,7 @@ esphome:
 
       
   project:
-    name: "ospreypi-esp32-s3.display01"
+    name: "osptek-esp32-s3.display01"
     version: "1.0"
   platformio_options:
     board_build.flash_mode: dio
