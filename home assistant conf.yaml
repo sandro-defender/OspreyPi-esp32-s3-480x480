@@ -1,0 +1,41 @@
+template:
+  - sensor:
+  
+  - switch:
+      - name: "Media Play Pause"
+        unique_id: media_play_pause_switch
+        turn_on:
+          service: media_player.media_play_pause
+          target:
+            entity_id: media_player.65pus9206_12
+        turn_off:
+          service: media_player.media_play_pause
+          target:
+            entity_id: media_player.65pus9206_12
+        # Optional: show ON when playing
+        state: "{{ is_state('media_player.65pus9206_12', 'playing') }}"
+
+      - name: "Call Exit Script"
+        unique_id: exit_script
+        turn_on:
+          service: script.turn_on
+          target:
+            entity_id: script.1592754559788
+        turn_off:
+          service: script.turn_on
+          target:
+            entity_id: script.1592754559788
+        # optional state tracking
+        state: "{{ is_state('script.1592754559788', 'running') }}"
+
+      - name: "Call Sleep Script"
+        unique_id: sleep_script
+        turn_on:
+          service: script.turn_on
+          target:
+            entity_id: script.1554740145504
+        turn_off:
+          service: script.turn_on
+          target:
+            entity_id: script.1554740145504
+        state: "{{ is_state('script.1554740145504', 'running') }}"
