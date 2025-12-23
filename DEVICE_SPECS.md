@@ -1,4 +1,4 @@
-# Guition ESP32-S3-4848S040 Device Specifications
+# OspreyPi esp32-s3-48x48 Device Specifications
 
 ## Hardware Overview
 - **MCU**: ESP32-S3 (16MB Flash, PSRAM)
@@ -97,5 +97,4 @@
     - **EN**: 40 (Inverted)
     - *Note: These pins are unverified but suggested by schematic/board specs.*
 
-## Software Configuration
-These settings have been applied to `user_setups/esp32s3/esp32-s3-4848S040.ini`.
+
