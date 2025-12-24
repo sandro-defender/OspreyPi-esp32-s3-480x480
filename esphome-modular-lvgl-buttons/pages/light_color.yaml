@@ -84,10 +84,18 @@ binary_sensor:
 
 sensor:
   # Brightness sensor
-  - platform: homeassistant
-    id: ${widget_name}_light_rgb_sensor_brightness
-    entity_id: "${light_entity}"
-    attribute: brightness
+  - id: ${widget_name}_light_rgb_sensor_brightness
+    platform: template
+    internal: true
+    lambda: |-
+      if (id(${widget_name}_brightness_raw).state == "None" || id(${widget_name}_brightness_raw).state == "") {
+        return 0.0f;
+      }
+      auto val = parse_number<float>(id(${widget_name}_brightness_raw).state);
+      if (val.has_value()) {
+        return val.value();
+      }
+      return 0.0f;
     on_value:
       - if:
           condition:
@@ -102,10 +110,18 @@ sensor:
             - script.execute: ${widget_name}_update_lightbulb_color
 
   # Color temp sensor
-  - platform: homeassistant
-    id: ${widget_name}_light_sensor_color_temp
-    entity_id: "${light_entity}"
-    attribute: color_temp_kelvin
+  - id: ${widget_name}_light_sensor_color_temp
+    platform: template
+    internal: true
+    lambda: |-
+      if (id(${widget_name}_color_temp_raw).state == "None" || id(${widget_name}_color_temp_raw).state == "") {
+        return 2700.0f; // Default warm white
+      }
+      auto val = parse_number<float>(id(${widget_name}_color_temp_raw).state);
+      if (val.has_value()) {
+        return val.value();
+      }
+      return 2700.0f;
     on_value:
       - if:
           condition:
@@ -126,6 +142,26 @@ sensor:
                   - script.execute: ${widget_name}_update_lightbulb_color
 
 text_sensor:
+  # Raw Brightness sensor (to handle None)
+  - platform: homeassistant
+    id: ${widget_name}_brightness_raw
+    entity_id: "${light_entity}"
+    attribute: brightness
+    internal: true
+    on_value:
+      then:
+        - component.update: ${widget_name}_light_rgb_sensor_brightness
+
+  # Raw Color Temp sensor (to handle None)
+  - platform: homeassistant
+    id: ${widget_name}_color_temp_raw
+    entity_id: "${light_entity}"
+    attribute: color_temp_kelvin
+    internal: true
+    on_value:
+      then:
+        - component.update: ${widget_name}_light_sensor_color_temp
+
   # HS Color sensor
   - platform: homeassistant
     id: ${widget_name}_light_sensor_hs

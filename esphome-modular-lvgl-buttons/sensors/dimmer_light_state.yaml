@@ -3,17 +3,32 @@
 # vars:
 #   uid: <unique identifer for the switch. Must match the ID of the button>
 #   entity_id: <Home Assistant entity_id for the object we are controlling>
-sensor:
-  - id: brightness_${uid}
+text_sensor:
+  - id: brightness_raw_${uid}
     platform: homeassistant
     entity_id: ${entity_id}
     attribute: brightness
+    internal: true
+    on_value:
+      then:
+        - component.update: brightness_${uid}
+
+sensor:
+  - id: brightness_${uid}
+    platform: template
+    internal: true
+    lambda: |-
+      if (id(brightness_raw_${uid}).state == "None" || id(brightness_raw_${uid}).state == "") {
+        return 0.0f;
+      }
+      auto val = parse_number<float>(id(brightness_raw_${uid}).state);
+      if (val.has_value()) {
+        return val.value();
+      }
+      return 0.0f;
     on_value:
       - lvgl.slider.update:
           id: slider_${uid}
-          #value: !lambda return x;
-          value: !lambda "return std::isnan(x) ? 0 : x;"
-    filters:
-      - lambda: "return std::isnan(x) ? 0.0 : x;"
+          value: !lambda "return x;"
 
 <<: !include ./switch_or_light_button_state.yaml
