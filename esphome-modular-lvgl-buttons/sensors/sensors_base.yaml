@@ -19,11 +19,17 @@ sensor:
   - platform: internal_temperature
     id: cpu_temperature
     name: "CPU Temperature"
-    filters:
-      - lambda: return (x * 1.8) + 32;
-    unit_of_measurement: "°F"
+    unit_of_measurement: "°C"
     icon: mdi:thermometer
-    entity_category: diagnostic    
+    entity_category: diagnostic
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: cpu_temp_label
+            text: !lambda |-
+              char buffer[16];
+              snprintf(buffer, sizeof(buffer), "%.1f°C", x);
+              return std::string(buffer);    
 
   # Reports the WiFi signal strength in %
   - platform: copy
@@ -123,11 +129,3 @@ text_sensor:
             text:
               format: "%s"
               args: [ 'id(device_name).state.c_str()' ]
-        - lvgl.qrcode.update:
-            id: cp_login
-            text:
-              format: "WIFI:S:%s;T:WPA;P:password;;"
-              args: [ 'id(device_name).state.c_str()' ]
-        - logger.log:
-            format: "Updated QRcode login info - WIFI:S:%s;T:WPA;P:password;;"
-            args: [ 'id(device_name).state.c_str()' ]
