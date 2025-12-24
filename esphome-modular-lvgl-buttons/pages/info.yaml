@@ -20,6 +20,28 @@ script:
             }
             return std::string(buffer);
 
+# Binary sensor to detect AP mode
+binary_sensor:
+  - platform: status
+    id: wifi_status
+    internal: true
+    on_state:
+      then:
+        - if:
+            condition:
+              # AP mode is active when WiFi is NOT connected
+              lambda: 'return !id(wifi_status).state;'
+            then:
+              - lvgl.widget.show: ap_mode_qr_container
+              - lvgl.qrcode.update:
+                  id: ap_mode_qr
+                  text: !lambda |-
+                    char buffer[64];
+                    snprintf(buffer, sizeof(buffer), "WIFI:S:%s;T:nopass;;", App.get_name().c_str());
+                    return std::string(buffer);
+            else:
+              - lvgl.widget.hide: ap_mode_qr_container
+
 # Sensors for info page
 sensor:
   # Free heap memory sensor
@@ -96,7 +118,7 @@ lvgl:
             pad_all: 10
             layout:
               type: GRID
-              grid_rows: [ content, content, content, content, content, content, content, content, content, content, content ]
+              grid_rows: [ content, content, content, content, content, content, content, content, content, content, content, content ]
               grid_columns: [ FR(42), FR(58) ]
               pad_column: 6
               pad_row: 8
@@ -288,6 +310,39 @@ lvgl:
                   grid_cell_y_align: CENTER
                   styles: info_value_style
                   text: "..."
+              
+              # AP Mode QR Code (hidden by default)
+              - obj:
+                  id: ap_mode_qr_container
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 11
+                  grid_cell_column_span: 2
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: CENTER
+                  width: 200
+                  height: 150
+                  bg_opa: transp
+                  border_width: 0
+                  hidden: true
+                  widgets:
+                    - label:
+                        align: top_mid
+                        y: 0
+                        text_font: nunito_24
+                        text_color: 0xFF6600
+                        text: "⚠ AP MODE ACTIVE"
+                    - qrcode:
+                        id: ap_mode_qr
+                        align: center
+                        y: 15
+                        size: 100
+                        text: "WIFI:S:display01;T:nopass;;"
+                    - label:
+                        align: bottom_mid
+                        y: 0
+                        text_font: nunito_18
+                        text_color: 0xCCCCCC
+                        text: "Scan to connect"
         
         # Exit button
         - button:
