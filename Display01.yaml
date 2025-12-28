@@ -189,7 +189,8 @@ packages:
 # LVGL pages and buttons
 # -------------------------------------------------------------------------
 lvgl:
-  buffer_size: 20%
+  buffer_size: 10%
+  update_interval: 50ms
 # Main Page
   pages:
     - id: main_page
