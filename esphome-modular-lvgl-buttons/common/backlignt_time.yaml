@@ -17,6 +17,7 @@ sun:
 time:
   - platform: homeassistant
     id: system_time
+    timezone: $timezone
     on_time_sync:
       - if: # Updates the last restart time
           condition:
@@ -25,6 +26,7 @@ time:
             - text_sensor.template.publish:
                 id: device_last_restart
                 state: !lambda 'return id(system_time).now().strftime("%a %d %b %Y - %I:%M:%S %p");'
+      - script.execute: time_update
     on_time:
       - seconds: 0
         minutes: $screen_night_minute
@@ -44,6 +46,7 @@ lvgl:
     then:
       - logger.log: "LVGL is idle"
       - lvgl.page.show: screensaver_page
+      - script.execute: time_update
       - if:
           condition:
             - lambda: 'return id(brightness_mode).current_option() == "Day";'

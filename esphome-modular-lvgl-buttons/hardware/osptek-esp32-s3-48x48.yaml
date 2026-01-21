@@ -4,7 +4,7 @@
 
 
 esphome:
-  min_version: 2024.11.0
+  min_version: 2026.1.0
 
       
   project:
@@ -19,6 +19,7 @@ esp32:
   flash_size: 16MB
   framework:
     type: esp-idf
+    version: 5.5.2
     sdkconfig_options:
       COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
@@ -97,9 +98,34 @@ touchscreen:
   platform: ft63x6
   id: my_touchscreen
   display: my_display
+  # Touchscreen transform MUST match display rotation above
+  # Current: 180° rotation
   transform:
     mirror_x: false
     mirror_y: false
+  
+  # --- ROTATION OPTIONS (uncomment matching transform when changing display_rotation) ---
+  # For 0° rotation (normal):
+  # transform:
+  #   mirror_x: false
+  #   mirror_y: false
+  
+  # For 90° rotation (clockwise):
+  # transform:
+  #   swap_xy: true
+  #   mirror_x: true
+  #   mirror_y: false
+  
+  # For 180° rotation (upside-down) - CURRENT
+  # transform:
+  #   mirror_x: true
+  #   mirror_y: true
+  
+  # For 270° rotation (counter-clockwise):
+  # transform:
+  #   swap_xy: true
+  #   mirror_x: false
+  #   mirror_y: true
 
 # -------------------------------------------
 # Display st7701s spi
@@ -121,9 +147,7 @@ display:
     dimensions:
       width: 480
       height: 480
-    transform:
-      mirror_x: false
-      mirror_y: false
+    rotation: $display_rotation
     cs_pin:
       number: 45
       ignore_strapping_warning: true

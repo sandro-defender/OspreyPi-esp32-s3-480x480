@@ -37,8 +37,8 @@ substitutions:
   byte_order: big_endian
 
   # Device Configuration
-  device_name: "display01"
-  device_friendly_name: "Display 01"
+  device_name: "display02"
+  device_friendly_name: "Display 02"
   device_comment: "osptek-esp32-s3 480px * 480px Smart Screen"
   
   # Time Configuration
@@ -52,7 +52,7 @@ substitutions:
   lvgl_update_interval: "50ms"
   
   # Display Rotation (change to 0, 90, 180, or 270)
-  display_rotation: "0"
+  display_rotation: "180"
 
 esphome:
   name: $device_name
@@ -72,7 +72,7 @@ logger:
 
 api:
   encryption:
-    key: !secret api_encryption_key
+    key: !secret api_encryption_key2
 
 esp32:
   framework:
@@ -157,6 +157,8 @@ packages:
 #
 #
 #
+
+
 
   # Button 1 - Remote switch controller (controls HA switch, doesn't create new entity)
   button_1_state: !include

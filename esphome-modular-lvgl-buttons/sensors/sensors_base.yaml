@@ -73,9 +73,20 @@ text_sensor:
       then:
         - lvgl.label.update:
             id: esphome_version_label
-            text:
-              format: "%s"
-              args: [ 'id(esphome_version).state.c_str()' ]
+            text: !lambda |-
+              std::string s = id(esphome_version).state;
+              size_t pos = s.find(" (");
+              if (pos != std::string::npos) {
+                std::string ver = s.substr(0, pos);
+                size_t hash_pos = s.find("0x", pos);
+                if (hash_pos != std::string::npos) {
+                   // Extract 7 chars of hash after 0x
+                   std::string hash = s.substr(hash_pos + 2, 7);
+                   return ver + " (" + hash + ")";
+                }
+                return ver;
+              }
+              return s;
 
   - platform: wifi_info
     mac_address:

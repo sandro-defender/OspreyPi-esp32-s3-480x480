@@ -154,6 +154,7 @@ lvgl:
                   grid_cell_row_pos: 1
                   grid_cell_x_align: START
                   grid_cell_y_align: CENTER
+                  text_font: nunito_18
                   styles: info_value_style
                   text: "..."
               

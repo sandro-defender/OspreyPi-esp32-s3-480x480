@@ -113,12 +113,13 @@ script:
 
   - id: check_boot_status
     then:
-      - lambda: |-
-          if (id(ha_connected)) {
-            lv_obj_add_flag(id(boot_homeassistant), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(boot_synchronization), LV_OBJ_FLAG_HIDDEN);
-            id(start_sync_animation).execute();
-          }
+      - if:
+          condition:
+            lambda: 'return id(ha_connected);'
+          then:
+            - lvgl.widget.hide: boot_homeassistant
+            - lvgl.widget.show: boot_synchronization
+            - script.execute: start_sync_animation
 
   - id: start_sync_animation
     then:
@@ -136,13 +137,18 @@ script:
 
   - id: on_ha_connected
     then:
-      - lambda: |-
-          if (!id(ha_connected)) {
-            id(ha_connected) = true;
-            lv_label_set_text(id(boot_homeassistant_label), "Home Assistant Connected!");
-            lv_obj_add_flag(id(boot_homeassistant_spiner), LV_OBJ_FLAG_HIDDEN);
-            id(check_boot_status).execute();
-          }
+      - if:
+          condition:
+            lambda: 'return !id(ha_connected);'
+          then:
+            - globals.set:
+                id: ha_connected
+                value: 'true'
+            - lvgl.label.update:
+                id: boot_homeassistant_label
+                text: "Home Assistant Connected!"
+            - lvgl.widget.hide: boot_homeassistant_spiner
+            - script.execute: check_boot_status
 
 api:
   on_client_connected:

@@ -37,6 +37,11 @@ globals:
     type: bool
     initial_value: 'false'
 
+  # Global to store calculated color for thread-safe update
+  - id: ${widget_name}_calc_color
+    type: int
+    initial_value: '0'
+
 binary_sensor:
   # Track light state (on/off)
   - platform: homeassistant
@@ -898,9 +903,12 @@ script:
           // Form the color as 0xRRGGBB
           uint32_t color = (r << 16) | (g << 8) | b;
           
-          // Set the bulb widget color
-          lv_obj_set_style_bg_color(id(${widget_name}_lightbulb_color), lv_color_hex(color), 0);
-          //lv_obj_set_style_text_color(id(${widget_name}_icon), lv_color_hex(color), 0);
+          // Store in global for thread-safe update
+          id(${widget_name}_calc_color) = color;
+
+      - lvgl.obj.update:
+          id: ${widget_name}_lightbulb_color
+          bg_color: !lambda return lv_color_hex(id(${widget_name}_calc_color));
 
 
   # ═══════════════════════════════════════════════════════════════════════════
