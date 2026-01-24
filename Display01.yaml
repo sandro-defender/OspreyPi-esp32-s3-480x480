@@ -53,6 +53,8 @@ substitutions:
   
   # Display Rotation (change to 0, 90, 180, or 270)
   display_rotation: "0"
+  touch_mirror_x: "false"
+  touch_mirror_y: "false"
 
 esphome:
   name: $device_name

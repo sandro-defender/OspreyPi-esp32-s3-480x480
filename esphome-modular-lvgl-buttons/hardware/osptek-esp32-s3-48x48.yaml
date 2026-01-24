@@ -4,7 +4,7 @@
 
 
 esphome:
-  min_version: 2026.1.0
+  min_version: 2026.1.1
 
       
   project:
@@ -101,8 +101,8 @@ touchscreen:
   # Touchscreen transform MUST match display rotation above
   # Current: 180° rotation
   transform:
-    mirror_x: false
-    mirror_y: false
+    mirror_x: $touch_mirror_x
+    mirror_y: $touch_mirror_y
   
   # --- ROTATION OPTIONS (uncomment matching transform when changing display_rotation) ---
   # For 0° rotation (normal):
