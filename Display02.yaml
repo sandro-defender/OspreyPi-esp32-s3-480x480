@@ -45,11 +45,11 @@ substitutions:
   timezone: "Asia/Tbilisi"
   
   # Logger Configuration
-  log_level: "warn"  # Change to "debug" for troubleshooting
+  log_level: "debug"  # Change to "debug" for troubleshooting
   
   # LVGL Performance
-  lvgl_buffer_size: "10%"
-  lvgl_update_interval: "50ms"
+  lvgl_buffer_size: "50%"
+  lvgl_update_interval: "16ms"
   
   # Display Rotation (change to 0, 90, 180, or 270)
   display_rotation: "180"
@@ -168,7 +168,7 @@ packages:
     vars:
       uid: button_1
       entity_id: "light.bedroom_lights"
-
+# 
   # Button 2 - Remote switch controller (controls HA switch, doesn't create new entity)
   button_2_state: !include
     file: esphome-modular-lvgl-buttons/sensors/switch_or_light_button_state.yaml
@@ -255,8 +255,7 @@ lvgl:
               height: $button_height_double
               text: bedroom
               icon: $mdi_lightbulb
-              entity_id: "light.bedroom_lights" 
-
+              entity_id: "light.bedroom_lights"
         # Button 2 - Standard light button with state updates
         - button: !include
             file: esphome-modular-lvgl-buttons/buttons/switch_button.yaml

@@ -13,7 +13,7 @@ script:
             static const char *const MONTHS_GE[] = {"იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"};
             auto time = id(system_time).now();
             char buffer[64];
-            snprintf(buffer, sizeof(buffer), "%s, %02d %s", DAYS_GE[time.day_of_week], time.day_of_month, MONTHS_GE[time.month - 1]);
+            snprintf(buffer, sizeof(buffer), "%s, %02d %s", DAYS_GE[time.day_of_week % 7], time.day_of_month, MONTHS_GE[time.month - 1]);
             return std::string(buffer);
 
   - id: update_weather_image

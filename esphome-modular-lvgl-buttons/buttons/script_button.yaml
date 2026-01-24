@@ -6,20 +6,21 @@
   # text:
   # icon:
   # entity_id:
-            height: ${height}
-            id: button_${uid}
-            widgets:
-              - label:
-                  text_font: $icon_font
-                  align: top_left
-                  id: icon_${uid}
-                  text: ${icon}
-              - label:
-                  align: bottom_left
-                  id: label_${uid}
-                  text: ${text}
-            on_short_click:
-                - homeassistant.action:
-                    action: script.turn_on
-                    data:
-                      entity_id: ${entity_id}
+height: ${height}
+width: $button_width
+id: button_${uid}
+widgets:
+  - label:
+      text_font: $icon_font
+      align: top_left
+      id: icon_${uid}
+      text: ${icon}
+  - label:
+      align: bottom_left
+      id: label_${uid}
+      text: ${text}
+on_short_click:
+    - homeassistant.action:
+        action: script.turn_on
+        data:
+          entity_id: ${entity_id}

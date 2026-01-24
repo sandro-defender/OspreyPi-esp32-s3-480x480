@@ -3,6 +3,7 @@
   # uid:
   # height:
 height: ${height}
+width: $button_width
 bg_opa: TRANSP
 checkable: no
 id: button_${uid}

@@ -7,6 +7,7 @@
   # icon:
   # entity_id:
 height: ${height}
+width: $button_width
 id: button_${uid}
 widgets:
   - label:
