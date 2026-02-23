@@ -1,0 +1,398 @@
+---
+globals:
+  - id: ${widget_name}_target_temp
+    type: float
+    initial_value: '24.0'
+
+  - id: ${widget_name}_current_temp
+    type: float
+    initial_value: '24.0'
+
+binary_sensor:
+  # AC Power State
+  - platform: homeassistant
+    id: ${widget_name}_power_state
+    entity_id: "${climate_entity}"
+    attribute: state
+    on_state:
+      - if:
+          condition:
+            lambda: return x;
+          then:
+            - lvgl.obj.update:
+                id: ${widget_name}_power_btn
+                bg_color: 0x4CAF50 # Green
+          else:
+             - lvgl.obj.update:
+                id: ${widget_name}_power_btn
+                bg_color: 0x555555 # Dark Gray
+
+text_sensor:
+  # HVAC Mode
+  - platform: homeassistant
+    id: ${widget_name}_hvac_mode
+    entity_id: "${climate_entity}"
+    attribute: hvac_mode
+    on_value: 
+       then:
+             - lvgl.label.update:
+                 id: ${widget_name}_mode_label
+                 text: !lambda return x;
+             - lambda: |-
+                 if (x == "cool") {
+                   lv_obj_set_style_bg_color(id(${widget_name}_mode_btn), lv_color_hex(0x2196F3), 0); // Blue
+                 } else if (x == "heat") {
+                   lv_obj_set_style_bg_color(id(${widget_name}_mode_btn), lv_color_hex(0xFF9800), 0); // Orange
+                 } else if (x == "dry") {
+                   lv_obj_set_style_bg_color(id(${widget_name}_mode_btn), lv_color_hex(0xFFEB3B), 0); // Yellow
+                   lv_obj_set_style_text_color(id(${widget_name}_mode_label), lv_color_black(), 0); 
+                 } else if (x == "fan_only") {
+                   lv_obj_set_style_bg_color(id(${widget_name}_mode_btn), lv_color_hex(0x4CAF50), 0); // Green
+                 } else {
+                   lv_obj_set_style_bg_color(id(${widget_name}_mode_btn), lv_color_hex(0x9E9E9E), 0); // Gray
+                   lv_obj_set_style_text_color(id(${widget_name}_mode_label), lv_color_white(), 0);
+                 }
+
+  # Fan Mode
+  - platform: homeassistant
+    id: ${widget_name}_fan_mode
+    entity_id: "${climate_entity}"
+    attribute: fan_mode
+    on_value:
+       then:
+         - lvgl.label.update:
+             id: ${widget_name}_fan_label
+             text: !lambda return x;
+         - lvgl.obj.update:
+             id: ${widget_name}_fan_btn
+             bg_color: 0x2196F3 # Blue
+
+  # Preset Mode (Turbo)
+  - platform: homeassistant
+    id: ${widget_name}_preset_mode
+    entity_id: "${climate_entity}"
+    attribute: preset_mode
+    on_value:
+       then:
+         - lambda: |-
+             if (x == "boost") {
+               lv_obj_set_style_bg_color(id(${widget_name}_turbo_btn), lv_color_hex(0xFF5722), 0); // Deep Orange
+             } else {
+               lv_obj_set_style_bg_color(id(${widget_name}_turbo_btn), lv_color_hex(0x555555), 0); // Gray
+             }
+
+sensor:
+  # Target Temperature
+  - platform: homeassistant
+    id: ${widget_name}_target_temp_sensor
+    entity_id: "${climate_entity}"
+    attribute: temperature
+    on_value:
+      - globals.set:
+          id: ${widget_name}_target_temp
+          value: !lambda return x;
+      - lvgl.arc.update:
+          id: ${widget_name}_temp_arc
+          value: !lambda return x;
+      - lvgl.label.update:
+          id: ${widget_name}_target_temp_label
+          text: !lambda |-
+            char buffer[10];
+            sprintf(buffer, "%d", (int)x);
+            return std::string(buffer);
+
+  # Current Temperature
+  - platform: homeassistant
+    id: ${widget_name}_current_temp_sensor
+    entity_id: "${climate_entity}"
+    attribute: current_temperature
+    on_value:
+      - globals.set:
+          id: ${widget_name}_current_temp
+          value: !lambda return x;
+      - lvgl.label.update:
+          id: ${widget_name}_current_temp_label
+          text: !lambda |-
+            char buffer[10];
+            sprintf(buffer, "%.1f", x);
+            return std::string(buffer);
+
+lvgl:
+  pages:
+    - id: ${widget_name}_page
+      bg_color: black
+      widgets:
+        # -------------------
+        # TARGET TEMP ARC
+        # -------------------
+        - arc:
+            id: ${widget_name}_temp_arc
+            align: center
+            y: -20
+            width: 380
+            height: 380
+            min_value: 17
+            max_value: 30
+            value: 24
+            start_angle: 135
+            end_angle: 45
+            arc_width: 20
+            arc_color: dark_gray
+            indicator:
+              arc_color: orange
+              arc_width: 20
+            knob:
+              border_width: 2
+              border_color: white
+              bg_color: orange
+              pad_all: 5
+            
+            on_value:
+              - lvgl.label.update:
+                  id: ${widget_name}_target_temp_label
+                  text: !lambda |-
+                    char buffer[10];
+                    sprintf(buffer, "%d", (int)x);
+                    return std::string(buffer);
+            
+            on_release:
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return x;
+
+        # -------------------
+        # CENTER INFO
+        # -------------------
+        - obj:
+            align: center
+            y: -20
+            width: 300
+            height: 200
+            bg_opa: transp
+            border_width: 0
+            layout:
+              type: flex
+              flex_flow: COLUMN
+              flex_align_main: CENTER
+              flex_align_cross: CENTER
+            widgets:
+              # Target Temp Big Label
+              - label:
+                  id: ${widget_name}_target_temp_label
+                  text: "24"
+                  text_font: nunito_72
+                  text_color: white
+                  width: 100%
+                  text_align: center
+              
+              # Current Temp Small Label
+              - label:
+                  id: ${widget_name}_current_temp_label
+                  text: "24.0"
+                  text_font: nunito_36
+                  text_color: gray
+                  width: 100%
+                  text_align: center
+
+        # Temp Minus Button
+        - button:
+            align: center
+            x: -100
+            y: -20
+            width: 60
+            height: 60
+            bg_color: 0x555555
+            radius: 30
+            widgets:
+              - label:
+                  align: center
+                  text: "-"
+                  text_font: nunito_36
+                  text_color: white
+            on_click:
+              - lambda: |-
+                  float current = id(${widget_name}_target_temp);
+                  float next = current - 1.0;
+                  if (next < 17.0) next = 17.0;
+                  id(${widget_name}_target_temp) = next;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                   id: ${widget_name}_target_temp_label
+                   text: !lambda |-
+                     char buffer[10];
+                     sprintf(buffer, "%d", (int)id(${widget_name}_target_temp));
+                     return std::string(buffer);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+        # Temp Plus Button
+        - button:
+            align: center
+            x: 100
+            y: -20
+            width: 60
+            height: 60
+            bg_color: 0x555555
+            radius: 30
+            widgets:
+              - label:
+                  align: center
+                  text: "+"
+                  text_font: nunito_36
+                  text_color: white
+            on_click:
+              - lambda: |-
+                  float current = id(${widget_name}_target_temp);
+                  float next = current + 1.0;
+                  if (next > 30.0) next = 30.0;
+                  id(${widget_name}_target_temp) = next;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                   id: ${widget_name}_target_temp_label
+                   text: !lambda |-
+                     char buffer[10];
+                     sprintf(buffer, "%d", (int)id(${widget_name}_target_temp));
+                     return std::string(buffer);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+        # -------------------
+        # CONTROLS BOTTOM
+        # -------------------
+        - obj:
+            align: bottom_mid
+            width: 440
+            height: 100
+            bg_opa: transp
+            border_width: 0
+            pad_all: 5
+            layout:
+              type: flex
+              flex_flow: ROW
+              flex_align_main: SPACE_BETWEEN
+              flex_align_cross: CENTER
+            widgets:
+              # Power Button
+              - button:
+                  id: ${widget_name}_power_btn
+                  width: 140
+                  height: 90
+                  bg_color: 0x555555
+                  radius: 15
+                  widgets:
+                    - label:
+                        align: center
+                        text: "PWR"
+                        text_font: nunito_24
+                        text_color: white
+                  on_click:
+                    - homeassistant.action:
+                        action: climate.toggle
+                        data:
+                          entity_id: "${climate_entity}"
+      
+              # Mode Button
+              - button:
+                  id: ${widget_name}_mode_btn
+                  width: 140
+                  height: 90
+                  bg_color: 0x555555
+                  radius: 15
+                  widgets:
+                    - label:
+                        id: ${widget_name}_mode_label
+                        align: center
+                        text: "Mode"
+                        text_font: nunito_24
+                        text_color: white
+                  on_click:
+                    - homeassistant.action:
+                        action: climate.set_hvac_mode
+                        data:
+                           entity_id: "${climate_entity}"
+                           hvac_mode: !lambda |-
+                              auto state = id(${widget_name}_hvac_mode).state;
+                              std::string next_mode = "off";
+                              if (state == "off") next_mode = "cool";
+                              else if (state == "cool") next_mode = "heat";
+                              else if (state == "heat") next_mode = "dry";
+                              else if (state == "dry") next_mode = "fan_only";
+                              else if (state == "fan_only") next_mode = "off";
+                              return next_mode;
+
+              # Fan Button
+              - button:
+                  id: ${widget_name}_fan_btn
+                  width: 140
+                  height: 90
+                  bg_color: 0x555555
+                  radius: 15
+                  widgets:
+                    - label:
+                        id: ${widget_name}_fan_label
+                        align: center
+                        text: "Fan"
+                        text_font: nunito_24
+                        text_color: white
+                  on_click:
+                    - homeassistant.action:
+                        action: climate.set_fan_mode
+                        data:
+                           entity_id: "${climate_entity}"
+                           fan_mode: !lambda |-
+                              auto state = id(${widget_name}_fan_mode).state;
+                              std::string next_mode = "auto";
+                              if (state == "auto") next_mode = "low";
+                              else if (state == "low") next_mode = "medium";
+                              else if (state == "medium") next_mode = "high";
+                              else next_mode = "auto";
+                              return next_mode;
+
+        # Back Button
+        - button:
+            align: top_left
+            x: 10
+            y: 10
+            width: 80
+            height: 50
+            bg_opa: transp
+            widgets:
+              - label:
+                  text: "< Back"
+                  text_color: white
+            on_click:
+              - lvgl.page.show: main_page
+
+        # Turbo Button
+        - button:
+            id: ${widget_name}_turbo_btn
+            align: top_right
+            x: -10
+            y: 10
+            width: 80
+            height: 50
+            bg_color: 0x555555
+            widgets:
+              - label:
+                  align: center
+                  text: "Turbo"
+                  text_color: white
+            on_click:
+              - homeassistant.action:
+                  action: climate.set_preset_mode
+                  data:
+                    entity_id: "${climate_entity}"
+                    preset_mode: !lambda |-
+                      return (id(${widget_name}_preset_mode).state == "boost") ? "none" : "boost";
