@@ -12,6 +12,7 @@ esphome:
     version: "1.0"
   platformio_options:
     board_build.flash_mode: dio
+    board_build.partitions: /Volumes/Ssd/esp32/OspreyPi-esp32-s3-480x480/partitions_16mb.csv
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -19,7 +20,7 @@ esp32:
   flash_size: 16MB
   framework:
     type: esp-idf
-    version: 5.5.2
+    #version: 5.5.2  # commented out: let ESPHome use recommended version
     sdkconfig_options:
       COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
@@ -98,8 +99,9 @@ touchscreen:
   platform: ft63x6
   id: my_touchscreen
   display: my_display
-  # Touchscreen transform MUST match display rotation above
-  # Current: 180° rotation
+  # Note: When using 'lvgl: rotation:', the touch input is rotated automatically.
+  # Manual transforms below should usually remain 'false' for 0 and 180 rotations.
+  # Current: 180° rotation (handled by LVGL)
   transform:
     mirror_x: $touch_mirror_x
     mirror_y: $touch_mirror_y
@@ -147,7 +149,7 @@ display:
     dimensions:
       width: 480
       height: 480
-    rotation: $display_rotation
+    # rotation moved to lvgl: block (required by ESPHome 2026.4+)
     cs_pin:
       number: 45
       ignore_strapping_warning: true

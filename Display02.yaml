@@ -53,8 +53,8 @@ substitutions:
   
   # Display Rotation (change to 0, 90, 180, or 270)
   display_rotation: "180"
-  touch_mirror_x: "true"
-  touch_mirror_y: "true"
+  touch_mirror_x: "false"
+  touch_mirror_y: "false"
 
 esphome:
   name: $device_name
@@ -76,10 +76,30 @@ api:
   encryption:
     key: !secret api_encryption_key2
 
+# ESPectre - Wi-Fi CSI motion detection
+# GitHub: https://github.com/francescopace/espectre
+#external_components:
+#  - source: github://francescopace/espectre
+#    components: [espectre]
+
+#espectre:
+#  id: espectre_csi
+#  detection_algorithm: mvs
+#  motion_sensor:
+#    name: "Motion Detected"
+#    icon: "mdi:motion-sensor"
+#  movement_sensor:
+#    name: "Movement Score"
+#    icon: "mdi:sine-wave"
+#  threshold_number:
+#    name: "Detection Threshold"
+#  calibrate_switch:
+#    name: "Calibrate"
+
 esp32:
   framework:
     type: esp-idf
-    version: 5.5.2
+#    version: 5.5.2
     sdkconfig_options:
       CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH: "n"
       CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
@@ -238,6 +258,7 @@ packages:
 lvgl:
   buffer_size: 50%
   update_interval: 16ms
+  rotation: $display_rotation
 # Main Page
   pages:
     - id: main_page
