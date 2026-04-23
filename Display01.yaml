@@ -48,8 +48,8 @@ substitutions:
   log_level: "warn"  # Change to "debug" for troubleshooting
   
   # LVGL Performance
-  lvgl_buffer_size: "10%"
-  lvgl_update_interval: "50ms"
+  lvgl_buffer_size: "50%"
+  lvgl_update_interval: "16ms"
   
   # Display Rotation (change to 0, 90, 180, or 270)
   display_rotation: "0"
@@ -76,10 +76,30 @@ api:
   encryption:
     key: !secret api_encryption_key
 
+# ESPectre - Wi-Fi CSI motion detection
+# GitHub: https://github.com/francescopace/espectre
+#external_components:
+#  - source: github://francescopace/espectre
+#    components: [espectre]
+
+#espectre:
+#  id: espectre_csi
+#  detection_algorithm: mvs
+#  motion_sensor:
+#    name: "Motion Detected"
+#    icon: "mdi:motion-sensor"
+#  movement_sensor:
+#    name: "Movement Score"
+#    icon: "mdi:sine-wave"
+#  threshold_number:
+#    name: "Detection Threshold"
+#  calibrate_switch:
+#    name: "Calibrate"
+
 esp32:
   framework:
     type: esp-idf
-    version: 5.5.2
+#    version: 5.5.2
     sdkconfig_options:
       CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH: "n"
       CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
@@ -128,6 +148,11 @@ packages:
 
   # Screensaver
   screensaver: !include esphome-modular-lvgl-buttons/pages/screensaver.yaml
+  ac_screen: !include
+    file: esphome-modular-lvgl-buttons/pages/ac_control.yaml
+    vars:
+      widget_name: ac_main
+      climate_entity: "climate.midea_ac_15393162830706_2"
 
   # This section will Update button state and relay state from Home Assistant
   # Any button that has real time updates needs a section here
@@ -230,6 +255,7 @@ packages:
 lvgl:
   buffer_size: 50%
   update_interval: 16ms
+  rotation: $display_rotation
 # Main Page
   pages:
     - id: main_page
@@ -285,12 +311,15 @@ lvgl:
               icon: $mdi_string_lights
               entity_id: "script.wled_light_togle_animated"
 
-        # Button 4 - Empty button moves the buttons below it down one
+        # Button 4 - AC Control
         - button: !include
-            file: esphome-modular-lvgl-buttons/buttons/transparent_empty_button.yaml
+            file: esphome-modular-lvgl-buttons/buttons/page_button.yaml
             vars:
-              uid: empty_4
+              uid: ac_nav
               height: $button_height_single
+              text: AC
+              icon: $mdi_air_conditioner
+              page: ac_main_page
 
         # Button 5 - Standard light button with state updates
         - button: !include
@@ -373,6 +402,7 @@ font:
       $mdi_pause,       # mdi-pause
       $mdi_location_exit,  # mdi-location-exit (for exit scene)
       $mdi_fan,         # mdi-fun
+      $mdi_air_conditioner, # mdi-air-conditioner
     ]
   - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
     id: mdi_icons_80
