@@ -6,25 +6,25 @@ esphome:
       then:
         - if:
             condition:
-              lambda: 'return id(display_rotation_select).state == "0";'
+              lambda: 'return id(display_rotation_select).current_option() == "0";'
             then:
               - lvgl.display.set_rotation:
                   rotation: 0
         - if:
             condition:
-              lambda: 'return id(display_rotation_select).state == "90";'
+              lambda: 'return id(display_rotation_select).current_option() == "90";'
             then:
               - lvgl.display.set_rotation:
                   rotation: 90
         - if:
             condition:
-              lambda: 'return id(display_rotation_select).state == "180";'
+              lambda: 'return id(display_rotation_select).current_option() == "180";'
             then:
               - lvgl.display.set_rotation:
                   rotation: 180
         - if:
             condition:
-              lambda: 'return id(display_rotation_select).state == "270";'
+              lambda: 'return id(display_rotation_select).current_option() == "270";'
             then:
               - lvgl.display.set_rotation:
                   rotation: 270

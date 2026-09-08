@@ -6,9 +6,7 @@ ota:
     on_begin: 
       - logger.log: "OTA Start"
       - light.turn_on: display_backlight
-      - lambda: "id(display_backlight).loop();"
       - lvgl.resume:
-      - lvgl.widget.redraw:
       - lvgl.label.update:
           id: ota_label_primary
           text: 'Starting OTA!'
@@ -16,10 +14,7 @@ ota:
           id: ota_label_secondary
           text: 'Wait...'
       - lvgl.widget.show: ota_widget
-      - lvgl.resume:
       - lvgl.widget.redraw:
-      - lambda: "id(lvgl_component).loop();"
-      - lambda: "id(lvgl_component).loop();"
       - logger.log: "OTA widget shown"
 
     on_progress: 
@@ -35,7 +30,7 @@ ota:
             static char buffer[64];
             snprintf(buffer, sizeof(buffer), "Firmware uploading %.1f%%", x);
             return buffer;
-      - lambda: "id(lvgl_component).loop();"
+      - lvgl.widget.redraw:
 
     on_end:
       - logger.log: "OTA End"
@@ -48,8 +43,7 @@ ota:
       - lvgl.label.update:
           id: ota_label_secondary
           text: 'Rebooting...'
-      - lambda: |-
-          id(lvgl_component).loop();
+      - lvgl.widget.redraw:
 
     on_error:
       - logger.log:
@@ -61,8 +55,7 @@ ota:
       - lvgl.label.update:
           id: ota_label_secondary
           text: 'Rebooting...'
-      - lambda: |-
-          id(lvgl_component).loop();   
+      - lvgl.widget.redraw:
 
 lvgl:
   id: lvgl_component

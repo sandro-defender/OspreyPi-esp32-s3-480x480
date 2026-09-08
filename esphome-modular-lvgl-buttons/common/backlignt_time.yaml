@@ -66,8 +66,6 @@ lvgl:
             - lambda: 'return id(brightness_mode).current_option() == "Night";'
           then:
             - light.turn_off: display_backlight
-            - lvgl.pause:
-                show_snow: true
 
 # Wake on screen touch
 touchscreen:

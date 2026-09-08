@@ -14,6 +14,15 @@ wifi:
   # WiFi roaming enabled by default in 2026.1.0
   # Devices will scan for better APs after connecting
   # and switch if a significantly better signal is found
+
+  # Reuse the last successful AP after a software restart without adding flash writes.
+  # If it is unavailable, ESPHome falls back to scanning both configured networks.
+  fast_connect:
+    enabled: true
+    storage: rtc
+
+  # Avoid a reboot loop during a short router outage while retaining automatic recovery.
+  reboot_timeout: 30min
   
   # Fallback AP if both networks fail
   ap:

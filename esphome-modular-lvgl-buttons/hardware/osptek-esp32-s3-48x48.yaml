@@ -4,31 +4,30 @@
 
 
 esphome:
-  min_version: 2026.1.1
+  # Tested against the ESPHome 2026.8 configuration schema.
+  min_version: 2026.8.0
 
       
   project:
     name: "osptek-esp32-s3.display01"
     version: "1.0"
-  platformio_options:
-    board_build.flash_mode: dio
-    board_build.partitions: /Volumes/Ssd/esp32/OspreyPi-esp32-s3-480x480/partitions_16mb.csv
 
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
   flash_size: 16MB
+  # Preserve the DIO setting required by this board without relying on PlatformIO-only options.
+  flash_mode: dio
+  # Relative to the node YAML, so it works in ESPHome Dashboard, Docker, Windows, and Linux.
+  partitions: partitions_16mb.csv
+  # Allow the RGB/LVGL workload to complete without spurious task-watchdog resets.
+  watchdog_timeout: 60s
   framework:
     type: esp-idf
-    #version: 5.5.2  # commented out: let ESPHome use recommended version
-    sdkconfig_options:
-      COMPILER_OPTIMIZATION_SIZE: y
-      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
-      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
-      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
-      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
-      CONFIG_SPIRAM_RODATA: y    
-      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "60"
+    advanced:
+      compiler_optimization: PERF
+      # Keeps display drawing responsive during flash writes such as OTA updates.
+      execute_from_psram: true
 
 psram:
   mode: octal

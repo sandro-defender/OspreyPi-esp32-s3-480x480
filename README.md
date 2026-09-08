@@ -151,7 +151,7 @@ This project provides a comprehensive, modular ESPHome configuration using LVGL 
 
 ### Prerequisites
 
-- **ESPHome** installed (version 2024.11.0+ recommended)
+- **ESPHome** installed (version 2026.8.0+ required)
 - **Home Assistant** (optional, for full integration)
 - **Python 3.9+** with pip
 - **Git** for cloning repositories

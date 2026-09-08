@@ -25,11 +25,16 @@ lvgl:
       checkable: false
       press_lock: false
       scroll_on_focus: true
-      radius: 25px
+      radius: 20px
       width: $button_width
       height: $button_height_single
-      pad_all: 10px
-      shadow_width: 0 # This is required even though the default is supposed to be 0
+      pad_all: 14px
+      border_width: 1
+      border_color: steel_blue
+      shadow_width: 10
+      shadow_color: black
+      shadow_opa: 60%
+      shadow_offset_y: 4
       bg_opa: cover
       bg_color: $button_off_color
       text_color: $label_off_color
@@ -38,7 +43,8 @@ lvgl:
     - id: page_style
       bg_color: black
       bg_opa: cover
-      pad_all: 5
+      # The dashboard uses fixed 150px cards; preserve its original 3×3 fit.
+      pad_all: 5px
 
 select:
   - platform: template

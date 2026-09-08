@@ -5,13 +5,10 @@ substitutions:
   text_color: white
   bg_color: black
   button_on_color: "ep_orange"
-  #button_off_color: "very_dark_gray"
-  button_off_color: "sky_blue"
+  button_off_color: "slate_blue_gray"
   icon_on_color: "yellow"
-  #icon_off_color: "gray"
-  icon_off_color: "white"
-  label_on_color: "red"
-  #label_off_color: "gray"
+  icon_off_color: "misty_blue"
+  label_on_color: "white"
   label_off_color: "white"
   button_text_color: "white"
   button_height_single: '109px'
@@ -48,8 +45,9 @@ substitutions:
   log_level: "warn"  # Change to "debug" for troubleshooting
   
   # LVGL Performance
-  lvgl_buffer_size: "50%"
-  lvgl_update_interval: "16ms"
+  # 12% keeps the draw buffer in faster internal RAM on PSRAM-equipped ESP32-S3s.
+  lvgl_buffer_size: "12%"
+  lvgl_refresh_interval: "16ms"
   
   # Display Rotation (change to 0, 90, 180, or 270)
   display_rotation: "0"
@@ -73,6 +71,8 @@ logger:
   # baud_rate: 0 # Uncomment to disable UART logging for RS485 Modbus testing on GPIO43/44
 
 api:
+  # Home Assistant maintenance should not reboot an otherwise healthy display.
+  reboot_timeout: 30min
   encryption:
     key: !secret api_encryption_key
 
@@ -253,8 +253,8 @@ packages:
 # LVGL pages and buttons
 # -------------------------------------------------------------------------
 lvgl:
-  buffer_size: 50%
-  update_interval: 16ms
+  buffer_size: $lvgl_buffer_size
+  refresh_interval: $lvgl_refresh_interval
   rotation: $display_rotation
 # Main Page
   pages:
@@ -264,8 +264,8 @@ lvgl:
         flex_flow: COLUMN_WRAP
       width: 100%
       styles: page_style
-      #bg_color: black
-      bg_image_src: screensaver_bg_image3
+      # A neutral background keeps cards readable in daylight and at night.
+      bg_color: black
       bg_opa: cover
       <<: !include
         file: esphome-modular-lvgl-buttons/widgets/swipe_navigation.yaml
