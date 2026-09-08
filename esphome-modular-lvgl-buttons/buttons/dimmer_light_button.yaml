@@ -40,17 +40,29 @@ widgets:
         radius: 9
         bg_color: mint
       on_release:
-        - homeassistant.action:
-            action: light.turn_on
-            data:
-              entity_id: ${entity_id}
-              brightness: !lambda return int(x);
+        - if:
+            condition:
+              lambda: 'return id(ha_connected);'
+            then:
+              - homeassistant.action:
+                  action: light.turn_on
+                  data:
+                    entity_id: ${entity_id}
+                    brightness: !lambda return int(x);
+            else:
+              - logger.log: "Home Assistant is offline; ignored brightness change"
 on_short_click:
     then:
-      - homeassistant.action:
-          action: light.toggle
-          data:
-            entity_id: ${entity_id}
+      - if:
+          condition:
+            lambda: 'return id(ha_connected);'
+          then:
+            - homeassistant.action:
+                action: light.toggle
+                data:
+                  entity_id: ${entity_id}
+          else:
+            - logger.log: "Home Assistant is offline; ignored light button press"
 # on_long_press disabled to save flash space
 on_long_press:
     then:

@@ -4,12 +4,14 @@ globals:
     initial_value: 'false'
 
 image:
-  - file: 'esphome-modular-lvgl-buttons/assets/images/loading/homeassistant.png'
+  - platform: file
+    file: 'esphome-modular-lvgl-buttons/assets/images/loading/homeassistant.png'
     id: ha_img
     resize: 400x82
     type: RGB565
     transparency: alpha_channel
-  - file: 'esphome-modular-lvgl-buttons/assets/images/loading/esphome.png'
+  - platform: file
+    file: 'esphome-modular-lvgl-buttons/assets/images/loading/esphome.png'
     id: esphome_img
     resize: 320x95
     type: RGB565
@@ -103,6 +105,7 @@ lvgl:
                 src: esphome_img
 script:
   - id: update_loading_page
+    mode: restart
     then:
       - lvgl.label.update:
           id: boot_synchronization_label
@@ -110,6 +113,14 @@ script:
       - lvgl.label.update:
           id: boot_homeassistant_label
           text: 'Connecting to Home Assistant..'
+      - delay: 20s
+      - if:
+          condition:
+            lambda: 'return !id(ha_connected);'
+          then:
+            - lvgl.label.update:
+                id: boot_homeassistant_label
+                text: 'Offline — reconnecting automatically'
 
   - id: check_boot_status
     then:
@@ -147,6 +158,15 @@ script:
             - lvgl.label.update:
                 id: boot_homeassistant_label
                 text: "Home Assistant Connected!"
+            - lvgl.label.update:
+                id: ha_connection_label
+                text: "Connected"
+            - lvgl.widget.enable:
+                - ac_main_temp_arc
+                - ac_main_power_btn
+                - ac_main_mode_btn
+                - ac_main_fan_btn
+                - ac_main_turbo_btn
             - lvgl.widget.hide: boot_homeassistant_spiner
             - script.execute: check_boot_status
 
@@ -170,6 +190,18 @@ api:
           - globals.set:
               id: ha_connected
               value: 'false'
+          - lvgl.label.update:
+              id: boot_homeassistant_label
+              text: 'Home Assistant disconnected — reconnecting'
+          - lvgl.label.update:
+              id: ha_connection_label
+              text: "Offline"
+          - lvgl.widget.disable:
+              - ac_main_temp_arc
+              - ac_main_power_btn
+              - ac_main_mode_btn
+              - ac_main_fan_btn
+              - ac_main_turbo_btn
           # - lvgl.label.update: 
               # id: ha_status
               # text_color: steel_blue

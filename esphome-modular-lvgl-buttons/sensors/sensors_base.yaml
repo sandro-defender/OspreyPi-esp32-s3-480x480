@@ -2,6 +2,7 @@
 button:
   - platform: restart
     name: "Restart"
+    id: restart_device
     entity_category: config
 
   - platform: factory_reset

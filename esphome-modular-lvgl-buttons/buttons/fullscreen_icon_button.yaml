@@ -15,7 +15,13 @@ widgets:
       id: icon_${uid}
       text: ${icon}
 on_short_click:
-    - homeassistant.service:
-        service: switch.toggle
-        data:
-          entity_id: ${entity_id}
+    - if:
+        condition:
+          lambda: 'return id(ha_connected);'
+        then:
+          - homeassistant.action:
+              action: switch.toggle
+              data:
+                entity_id: ${entity_id}
+        else:
+          - logger.log: "Home Assistant is offline; ignored switch button press"

@@ -118,7 +118,7 @@ lvgl:
             pad_all: 10
             layout:
               type: GRID
-              grid_rows: [ content, content, content, content, content, content, content, content, content, content, content, content ]
+              grid_rows: [ content, content, content, content, content, content, content, content, content, content, content, content, content, content ]
               grid_columns: [ FR(42), FR(58) ]
               pad_column: 6
               pad_row: 8
@@ -311,12 +311,48 @@ lvgl:
                   grid_cell_y_align: CENTER
                   styles: info_value_style
                   text: "..."
+
+              # Home Assistant API state
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 11
+                  grid_cell_x_align: START
+                  grid_cell_y_align: CENTER
+                  styles: info_label_style
+                  text: "Home Assistant:"
+              - label:
+                  id: ha_connection_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 11
+                  grid_cell_x_align: START
+                  grid_cell_y_align: CENTER
+                  styles: info_value_style
+                  text: "Connecting..."
+
+              - button:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 12
+                  grid_cell_column_span: 2
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: CENTER
+                  width: 180
+                  height: 42
+                  bg_color: 0x555555
+                  radius: 12
+                  widgets:
+                    - label:
+                        align: center
+                        text: "Restart Display"
+                        text_color: white
+                        text_font: nunito_20
+                  on_click:
+                    - button.press: restart_device
               
               # AP Mode QR Code (hidden by default)
               - obj:
                   id: ap_mode_qr_container
                   grid_cell_column_pos: 0
-                  grid_cell_row_pos: 11
+                  grid_cell_row_pos: 13
                   grid_cell_column_span: 2
                   grid_cell_x_align: CENTER
                   grid_cell_y_align: CENTER

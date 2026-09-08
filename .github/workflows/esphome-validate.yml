@@ -1,0 +1,32 @@
+name: Validate ESPHome configurations
+
+on:
+  push:
+    paths:
+      - "**.yaml"
+      - ".github/workflows/esphome-validate.yml"
+  pull_request:
+    paths:
+      - "**.yaml"
+      - ".github/workflows/esphome-validate.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    container: esphome/esphome:2026.8.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create non-secret validation values
+        run: |
+          cat > secrets.yaml <<'EOF'
+          wifi_ssid: validation
+          wifi_password: validation-password
+          wifi_ssid2: validation
+          wifi_password2: validation-password
+          api_encryption_key: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
+          api_encryption_key2: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
+          EOF
+      - name: Validate Display01
+        run: esphome config Display01.yaml
+      - name: Validate Display02
+        run: esphome config Display02.yaml

@@ -152,7 +152,7 @@ packages:
     file: esphome-modular-lvgl-buttons/pages/ac_control.yaml
     vars:
       widget_name: ac_main
-      climate_entity: "climate.midea_ac_15393162830706_2"
+      climate_entity: "climate.midea_ac"
 
   # This section will Update button state and relay state from Home Assistant
   # Any button that has real time updates needs a section here
@@ -416,17 +416,21 @@ font:
 
 # Images (must be in main YAML for global visibility)
 image:
-  - file: esphome-modular-lvgl-buttons/assets/images/light/lightbulb.png
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/images/light/lightbulb.png
     id: lightbulb_image
     resize: 100x100
     type: RGB565
     transparency: alpha_channel
-  - file: esphome-modular-lvgl-buttons/assets/bg/ota-dark.jpeg
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/ota-dark.jpeg
     id: screensaver_bg_image2
     type: RGB565
-  - file: esphome-modular-lvgl-buttons/assets/bg/bg1.jpg
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/bg1.jpg
     id: screensaver_bg_image3
     type: RGB565
-  - file: esphome-modular-lvgl-buttons/assets/bg/sync4-dark.jpeg
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/sync4-dark.jpeg
     id: sync4
     type: RGB565
