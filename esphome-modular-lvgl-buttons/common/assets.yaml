@@ -73,6 +73,32 @@ image:
     resize: 80x80
     type: RGB565
 
+  # ── Home Assistant connection status icons (Settings card) ──────────────
+  # Shown instead of the old small "Connected" / "HA offline" text label.
+  #   connected  = mdi_cloud_check        (mint)
+  #   connecting = mdi_cloud_sync         (amber)
+  #   offline    = mdi_cloud_off_outline  (red)
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/images/connection/connected.png
+    id: conn_status_connected
+    resize: 72x72
+    type: RGB565
+    transparency: alpha_channel
+
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/images/connection/connecting.png
+    id: conn_status_connecting
+    resize: 72x72
+    type: RGB565
+    transparency: alpha_channel
+
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/images/connection/offline.png
+    id: conn_status_offline
+    resize: 72x72
+    type: RGB565
+    transparency: alpha_channel
+
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/bg/ota-dark.jpeg
     id: screensaver_bg_image2

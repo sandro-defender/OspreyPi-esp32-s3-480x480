@@ -231,12 +231,13 @@ lvgl:
                   align: top_left
                   text_font: $icon_font
                   text: $mdi_cog
-              - label:
+              # Live Home Assistant connection state, shown as an icon
+              # (image) instead of the old small text label.
+              - image:
                   id: dashboard_connection_status
                   align: center
-                  text_font: nunito_18
-                  text_color: amber
-                  text: "Connecting"
+                  y: 4
+                  src: conn_status_connecting
               - label:
                   align: bottom_left
                   text_font: nunito_14
@@ -271,15 +272,13 @@ binary_sensor:
           condition:
             binary_sensor.is_on: dashboard_ha_status
           then:
-            - lvgl.label.update:
+            - lvgl.image.update:
                 id: dashboard_connection_status
-                text: "Connected"
-                text_color: mint
+                src: conn_status_connected
           else:
-            - lvgl.label.update:
+            - lvgl.image.update:
                 id: dashboard_connection_status
-                text: "HA offline"
-                text_color: amber
+                src: conn_status_offline
 
 # Theme handling - defined AFTER all pages so all ids exist (fixes validation)
 script:
