@@ -116,7 +116,7 @@ lvgl:
         - label:
             id: screensaver_time
             text: "--:--"
-            text_font: bold_time_144
+            text_font: bold_time_148
             align: top_mid
             y: 16
             text_color: white
@@ -143,14 +143,14 @@ lvgl:
               - label:
                   id: screensaver_temp
                   text: "--°"
-                  text_font: bold_72
+                  text_font: bold_96
                   text_color: white
               - image:
                   id: screensaver_icon
                   src: weather_sunny
               - obj:
-                  width: 100
-                  height: 80
+                  width: 124
+                  height: 90
                   bg_opa: transp
                   border_width: 0
                   layout:
@@ -161,12 +161,12 @@ lvgl:
                     - label:
                         id: screensaver_humidity
                         text: "--%"
-                        text_font: bold_24
+                        text_font: bold_28
                         text_color: white
                     - label:
                         id: screensaver_wind
                         text: "--"
-                        text_font: bold_20
+                        text_font: bold_24
                         text_color: 0xCCCCCC
         - button:
             id: screensaver_exit_btn
