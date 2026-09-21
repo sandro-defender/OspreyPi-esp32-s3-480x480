@@ -32,18 +32,29 @@ jobs:
       - name: Validate Display01
         run: |
           set -o pipefail
-          esphome config Display01.yaml 2>&1 | tee /tmp/display01.log || (cat /tmp/display01.log >> $GITHUB_STEP_SUMMARY; echo "---FAILED---" >> $GITHUB_STEP_SUMMARY; exit 1)
+          esphome config Display01.yaml 2>&1 | tee /tmp/display01.log
       - name: Validate Display02
         run: |
           set -o pipefail
-          esphome config Display02.yaml 2>&1 | tee /tmp/display02.log || (cat /tmp/display02.log >> $GITHUB_STEP_SUMMARY; echo "---FAILED---" >> $GITHUB_STEP_SUMMARY; exit 1)
-      - name: Show summary on failure
-        if: failure()
+          esphome config Display02.yaml 2>&1 | tee /tmp/display02.log
+      - name: Dump logs to summary
+        if: always()
         run: |
-          echo "## Display01 log" >> $GITHUB_STEP_SUMMARY
-          cat /tmp/display01.log >> $GITHUB_STEP_SUMMARY || true
-          echo "## Display02 log" >> $GITHUB_STEP_SUMMARY
-          cat /tmp/display02.log >> $GITHUB_STEP_SUMMARY || true
+          echo "## Display01 log tail" >> $GITHUB_STEP_SUMMARY
+          tail -n 200 /tmp/display01.log >> $GITHUB_STEP_SUMMARY || echo "no log" >> $GITHUB_STEP_SUMMARY
+          echo "## Display02 log tail" >> $GITHUB_STEP_SUMMARY
+          tail -n 200 /tmp/display02.log >> $GITHUB_STEP_SUMMARY || echo "no log" >> $GITHUB_STEP_SUMMARY
+          echo "## Full Display01 log" 
+          cat /tmp/display01.log || true
+      - name: Create gist with logs on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh gist create /tmp/display01.log --public --desc "Display01 validation failure log" || true
+          cat /tmp/display01.log
+          echo "---DISPLAY01 END---"
+          cat /tmp/display02.log || true
 
   release:
     name: Publish GitHub release
