@@ -34,27 +34,32 @@ jobs:
       - name: Validate Display01
         run: |
           set -o pipefail
-          esphome config Display01.yaml 2>&1 | tee /tmp/display01_full.log
-          echo "Exit code: $?"
+          esphome config Display01.yaml 2>&1 | tee /tmp/display01_full.log; echo "EXIT_CODE:$?"
       - name: Validate Display02
         run: |
           set -o pipefail
-          esphome config Display02.yaml 2>&1 | tee /tmp/display02_full.log
+          esphome config Display02.yaml 2>&1 | tee /tmp/display02_full.log; echo "EXIT_CODE:$?"
       - name: Show logs
         if: always()
         run: |
-          echo "=== DISPLAY01 TAIL ==="
+          echo "=== DISPLAY01 TAIL 500 ==="
           tail -n 500 /tmp/display01_full.log || true
-          echo "=== DISPLAY02 TAIL ==="
-          tail -n 500 /tmp/display02_full.log || true
+          echo "=== DISPLAY01 GREP BEFORE FAILED ==="
+          grep -B 200 "Failed config" /tmp/display01_full.log | tail -n 250 || true
+          echo "=== DISPLAY01 GREP AFTER FAILED ==="
+          grep -A 200 "Failed config" /tmp/display01_full.log | head -n 250 || true
       - name: Annotate failure details
         if: failure()
         run: |
-          echo "=== ANNOTATING FAILURE ==="
-          # Get last 300 lines after Failed config
-          grep -A 300 "Failed config" /tmp/display01_full.log | head -n 200 | while IFS= read -r line; do
-            clean=$(echo "$line" | sed 's/%/%25/g' | sed 's/\r//g' | cut -c1-500)
-            echo "::error::${clean}"
+          echo "=== ANNOTATING BEFORE ==="
+          grep -B 100 "Failed config" /tmp/display01_full.log | tail -n 150 | while IFS= read -r line; do
+            clean=$(echo "$line" | sed 's/%/%25/g; s/\r//g' | cut -c1-500)
+            echo "::error::BEFORE: ${clean}"
+          done
+          echo "=== ANNOTATING AFTER ==="
+          grep -A 100 "Failed config" /tmp/display01_full.log | head -n 150 | while IFS= read -r line; do
+            clean=$(echo "$line" | sed 's/%/%25/g; s/\r//g' | cut -c1-500)
+            echo "::error::AFTER: ${clean}"
           done
           exit 1
 
