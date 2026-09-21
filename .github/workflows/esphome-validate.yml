@@ -34,35 +34,26 @@ jobs:
       - name: Validate Display01
         run: |
           set -o pipefail
-          esphome config Display01.yaml > /tmp/display01_full.log 2>&1 || (echo "=== FULL LOG TAIL ==="; tail -n 500 /tmp/display01_full.log; exit 1)
+          esphome config Display01.yaml 2>&1 | tee /tmp/display01_full.log
+          echo "Exit code: $?"
       - name: Validate Display02
         run: |
           set -o pipefail
-          esphome config Display02.yaml > /tmp/display02_full.log 2>&1 || (echo "=== FULL LOG TAIL ==="; tail -n 500 /tmp/display02_full.log; exit 1)
-      - name: Comment PR with logs on failure
-        if: failure() && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
+          esphome config Display02.yaml 2>&1 | tee /tmp/display02_full.log
+      - name: Show logs
+        if: always()
         run: |
-          echo "Posting failure logs to PR"
-          {
-            echo "### Display01 validation failure"
-            echo '```'
-            tail -n 200 /tmp/display01_full.log || true
-            echo '```'
-            echo "### Display02 validation failure"
-            echo '```'
-            tail -n 200 /tmp/display02_full.log || true
-            echo '```'
-          } > /tmp/comment.md
-          cat /tmp/comment.md
-          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md || true
-      - name: Annotate failure
+          echo "=== DISPLAY01 TAIL ==="
+          tail -n 500 /tmp/display01_full.log || true
+          echo "=== DISPLAY02 TAIL ==="
+          tail -n 500 /tmp/display02_full.log || true
+      - name: Annotate failure details
         if: failure()
         run: |
-          tail -n 200 /tmp/display01_full.log | while IFS= read -r line; do
-            # Sanitize for annotation
-            clean=$(echo "$line" | tr -cd '[:print:]\n' | cut -c1-200)
+          echo "=== ANNOTATING FAILURE ==="
+          # Get last 300 lines after Failed config
+          grep -A 300 "Failed config" /tmp/display01_full.log | head -n 200 | while IFS= read -r line; do
+            clean=$(echo "$line" | sed 's/%/%25/g' | sed 's/\r//g' | cut -c1-500)
             echo "::error::${clean}"
           done
           exit 1
