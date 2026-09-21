@@ -45,6 +45,16 @@ substitutions:
   perf_slider_active: "0x666666"
 
 lvgl:
+  gradients:
+    # Vertical "raised face" gradient behind Modern (theme 2) buttons
+    - id: depth_face_gradient
+      direction: ver
+      stops:
+        - color: 0x323B4D
+          position: 0
+        - color: 0x1A212C
+          position: 255
+
   style_definitions:
     # Classic styles
     - id: theme_classic_page
@@ -92,6 +102,61 @@ lvgl:
       border_width: 0
       shadow_width: 0
       pad_all: 14
+
+    # ── Theme 2 (Modern) depth ──────────────────────────────────────────
+    # Raised "3D" button face: vertical gradient + thin top light + drop shadow.
+    # Applied with lv_obj_add_style() so widgets keep their own radius/pad.
+    - id: depth_dark
+      bg_grad: depth_face_gradient
+      bg_grad_dir: ver
+      bg_main_stop: 255
+      bg_grad_stop: 255
+      bg_opa: cover
+      border_width: 1
+      border_color: 0x3D4658
+      border_opa: 100%
+      shadow_width: 14
+      shadow_opa: 55%
+      shadow_color: 0x000000
+      shadow_offset_y: 5
+
+    # Soft neutral glow (e.g. −/+ steppers on the AC page)
+    - id: glow_soft
+      border_width: 1
+      border_color: 0x4A5468
+      border_opa: 100%
+      shadow_width: 18
+      shadow_opa: 45%
+      shadow_color: 0x9BA2BC
+      shadow_offset_y: 0
+
+    # Colored glows for active fills (Power ON green, Mode cool blue, Turbo orange)
+    - id: glow_green
+      border_width: 2
+      border_color: 0x69F0AE
+      border_opa: 55%
+      shadow_width: 22
+      shadow_opa: 75%
+      shadow_color: 0x00E676
+      shadow_offset_y: 0
+
+    - id: glow_blue
+      border_width: 2
+      border_color: 0x81D4FA
+      border_opa: 55%
+      shadow_width: 22
+      shadow_opa: 75%
+      shadow_color: 0x29B6F6
+      shadow_offset_y: 0
+
+    - id: glow_orange
+      border_width: 2
+      border_color: 0xFFB74D
+      border_opa: 60%
+      shadow_width: 22
+      shadow_opa: 75%
+      shadow_color: 0xFF8C00
+      shadow_offset_y: 0
 
     - id: theme_modern_ac_power_on
       bg_color: 0x00E676

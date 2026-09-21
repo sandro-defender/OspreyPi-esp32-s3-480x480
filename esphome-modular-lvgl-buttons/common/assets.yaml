@@ -34,6 +34,29 @@ font:
       - $mdi_cog
       - $mdi_information_outline
 
+  # Compact icon set for AC buttons / info rows (3-line buttons, small badges)
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
+    id: mdi_icons_22
+    size: 22
+    bpp: 4
+    glyphs:
+      - $mdi_power
+      - $mdi_snowflake
+      - $mdi_fire
+      - $mdi_water
+      - $mdi_fan
+      - $mdi_fan_auto
+      - $mdi_swap_horizontal
+      - $mdi_leaf
+      - $mdi_moon_waning_crescent
+      - $mdi_rocket
+      - $mdi_account
+      - $mdi_arrow_left
+      - $mdi_restart
+      - $mdi_home
+      - $mdi_thermometer
+      - $mdi_weather_windy
+
   - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
     id: mdi_icons_80
     size: 80

@@ -307,34 +307,7 @@ script:
             if (theme=="Performance") top_bg = 0x000000;
             lv_obj_set_style_bg_color(id(ac_main_top_bar), lv_color_hex(top_bg), 0);
           }
-          if (theme=="Modern") {
-            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 16, 0);
-            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 16, 0);
-            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 16, 0);
-            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 16, 0);
-            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 16, 0);
-            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 16, 0);
-            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 16, 0);
-            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 16, 0);
-          } else if (theme=="Performance") {
-            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 6, 0);
-            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 6, 0);
-            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 6, 0);
-            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 6, 0);
-            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 6, 0);
-            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 6, 0);
-            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 6, 0);
-            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 6, 0);
-          } else {
-            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 12, 0);
-            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 12, 0);
-            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 12, 0);
-            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 12, 0);
-            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 12, 0);
-            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 12, 0);
-            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 12, 0);
-            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 12, 0);
-          }
+          // AC button radius/color/depth now owned by script ac_main_refresh
       - lvgl.style.update:
           id: page_style
           bg_color: !lambda |-
@@ -344,6 +317,7 @@ script:
             return lv_color_hex(0x000000);
           text_color: !lambda |-
             return lv_color_hex(0xFFFFFF);
+      - script.execute: ac_main_refresh
       - script.execute: update_settings_highlight
       - script.execute: apply_dashboard_theme
       - lvgl.widget.redraw:
@@ -356,14 +330,20 @@ script:
             if (!btn) return;
             uint32_t active_bg = 0xFF9F1C;
             uint32_t inactive_bg = 0x3A4352;
-            if (theme=="Modern") { active_bg = 0xFF8C00; inactive_bg = 0x1E232E; }
-            else if (theme=="Performance") { active_bg = 0x444444; inactive_bg = 0x1A1A1A; }
+            bool modern = (theme == "Modern");
+            bool perf = (theme == "Performance");
+            if (modern) { active_bg = 0xFF8C00; inactive_bg = 0x2A3142; }
+            else if (perf) { active_bg = 0x444444; inactive_bg = 0x1A1A1A; }
+            lv_obj_remove_style(btn, id(depth_dark), 0);
+            lv_obj_remove_style(btn, id(glow_orange), 0);
             if (active) {
               lv_obj_set_style_bg_color(btn, lv_color_hex(active_bg), 0);
               lv_obj_set_style_text_color(btn, lv_color_white(), 0);
+              if (modern) lv_obj_add_style(btn, id(glow_orange), 0);
             } else {
               lv_obj_set_style_bg_color(btn, lv_color_hex(inactive_bg), 0);
               lv_obj_set_style_text_color(btn, lv_color_hex(0xCCCCCC), 0);
+              if (modern) lv_obj_add_style(btn, id(depth_dark), 0);
             }
           };
           std::string bmode = id(brightness_mode).current_option();
@@ -429,15 +409,23 @@ script:
             nullptr,
             id(label_button_9)
           };
+          bool modern_theme = (theme == "Modern");
           for (int i=0;i<10;i++) {
             auto btn = buttons[i];
             if (!btn) continue;
+            lv_obj_remove_style(btn, id(depth_dark), 0);
+            lv_obj_remove_style(btn, id(glow_orange), 0);
             lv_obj_set_style_bg_color(btn, lv_color_hex(button_bg), 0);
             lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, 0);
             lv_obj_set_style_radius(btn, button_radius, 0);
-            lv_obj_set_style_border_width(btn, 0, 0);
-            lv_obj_set_style_shadow_width(btn, 0, 0);
-            lv_obj_set_style_pad_all(btn, theme=="Performance" ? 6 : (theme=="Modern" ? 14 : 10), 0);
+            if (modern_theme) {
+              // raised "3D" face like the mockups: gradient + border + shadow
+              lv_obj_add_style(btn, id(depth_dark), 0);
+            } else {
+              lv_obj_set_style_border_width(btn, 0, 0);
+              lv_obj_set_style_shadow_width(btn, 0, 0);
+              lv_obj_set_style_pad_all(btn, theme=="Performance" ? 6 : 10, 0);
+            }
             if (theme=="Modern") lv_obj_set_style_text_color(btn, lv_color_hex(0xCCCCCC), 0);
             else lv_obj_set_style_text_color(btn, lv_color_hex(0xFFFFFF), 0);
             auto icon = icons[i];

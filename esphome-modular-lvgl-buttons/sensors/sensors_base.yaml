@@ -28,8 +28,8 @@ sensor:
         - lvgl.label.update:
             id: cpu_temp_label
             text: !lambda |-
-              char buffer[16];
-              snprintf(buffer, sizeof(buffer), "%.1f°C", x);
+              char buffer[24];
+              snprintf(buffer, sizeof(buffer), "%d MHz / %.1f°C", CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ, x);
               return std::string(buffer);    
 
   # Reports the WiFi signal strength in %
@@ -48,8 +48,8 @@ sensor:
           - lvgl.label.update:
               id: wifi_signal_db_percent_label
               text:
-                format: "%.0f%%"
-                args: [ 'id(wifi_signal_db_percent).state' ]
+                format: "%.0fdBm / %.0f%%"
+                args: [ 'id(wifi_signal_db).state', 'id(wifi_signal_db_percent).state' ]
 
 binary_sensor:
   - platform: status
@@ -77,17 +77,8 @@ text_sensor:
             text: !lambda |-
               std::string s = id(esphome_version).state;
               size_t pos = s.find(" (");
-              if (pos != std::string::npos) {
-                std::string ver = s.substr(0, pos);
-                size_t hash_pos = s.find("0x", pos);
-                if (hash_pos != std::string::npos) {
-                   // Extract 7 chars of hash after 0x
-                   std::string hash = s.substr(hash_pos + 2, 7);
-                   return ver + " (" + hash + ")";
-                }
-                return ver;
-              }
-              return s;
+              std::string ver = (pos != std::string::npos) ? s.substr(0, pos) : s;
+              return ver + " (" + std::string(__DATE__) + ")";
 
   - platform: wifi_info
     mac_address:
@@ -139,5 +130,5 @@ text_sensor:
         - lvgl.label.update:
             id: device_name_label
             text:
-              format: "%s"
+              format: "Device %s"
               args: [ 'id(device_name).state.c_str()' ]

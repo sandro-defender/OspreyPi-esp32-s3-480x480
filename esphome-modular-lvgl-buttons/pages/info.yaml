@@ -1,5 +1,8 @@
 ---
-# Optimized info page - faster rendering, less frequent updates
+# Info page — matches the mockup (docs/images/screen_settings.png):
+# dark rows with alternating shading, device header, live values right-aligned,
+# HA status with green dot, Restart / Exit buttons at the bottom.
+
 script:
   - id: update_uptime
     then:
@@ -7,11 +10,11 @@ script:
           id: uptime_label
           text: !lambda |-
             int s = millis()/1000;
-            int d = s/86400; int h = (s%86400)/3600; int m = (s%3600)/60;
-            char b[24];
-            if (d>0) snprintf(b,sizeof(b),"%dd %dh %dm",d,h,m);
-            else if (h>0) snprintf(b,sizeof(b),"%dh %dm",h,m);
-            else snprintf(b,sizeof(b),"%dm",m);
+            int d = s/86400; int h = (s%86400)/3600; int m = (s%3600)/60; int sec = s%60;
+            char b[32];
+            if (d>0) snprintf(b,sizeof(b),"%dd %dh %dm %ds",d,h,m,sec);
+            else if (h>0) snprintf(b,sizeof(b),"%dh %dm %ds",h,m,sec);
+            else snprintf(b,sizeof(b),"%dm %ds",m,sec);
             return std::string(b);
 
 binary_sensor:
@@ -41,7 +44,9 @@ sensor:
       - lvgl.label.update:
           id: free_heap_label
           text: !lambda |-
-            char b[16]; snprintf(b,sizeof(b),"%.0f KB",x/1024.0); return std::string(b);
+            float total = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+            float used_pct = total > 0 ? 100.0f * (total - x) / total : 0.0f;
+            char b[24]; snprintf(b,sizeof(b),"%.1f KB / %.1f%%",x/1024.0,used_pct); return std::string(b);
   - platform: template
     id: free_psram_sensor
     internal: true
@@ -51,295 +56,391 @@ sensor:
       - lvgl.label.update:
           id: free_psram_label
           text: !lambda |-
-            char b[16]; snprintf(b,sizeof(b),"%.1f MB",x/1024.0/1024.0); return std::string(b);
+            float total = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+            float used_pct = total > 0 ? 100.0f * (total - x) / total : 0.0f;
+            char b[24]; snprintf(b,sizeof(b),"%.1f MB / %.1f%%",x/1024.0/1024.0,used_pct); return std::string(b);
 
 lvgl:
-  style_definitions:
-    - id: info_label_style
-      text_font: nunito_18
-      text_color: 0x888888
-    - id: info_value_style
-      text_font: nunito_18
-      text_color: white
-
   pages:
     - id: info_screen
       bg_color: 0x11151C
+      bg_opa: cover
       widgets:
         - obj:
-            width: 100%
-            height: 430
+            align: top_mid
+            y: 10
+            width: 456
+            height: 40
+            radius: 10
+            bg_color: 0x252B38
+            bg_opa: cover
+            border_width: 0
+            pad_left: 14
+            pad_right: 14
+            layout:
+              type: flex
+              flex_flow: row
+              flex_align_main: space_between
+              flex_align_cross: center
+            widgets:
+              - label:
+                  id: device_name_label
+                  text: "Device ${device_name}"
+                  text_font: nunito_24
+                  text_color: white
+              - label:
+                  text: "ESPHome ${project_version}"
+                  text_font: nunito_24
+                  text_color: 0x9BA2BC
+
+        - obj:
+            align: top_mid
+            y: 58
+            width: 456
+            height: 352
             bg_opa: transp
             border_width: 0
-            pad_all: 8
+            pad_all: 0
             layout:
               type: flex
               flex_flow: column
-              pad_row: 4
+              pad_row: 3
             widgets:
+              # ── rows (alternating shading like the mockup) ──────────
               - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x1E2530
+                  bg_opa: cover
                   border_width: 0
+                  pad_left: 14
+                  pad_right: 14
                   layout:
                     type: flex
                     flex_flow: row
                     flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "Device:"
-                    - label:
-                        id: device_name_label
-                        styles: info_value_style
-                        text: "${device_name}"
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "ESPHome:"
-                    - label:
-                        id: esphome_version_label
-                        styles: info_value_style
-                        text: "${project_version}"
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "Build:"
-                    - label:
-                        styles: info_value_style
-                        text:
-                          format: "%s"
-                          args: [__DATE__]
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "Uptime:"
-                    - label:
-                        id: uptime_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "WiFi:"
-                    - label:
-                        id: connected_ssid_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "IP:"
-                    - label:
-                        id: ip_address_label
-                        styles: info_value_style
-                        text: "0.0.0.0"
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "MAC:"
-                    - label:
-                        id: connected_mac_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "Signal:"
-                    - label:
-                        id: wifi_signal_db_percent_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "CPU:"
-                    - label:
-                        id: cpu_temp_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "Heap:"
-                    - label:
-                        id: free_heap_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "PSRAM:"
-                    - label:
-                        id: free_psram_label
-                        styles: info_value_style
-                        text: "..."
-              - obj:
-                  width: 100%
-                  height: 28
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_between
-                  widgets:
-                    - label:
-                        styles: info_label_style
-                        text: "HA:"
-                    - label:
-                        id: ha_connection_label
-                        styles: info_value_style
-                        text: "Connecting..."
-
-              - obj:
-                  width: 100%
-                  height: 50
-                  bg_opa: transp
-                  border_width: 0
-                  layout:
-                    type: flex
-                    flex_flow: row
-                    flex_align_main: space_evenly
                     flex_align_cross: center
                   widgets:
-                    - button:
-                        width: 140
-                        height: 38
-                        radius: 10
-                        bg_color: 0x555555
-                        border_width: 0
-                        widgets:
-                          - label:
-                              align: center
-                              text: "Restart"
-                              text_font: nunito_18
-                        on_click:
-                          - button.press: restart_device
-                    - obj:
-                        id: ap_mode_qr_container
-                        width: 120
-                        height: 120
-                        bg_opa: transp
-                        border_width: 0
-                        hidden: true
-                        widgets:
-                          - qrcode:
-                              id: ap_mode_qr
-                              align: center
-                              size: 90
-                              text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
+                    - label:
+                        text: "Build"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: esphome_version_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
 
-        - button:
-            align: bottom_right
-            x: -10
-            y: -8
-            width: 80
-            height: 38
-            radius: 10
-            bg_color: 0xFF6600
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x151A24
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "Uptime"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: uptime_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x1E2530
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "WiFi"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: connected_ssid_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x151A24
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "IP"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: ip_address_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x1E2530
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "MAC"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: connected_mac_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x151A24
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "Signal"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: wifi_signal_db_percent_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x1E2530
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "CPU"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: cpu_temp_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x151A24
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "Heap"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: free_heap_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x1E2530
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "PSRAM"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: free_psram_label
+                        text: "..."
+                        text_font: nunito_20
+                        text_color: white
+
+              - obj:
+                  width: 456
+                  height: 32
+                  radius: 8
+                  bg_color: 0x151A24
+                  bg_opa: cover
+                  border_width: 0
+                  pad_left: 14
+                  pad_right: 14
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        text: "HA Connection"
+                        text_font: nunito_20
+                        text_color: 0x8891A0
+                    - label:
+                        id: ha_connection_label
+                        text: "● Connecting…"
+                        text_font: nunito_20
+                        text_color: 0xFFB74D
+
+        # ── Restart / Exit ────────────────────────────────────────────
+        - obj:
+            align: bottom_mid
+            y: -10
+            width: 456
+            height: 44
+            bg_opa: transp
             border_width: 0
+            pad_all: 0
+            layout:
+              type: flex
+              flex_flow: row
+              flex_align_main: space_between
+              flex_align_cross: center
             widgets:
-              - label:
+              - button:
+                  width: 224
+                  height: 44
+                  radius: 10
+                  bg_color: 0x2A3142
+                  border_width: 0
+                  pad_all: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: center
+                    flex_align_cross: center
+                    pad_column: 8
+                  widgets:
+                    - label:
+                        text: $mdi_restart
+                        text_font: mdi_icons_22
+                        text_color: white
+                    - label:
+                        text: "Restart"
+                        text_font: nunito_20
+                        text_color: white
+                  on_click:
+                    - button.press: restart_device
+
+              - button:
+                  width: 224
+                  height: 44
+                  radius: 10
+                  bg_color: 0x2A3142
+                  border_width: 0
+                  pad_all: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: center
+                    flex_align_cross: center
+                    pad_column: 8
+                  widgets:
+                    - label:
+                        text: $mdi_arrow_left
+                        text_font: mdi_icons_22
+                        text_color: white
+                    - label:
+                        text: "Exit"
+                        text_font: nunito_20
+                        text_color: white
+                  on_click:
+                    - lvgl.page.show: main_page
+
+        # ── fallback AP QR (only when WiFi is down) ───────────────────
+        - obj:
+            id: ap_mode_qr_container
+            align: center
+            width: 140
+            height: 140
+            radius: 12
+            bg_color: 0x1E2530
+            bg_opa: cover
+            border_width: 0
+            hidden: true
+            widgets:
+              - qrcode:
+                  id: ap_mode_qr
                   align: center
-                  text: "Exit"
-                  text_font: nunito_18
-                  text_color: white
-            on_click:
-              - lvgl.page.show: main_page
+                  size: 110
+                  text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
 
 interval:
-  - interval: 60s
+  - interval: 1s
     then:
       - script.execute: update_uptime
