@@ -1,0 +1,103 @@
+---
+# ── Daylight theme (theme 4, NEW) ────────────────────────────────────────────
+# Light theme based on LVGL's default light theme palette (blue primary /
+# cyan secondary on light surfaces). White cards with soft elevation on a cool
+# off-white background, charcoal text, blue accent for "on"/active states,
+# green reserved for status dots. Stays readable in bright daylight.
+# Ref: docs/images/preview_daylight_home.png
+
+substitutions:
+  daylight_bg: "0xEFF2F7"
+  daylight_page_bg: "0xEFF2F7"
+  daylight_settings_bg: "0xF2F4F8"
+  daylight_info_bg: "0xF2F4F8"
+  daylight_ac_bg: "0xE9EEF5"
+  daylight_ac_topbar_bg: "0xFFFFFF"
+  daylight_button_bg: "0xFFFFFF"
+  daylight_button_face_top: "0xFFFFFF"
+  daylight_button_face_bottom: "0xE7ECF4"
+  daylight_button_bevel: "0xD5DCE6"
+  daylight_button_active: "0x2196F3"
+  daylight_text: "0x1A1C22"
+  daylight_text_dim: "0x5F6672"
+  daylight_text_muted: "0x8A93A3"
+  daylight_text_accent: "0x1976D2"
+  daylight_row_bg: "0xFFFFFF"
+  daylight_row_bg_alt: "0xE7ECF4"
+  daylight_selector_off: "0xE1E6EE"
+  daylight_slider_bg: "0xD8DEE9"
+  daylight_slider_active: "0x2196F3"
+  daylight_radius: "16"
+  daylight_radius_card: "14"
+  daylight_pad: "12"
+
+lvgl:
+  gradients:
+    # Subtle top-light face for raised white cards
+    - id: depth_light_gradient
+      direction: ver
+      stops:
+        - color: 0xFFFFFF
+          position: 0
+        - color: 0xE7ECF4
+          position: 255
+
+  style_definitions:
+    - id: theme_daylight_page
+      bg_color: 0xEFF2F7
+      bg_opa: cover
+      text_color: 0x1A1C22
+      pad_all: 6
+      border_width: 0
+      shadow_width: 0
+      radius: 0
+
+    - id: theme_daylight_button
+      bg_color: 0xFFFFFF
+      bg_opa: cover
+      text_color: 0x1A1C22
+      radius: 16
+      border_width: 1
+      border_color: 0xD5DCE6
+      shadow_width: 10
+      shadow_opa: 22%
+      shadow_color: 0x9AA4B5
+      shadow_offset_y: 3
+      pad_all: 12
+
+    - id: theme_daylight_button_active
+      bg_color: 0x2196F3
+      bg_opa: cover
+      text_color: white
+      radius: 16
+      border_width: 0
+      shadow_width: 12
+      shadow_opa: 35%
+      shadow_color: 0x2196F3
+      shadow_offset_y: 3
+      pad_all: 12
+
+    # Raised white card face (Modern's depth_dark counterpart)
+    - id: depth_light
+      bg_grad: depth_light_gradient
+      bg_grad_dir: ver
+      bg_main_stop: 255
+      bg_grad_stop: 255
+      bg_opa: cover
+      border_width: 1
+      border_color: 0xD5DCE6
+      border_opa: 100%
+      shadow_width: 12
+      shadow_opa: 25%
+      shadow_color: 0x9AA4B5
+      shadow_offset_y: 4
+
+    # Soft blue focus glow for active states on light surfaces
+    - id: glow_blue_light
+      border_width: 2
+      border_color: 0x64B5F6
+      border_opa: 70%
+      shadow_width: 18
+      shadow_opa: 45%
+      shadow_color: 0x2196F3
+      shadow_offset_y: 0

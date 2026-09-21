@@ -29,8 +29,9 @@
 | **Classic** | Original dark | Black bg, slate_blue_gray #343645 buttons, white text, orange accent | 14px | Balanced |
 | **Modern** | Like mockup images you liked | Navy #0A0E14 bg, #1E232E buttons, glowing orange #FF8C00 icons, green/blue power/mode | 20px | Medium (glow) |
 | **Performance** | Minimal for max speed | Pure black, #1A1A1A buttons, white only, no colors, no glow | 4px | Fastest |
+| **Daylight** | NEW: light theme for bright rooms | Off-white #EFF2F7 bg, white cards, charcoal text, blue #2196F3 accent (LVGL default palette) | 16px | Balanced |
 
-**Selectable on device:** Settings → Theme → [ Classic ] [ Modern ] [ Perf ] — instant switch, persistent, also exposed as HA select entity `Theme`
+**Selectable on device:** Settings → Theme → [ Classic ] [ Modern ] [ Perf ] [ Day ] — instant switch, persistent, also exposed as HA select entity `Theme`. One YAML file per theme lives in `esphome-modular-lvgl-buttons/common/themes/`.
 
 **Implementation:**
 - `common/themes.yaml` defines all colors, radii, style_definitions
@@ -92,9 +93,9 @@ Uses less resources — pure black, #1A1A1A buttons radius 4, white only, no col
 
 ### All Screens Gallery (General)
 
-| Home | AC | Settings | Screensaver | Light | Info |
+| Home | AC | Settings | Screensaver | Light |
 |---|---|---|---|---|---|
-| ![Home](docs/images/screen_home.png) | ![AC](docs/images/screen_ac.png) | ![Settings](docs/images/screen_settings.png) | ![Saver](docs/images/screen_screensaver.png) | ![Light](docs/images/screen_light.png) | ![Info](docs/images/screen_info.png) |
+| ![Home](docs/images/theme_modern_home.png) | ![AC](docs/images/screen_ac.png) | ![Settings](docs/images/screen_settings.png) | ![Saver](docs/images/screen_screensaver.png) | ![Light](docs/images/screen_light.png) |
 
 ---
 
@@ -126,7 +127,7 @@ Uses less resources — pure black, #1A1A1A buttons radius 4, white only, no col
 ├── README.md
 ├── docs/
 │   ├── images/
-│   │   ├── screen_home.png, screen_ac.png... (6 general)
+│   │   ├── screen_ac.png, screen_light.png, screen_settings.png...
 │   │   ├── theme_classic_home/ac/settings.png (3 classic)
 │   │   ├── theme_modern_home/ac/settings.png (3 modern like mockup)
 │   │   └── theme_performance_home/ac/settings.png (3 perf)

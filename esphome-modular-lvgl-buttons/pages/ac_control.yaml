@@ -147,7 +147,10 @@ sensor:
       - lvgl.label.update:
           id: ${widget_name}_target_temp_label
           text: !lambda |-
-            char b[8]; snprintf(b, sizeof(b), "%d°", (int) x); return std::string(b);
+            char b[8];
+            if (x == (float)(int) x) snprintf(b, sizeof(b), "%d°", (int) x);
+            else snprintf(b, sizeof(b), "%.1f°", x);
+            return std::string(b);
 
   - platform: homeassistant
     id: ${widget_name}_current_temp_sensor
@@ -186,6 +189,7 @@ script:
           if (theme.empty()) theme = "Classic";
           bool modern = (theme == "Modern");
           bool perf = (theme == "Performance");
+          bool day = (theme == "Daylight"); // light surfaces, dark text, blue accent
 
           std::string m = id(${widget_name}_hvac_mode).state;
           std::string fan = id(${widget_name}_fan_mode).state;
@@ -193,9 +197,9 @@ script:
           std::string pre = id(${widget_name}_preset_mode).state;
 
           // ── palette ────────────────────────────────────────────────
-          uint32_t off_bg   = modern ? 0x232A38 : (perf ? 0x1A1A1A : 0x343645);
-          uint32_t title_c  = modern ? 0x9BA2BC : (perf ? 0xCCCCCC : 0xBBBBBB);
-          uint32_t val_c    = 0xFFFFFF;
+          uint32_t off_bg   = modern ? 0x232A38 : (perf ? 0x1A1A1A : (day ? 0xFFFFFF : 0x343645));
+          uint32_t title_c  = modern ? 0x9BA2BC : (perf ? 0xCCCCCC : (day ? 0x5F6672 : 0xBBBBBB));
+          uint32_t val_c    = day ? 0x1A1C22 : 0xFFFFFF;
 
           // depth helper: Modern gets the mockup "3D" look.
           // glow: 0 = inactive (raised dark), 1/2/3 = filled green/blue/orange
@@ -203,23 +207,43 @@ script:
           auto depth = [&](lv_obj_t *b, int glow) {
             if (!b) return;
             lv_obj_remove_style(b, id(depth_dark), 0);
+            lv_obj_remove_style(b, id(depth_light), 0);
             lv_obj_remove_style(b, id(glow_soft), 0);
             lv_obj_remove_style(b, id(glow_green), 0);
             lv_obj_remove_style(b, id(glow_blue), 0);
+            lv_obj_remove_style(b, id(glow_blue_light), 0);
             lv_obj_remove_style(b, id(glow_orange), 0);
-            if (!modern) return;
-            if (glow == 0 || glow == 4) lv_obj_add_style(b, id(depth_dark), 0);
-            if (glow == 1) lv_obj_add_style(b, id(glow_green), 0);
-            else if (glow == 2) lv_obj_add_style(b, id(glow_blue), 0);
-            else if (glow == 3) lv_obj_add_style(b, id(glow_orange), 0);
-            else if (glow == 4) lv_obj_add_style(b, id(glow_soft), 0);
+            if (modern) {
+              if (glow == 0 || glow == 4) lv_obj_add_style(b, id(depth_dark), 0);
+              if (glow == 1) lv_obj_add_style(b, id(glow_green), 0);
+              else if (glow == 2) lv_obj_add_style(b, id(glow_blue), 0);
+              else if (glow == 3) lv_obj_add_style(b, id(glow_orange), 0);
+              else if (glow == 4) lv_obj_add_style(b, id(glow_soft), 0);
+            } else if (day) {
+              // raised white card + soft blue ring when active
+              if (glow == 0 || glow == 4) lv_obj_add_style(b, id(depth_light), 0);
+              if (glow == 1) lv_obj_add_style(b, id(glow_green), 0);
+              else if (glow == 2) lv_obj_add_style(b, id(glow_blue_light), 0);
+              else if (glow == 3) lv_obj_add_style(b, id(glow_orange), 0);
+              else if (glow == 4) lv_obj_add_style(b, id(glow_soft), 0);
+            }
           };
           auto paint = [&](lv_obj_t *btn, lv_obj_t *ic, lv_obj_t *tt, lv_obj_t *vv,
                            uint32_t bg, uint32_t tc, int glow) {
+            if (day) {
+              // Daylight: muted grays -> dark gray; white stays white on colored fills
+              if (tc == 0xBBBBBB || tc == 0x9E9E9E) tc = 0x5F6672;
+            }
             if (btn) {
               lv_obj_set_style_bg_color(btn, lv_color_hex(bg), 0);
               lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, 0);
-              lv_obj_set_style_radius(btn, modern ? 18 : (perf ? 6 : 12), 0);
+              lv_obj_set_style_radius(btn, modern ? 18 : (perf ? 6 : (day ? 16 : 12)), 0);
+              if (day) {
+                lv_obj_set_style_border_width(btn, 1, 0);
+                lv_obj_set_style_border_color(btn, lv_color_hex(0xD5DCE6), 0);
+              } else {
+                lv_obj_set_style_border_width(btn, 0, 0);
+              }
               depth(btn, glow);
             }
             if (ic) lv_obj_set_style_text_color(ic, lv_color_hex(tc), 0);
@@ -231,7 +255,7 @@ script:
           bool power_on = (m != "off" && !m.empty());
           if (power_on) {
             uint32_t bg = perf ? 0x444444 : (modern ? 0x00E676 : 0x4CAF50);
-            uint32_t tc = (modern ? 0x000000 : 0xFFFFFF);
+            uint32_t tc = (modern ? 0x000000 : 0xFFFFFF); // classic fill + white text reads well on Daylight
             paint(id(${widget_name}_power_btn), id(${widget_name}_power_icon),
                   id(${widget_name}_power_title), id(${widget_name}_power_label), bg, tc,
                   modern ? 1 : 0);
@@ -303,34 +327,63 @@ script:
 
           // ── −/+ steppers ───────────────────────────────────────────
           {
-            uint32_t bg = modern ? 0x2A3242 : (perf ? 0x1A1A1A : 0x343645);
+            uint32_t bg = modern ? 0x2A3242 : (perf ? 0x1A1A1A : (day ? 0xFFFFFF : 0x343645));
+            uint32_t step_radius = modern ? 16 : (perf ? 4 : (day ? 14 : 26));
             if (id(${widget_name}_minus_btn)) {
               lv_obj_set_style_bg_color(id(${widget_name}_minus_btn), lv_color_hex(bg), 0);
-              lv_obj_set_style_radius(id(${widget_name}_minus_btn), modern ? 16 : (perf ? 4 : 26), 0);
+              lv_obj_set_style_radius(id(${widget_name}_minus_btn), step_radius, 0);
               depth(id(${widget_name}_minus_btn), 4);
             }
             if (id(${widget_name}_plus_btn)) {
               lv_obj_set_style_bg_color(id(${widget_name}_plus_btn), lv_color_hex(bg), 0);
-              lv_obj_set_style_radius(id(${widget_name}_plus_btn), modern ? 16 : (perf ? 4 : 26), 0);
+              lv_obj_set_style_radius(id(${widget_name}_plus_btn), step_radius, 0);
               depth(id(${widget_name}_plus_btn), 4);
             }
           }
 
           // ── gauge + header accents ─────────────────────────────────
           if (id(${widget_name}_temp_arc)) {
-            lv_obj_set_style_arc_color(id(${widget_name}_temp_arc),
-                lv_color_hex(modern ? 0x232A38 : (perf ? 0x1A1A1A : 0x2A2E3A)), LV_PART_MAIN);
-            lv_obj_set_style_arc_color(id(${widget_name}_temp_arc),
-                lv_color_hex(modern ? 0xFF8C00 : (perf ? 0x666666 : 0xFF9F1C)), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_color(id(${widget_name}_temp_arc),
-                lv_color_hex(modern ? 0xFF8C00 : (perf ? 0x666666 : 0xFF9F1C)), LV_PART_KNOB);
+            uint32_t track = modern ? 0x232A38 : (perf ? 0x1A1A1A : (day ? 0xD8DEE9 : 0x2A2E3A));
+            uint32_t accent = modern ? 0xFF8C00 : (perf ? 0x666666 : (day ? 0x1976D2 : 0xFF9F1C));
+            lv_obj_set_style_arc_color(id(${widget_name}_temp_arc), lv_color_hex(track), LV_PART_MAIN);
+            lv_obj_set_style_arc_color(id(${widget_name}_temp_arc), lv_color_hex(accent), LV_PART_INDICATOR);
+            lv_obj_set_style_bg_color(id(${widget_name}_temp_arc), lv_color_hex(accent), LV_PART_KNOB);
           }
+
+          // ── header: back chip, title, humidity / room temp ─────────
+          if (id(${widget_name}_back_btn)) {
+            lv_obj_t *bb = id(${widget_name}_back_btn);
+            lv_obj_set_style_bg_color(bb, lv_color_hex(day ? 0xFFFFFF : 0x151B26), 0);
+            lv_obj_set_style_bg_opa(bb, LV_OPA_COVER, 0);
+            lv_obj_set_style_border_color(bb, lv_color_hex(day ? 0x1976D2 : 0x29B6F6), 0);
+            lv_obj_set_style_text_color(bb, lv_color_hex(day ? 0x1976D2 : 0x29B6F6), 0);
+            lv_obj_set_style_radius(bb, day ? 12 : 10, 0);
+          }
+          if (id(${widget_name}_title_label))
+            lv_obj_set_style_text_color(id(${widget_name}_title_label),
+                lv_color_hex(day ? 0x1A1C22 : 0xFFFFFF), 0);
+          if (id(${widget_name}_humidity_label))
+            lv_obj_set_style_text_color(id(${widget_name}_humidity_label),
+                lv_color_hex(day ? 0x5F6672 : 0x9BA2BC), 0);
+          if (id(${widget_name}_current_temp_label))
+            lv_obj_set_style_text_color(id(${widget_name}_current_temp_label),
+                lv_color_hex(day ? 0x8A93A3 : 0x6C7382), 0);
+          if (id(${widget_name}_degrees_label))
+            lv_obj_set_style_text_color(id(${widget_name}_degrees_label),
+                lv_color_hex(day ? 0x5F6672 : 0x9BA2BC), 0);
 
 lvgl:
   pages:
     - id: ${widget_name}_page
       bg_color: 0x0A0E14
       bg_opa: cover
+      # swipe right = back to Home (part of Home <-> AC <-> Light swipe ring)
+      on_swipe_right:
+        - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
+        - lvgl.page.show:
+            id: main_page
+            animation: OUT_RIGHT
+            time: 300ms
       widgets:
         # ── Header: Back | Climate Control | humidity / room ──────────
         - button:
@@ -519,7 +572,34 @@ lvgl:
               - lvgl.label.update:
                   id: ${widget_name}_target_temp_label
                   text: !lambda |-
-                    char b[8]; snprintf(b, sizeof(b), "%d°", (int) id(${widget_name}_target_temp)); return std::string(b);
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+            # long press = fine 0.5° step (mockup/doc feature)
+            on_long_press:
+              - lambda: |-
+                  float n = id(${widget_name}_target_temp) - 0.5f;
+                  if (n < 16) n = 16;
+                  id(${widget_name}_target_temp) = n;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                  id: ${widget_name}_target_temp_label
+                  text: !lambda |-
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
               - homeassistant.action:
                   action: climate.set_temperature
                   data:
@@ -553,7 +633,34 @@ lvgl:
               - lvgl.label.update:
                   id: ${widget_name}_target_temp_label
                   text: !lambda |-
-                    char b[8]; snprintf(b, sizeof(b), "%d°", (int) id(${widget_name}_target_temp)); return std::string(b);
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+            # long press = fine 0.5° step (mockup/doc feature)
+            on_long_press:
+              - lambda: |-
+                  float n = id(${widget_name}_target_temp) + 0.5f;
+                  if (n > 31) n = 31;
+                  id(${widget_name}_target_temp) = n;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                  id: ${widget_name}_target_temp_label
+                  text: !lambda |-
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
               - homeassistant.action:
                   action: climate.set_temperature
                   data:
