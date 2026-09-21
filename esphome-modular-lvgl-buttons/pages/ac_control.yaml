@@ -33,7 +33,7 @@ binary_sensor:
       - lvgl.label.update:
           id: ${widget_name}_power_label
           text: !lambda |-
-            return x ? "ON" : "OFF";
+            return std::string(x ? "ON" : "OFF");
 
 text_sensor:
   - platform: homeassistant

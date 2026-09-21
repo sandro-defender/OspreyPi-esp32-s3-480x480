@@ -78,8 +78,9 @@ script:
     then:
       - lambda: |-
           std::string r = id(display_rotation_select).current_option();
-          lvgl::RotationType rot = lvgl::ROTATION_0_DEGREES;
-          if (r == "90") rot = lvgl::ROTATION_90_DEGREES;
-          else if (r == "180") rot = lvgl::ROTATION_180_DEGREES;
-          else if (r == "270") rot = lvgl::ROTATION_270_DEGREES;
+          int rot = 0;
+          if (r == "90") rot = 90;
+          else if (r == "180") rot = 180;
+          else if (r == "270") rot = 270;
           id(lvgl_component).set_rotation(rot);
+

@@ -284,23 +284,23 @@ script:
           else if (theme == "Performance") { page_bg = 0x000000; settings_bg = 0x000000; info_bg = 0x000000; }
 
           if (id(main_page)) {
-            lv_obj_set_style_bg_color(id(main_page), lv_color_hex(page_bg), 0);
-            lv_obj_set_style_bg_opa(id(main_page), LV_OPA_COVER, 0);
-            lv_obj_set_style_pad_all(id(main_page), theme=="Performance" ? 2 : (theme=="Modern" ? 6 : 4), 0);
+            lv_obj_set_style_bg_color(id(main_page)->obj, lv_color_hex(page_bg), 0);
+            lv_obj_set_style_bg_opa(id(main_page)->obj, LV_OPA_COVER, 0);
+            lv_obj_set_style_pad_all(id(main_page)->obj, theme=="Performance" ? 2 : (theme=="Modern" ? 6 : 4), 0);
           }
           if (id(settings_page)) {
-            lv_obj_set_style_bg_color(id(settings_page), lv_color_hex(settings_bg), 0);
-            lv_obj_set_style_bg_opa(id(settings_page), LV_OPA_COVER, 0);
+            lv_obj_set_style_bg_color(id(settings_page)->obj, lv_color_hex(settings_bg), 0);
+            lv_obj_set_style_bg_opa(id(settings_page)->obj, LV_OPA_COVER, 0);
           }
           if (id(info_screen)) {
-            lv_obj_set_style_bg_color(id(info_screen), lv_color_hex(info_bg), 0);
-            lv_obj_set_style_bg_opa(id(info_screen), LV_OPA_COVER, 0);
+            lv_obj_set_style_bg_color(id(info_screen)->obj, lv_color_hex(info_bg), 0);
+            lv_obj_set_style_bg_opa(id(info_screen)->obj, LV_OPA_COVER, 0);
           }
           if (id(ac_main_page)) {
             uint32_t ac_bg = (theme=="Modern") ? 0x080A0F : 0x0F1115;
             if (theme=="Performance") ac_bg = 0x000000;
-            lv_obj_set_style_bg_color(id(ac_main_page), lv_color_hex(ac_bg), 0);
-            lv_obj_set_style_bg_opa(id(ac_main_page), LV_OPA_COVER, 0);
+            lv_obj_set_style_bg_color(id(ac_main_page)->obj, lv_color_hex(ac_bg), 0);
+            lv_obj_set_style_bg_opa(id(ac_main_page)->obj, LV_OPA_COVER, 0);
           }
           if (id(ac_main_top_bar)) {
             uint32_t top_bg = (theme=="Modern") ? 0x12151E : 0x1A1D26;
@@ -339,11 +339,11 @@ script:
           id: page_style
           bg_color: !lambda |-
             std::string t = id(current_theme).current_option();
-            if (t=="Modern") return 0x0A0E14;
-            if (t=="Performance") return 0x000000;
-            return 0x000000;
+            if (t=="Modern") return lv_color_hex(0x0A0E14);
+            if (t=="Performance") return lv_color_hex(0x000000);
+            return lv_color_hex(0x000000);
           text_color: !lambda |-
-            return 0xFFFFFF;
+            return lv_color_hex(0xFFFFFF);
       - script.execute: update_settings_highlight
       - script.execute: apply_dashboard_theme
       - lvgl.widget.redraw:

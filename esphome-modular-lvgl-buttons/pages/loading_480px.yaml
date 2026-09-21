@@ -160,10 +160,6 @@ script:
                 id: ha_connection_label
                 text: "Connected"
             - lvgl.widget.hide: boot_homeassistant_spiner
-            - lambda: |-
-                // Enable all AC controls
-                auto enable = [](lv_obj_t* o){ if(o) lv_obj_clear_flag(o, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_HIDDEN); };
-                // Actually use lvgl.widget.enable via id list is safer, but do via lambda for new buttons
             - lvgl.widget.enable:
                 - ac_main_temp_arc
                 - ac_main_power_btn
