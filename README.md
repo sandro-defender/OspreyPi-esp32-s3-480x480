@@ -4,7 +4,8 @@
 
 **A modular 480×480 ESPHome/LVGL dashboard for Home Assistant**
 
-[![ESPHome](https://img.shields.io/badge/ESPHome-2026.9%2B-blue?logo=esphome)](https://esphome.io/)
+[![Release](https://img.shields.io/github/v/release/sandro-defender/OspreyPi-esp32-s3-480x480?sort=semver)](https://github.com/sandro-defender/OspreyPi-esp32-s3-480x480/releases/latest)
+[![ESPHome](https://img.shields.io/badge/ESPHome-2026.9.0-blue?logo=esphome)](https://esphome.io/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Native-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)
 
 </div>
@@ -313,6 +314,19 @@ GitHub Actions validates both entrypoints with the pinned ESPHome container:
 ```
 
 Because both displays consume the same packages, validation catches shared changes for both orientations and API configurations.
+
+## Automatic releases
+
+The project version has one source of truth:
+
+```yaml
+# esphome-modular-lvgl-buttons/common/display.yaml
+project_version: "2.0"
+```
+
+After a push to `main`, GitHub Actions first validates both displays with ESPHome 2026.9.0. If validation succeeds and that version has not been published, the workflow automatically creates the matching Git tag and GitHub release with generated release notes. Existing releases are left unchanged, so rerunning the workflow is safe.
+
+Before publishing the next release, change `project_version` to a new semantic version. Releases are never created from pull-request branches.
 
 ## Upstream projects
 

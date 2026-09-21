@@ -10,6 +10,9 @@ on:
       - "**.yaml"
       - ".github/workflows/esphome-validate.yml"
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -30,3 +33,74 @@ jobs:
         run: esphome config Display01.yaml
       - name: Validate Display02
         run: esphome config Display02.yaml
+
+  release:
+    name: Publish GitHub release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: github-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read and validate project version
+        id: version
+        shell: bash
+        run: |
+          mapfile -t versions < <(
+            sed -nE 's/^[[:space:]]*project_version:[[:space:]]*"([^"]+)".*/\1/p' \
+              esphome-modular-lvgl-buttons/common/display.yaml
+          )
+
+          if [[ "${#versions[@]}" -ne 1 ]]; then
+            echo "Expected exactly one project_version substitution." >&2
+            exit 1
+          fi
+
+          version="${versions[0]}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "Invalid release version: $version" >&2
+            exit 1
+          fi
+
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+          echo "Release version: $version"
+
+      - name: Create release and tag when not already published
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; nothing to publish."
+            echo "### Release $VERSION already exists" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if git show-ref --verify --quiet "refs/tags/$VERSION"; then
+            tag_commit="$(git rev-list -n 1 "$VERSION")"
+            if [[ "$tag_commit" != "$GITHUB_SHA" ]]; then
+              echo "Tag $VERSION already points to $tag_commit, not $GITHUB_SHA." >&2
+              exit 1
+            fi
+            tag_args=(--verify-tag)
+          else
+            tag_args=(--target "$GITHUB_SHA")
+          fi
+
+          gh release create "$VERSION" \
+            "${tag_args[@]}" \
+            --title "$VERSION" \
+            --generate-notes \
+            --latest
+
+          echo "### Published release $VERSION" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://github.com/${GITHUB_REPOSITORY}/releases/tag/$VERSION" \
+            >> "$GITHUB_STEP_SUMMARY"

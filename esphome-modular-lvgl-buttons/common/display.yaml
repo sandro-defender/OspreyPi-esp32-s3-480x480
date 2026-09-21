@@ -8,7 +8,8 @@
 substitutions:
   device_comment: "OspreyPi ESP32-S3 480x480 smart display"
   project_name: "ospreypi.smart-display"
-  project_version: "2.0.0"
+  # This is also the GitHub release/tag created after a validated main push.
+  project_version: "2.0"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"
