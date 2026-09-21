@@ -2,28 +2,49 @@
 
 ## Images
 
-### General Screens (v2.1)
-- `images/screen_ac.png` — AC climate control mockup
-- `images/screen_light.png` — WLED / light page mockup (Bed LEDs)
-- `images/screen_settings.png` — Fast settings page
-- `images/screen_screensaver.png` — Screensaver clock + weather
+All UI mockups in `images/` are rendered at **true 480×480 device resolution**
+from the palettes and layout coordinates in the firmware YAML, using the real
+bundled fonts (Nunito, DejaVu Bold, Noto Georgian, Material Design Icons) and
+real assets (weather/connection icons, screensaver background, lightbulb).
+Regenerate after any UI change with:
 
-Home-screen references: use the `theme_*_home.png` gallery images (there is
-no dedicated home-grid mockup).
+```bash
+pip install pillow
+python3 tools/generate_screenshots.py
+```
 
-### Themes (v2.2) — 3 Selectable
-- **Classic**: `theme_classic_home.png`, `theme_classic_ac.png`, `theme_classic_settings.png` — original dark
-- **Modern**: `theme_modern_home.png`, `theme_modern_ac.png`, `theme_modern_settings.png` — exactly like mockup images you liked, orange glow, green/blue AC
-- **Performance**: `theme_performance_home.png`, `theme_performance_ac.png`, `theme_performance_settings.png` — minimal, max speed, less resources
+### Theme galleries (v2.3 — 4 selectable themes)
 
-All images 480×480, generated as optional UI previews. Replace with real device screenshots after flashing.
+Per theme: `<theme>_home.png`, `<theme>_ac.png`, `<theme>_settings.png` for
+
+- **Classic** — `theme_classic_*.png` — original flat dark, slate tiles, orange active
+- **Modern** — `theme_modern_*.png` — mockup look: navy, raised gradient tiles, orange glow, green/blue AC
+- **Performance** — `theme_performance_*.png` — minimal monochrome, fastest
+- **Daylight** — `theme_daylight_*.png` — warm raised dark cards, orange accents/glows
+
+`theme_preview_sheet.png` — all four home screens in one 2×2 sheet (1008×1008).
+
+### General screens (480×480)
+
+- `screen_ac.png` — AC climate page (Modern)
+- `screen_light.png` — WLED / Bed LEDs light page (brightness + saturation sliders, 12-segment hue ring)
+- `screen_settings.png` — settings page (Modern)
+- `screen_info.png` — device info / diagnostics page
+- `screen_screensaver.png` — screensaver clock + Georgian date + weather
+
+### Hi-res home previews (960×960)
+
+- `preview_classic_v2_home.png`
+- `preview_modern_v2_home.png`
+- `preview_performance_v2_home.png`
+- `preview_daylight_home.png`
 
 ## Wiki
 
 See `wiki/` folder:
 
-- Home.md — overview v2.2
-- Themes.md — NEW 3 themes detailed (Classic / Modern like images / Performance)
+- Home.md — overview (v2.3)
+- Themes.md — all 4 themes detailed (Classic / Modern / Performance / Daylight)
 - Installation.md
 - Performance.md
 - AC-Control.md
@@ -32,9 +53,13 @@ See `wiki/` folder:
 - Custom-Dashboard.md
 - Troubleshooting.md
 
-Wiki linked from main README.md
+Wiki linked from main README.md.
 
 ## Hardware Photos
 
-Original device photos in `../hardware/img/` — 6 images restored in README gallery (was 3)
+Original device photos in `../hardware/img/` — 6 images shown in the README gallery.
 
+## For AI agents
+
+`../AGENTS.md` is the operating manual for AI editors: architecture, file map,
+validation commands, screenshot regeneration and the version-bump policy.

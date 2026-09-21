@@ -4,7 +4,9 @@
 #   classic.yaml      original dark look, slate tiles, single orange accent
 #   modern.yaml       mockup look: navy + raised faces + glow rings
 #   performance.yaml  flat monochrome, cheapest to render
-#   daylight.yaml     NEW: LVGL-default-palette light theme for bright rooms
+#   daylight.yaml     warm raised dark cards + orange accents/glows
+#                     (matches docs/images/screen_light.png; the bright
+#                     light palette was dropped as unreadable)
 #
 # Each theme file carries its own substitutions (palette) and LVGL
 # style_definitions; ESPHome merges the lvgl: blocks from all packages, so

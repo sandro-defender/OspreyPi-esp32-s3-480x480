@@ -1,34 +1,38 @@
-# Performance Optimizations v2.1
+# Performance Optimizations
 
-## Problem
+Applies from v2.1 onward; values below reflect the **current** firmware
+(`common/display.yaml`, `common/fonts.yaml`).
 
-Old version:
+## Problem (old version)
+
 - Settings page laggy, scroll stutter
-- Boot 60s + 20s HA timeout
-- 11 fonts bpp 8 = RAM heavy
+- Boot 60 s + 20 s HA timeout
+- Fonts bpp 8 = RAM heavy
 - Logger WARN + many components logging
 - LVGL buffer 12%
 - Dropdowns create overlay list every open
 
 ## Solutions Implemented
 
-### 1. LVGL Buffer 12% → 20%
+### 1. LVGL Buffer 12% → 20% → 50%
 
 In `common/display.yaml`:
 ```yaml
-lvgl_buffer_size: "20%"
+lvgl_buffer_size: "50%"
+lvgl_refresh_interval: "16ms"
 ```
-Uses PSRAM (octal 80MHz) but renders faster. Tradeoff: more PSRAM, less internal heap — okay because we have 8MB PSRAM.
+Uses PSRAM (octal 80 MHz) but renders faster. Tradeoff: more PSRAM, less
+internal heap — okay because we have 8 MB PSRAM.
 
-### 2. Fonts 11 → 7, bpp 8 → 4
+### 2. Fonts bpp 8 → 4
 
-Old: nunito_12,14,18,20,24,32,36,42,48,72,120 + georgian_48 = 11
+All fonts render at bpp 4 (halves memory vs 8, anti-aliasing still fine at
+480p). Current set in `common/fonts.yaml`:
 
-New: 120,72,36,24,20,18,14 + georgian_32 = 7 + aliases for compat
-
-bpp 4 halves memory vs 8, anti-aliasing still okay for 480p.
-
-File: `common/fonts.yaml`
+- Nunito-SemiBold: 120 (screensaver-era large), 72 (AC target temp), 36 (steppers), 24 (main UI), 20 (settings/info), 18, 14, plus compat aliases
+- NotoSansGeorgian 32 (Georgian date)
+- DejaVu Sans Bold: 148 (screensaver clock), 96 (weather temp), 32 (Georgian date), 28, 24
+- Material Design Icons: 40 (dashboard icons), 22 (AC/info icons), 80 (play/pause)
 
 ### 3. Logger ERROR Only
 
@@ -47,11 +51,9 @@ No log spam during touch, saves CPU.
 
 ```yaml
 api:
-  reboot_timeout: 0s
-  batch_delay: 50ms
+  reboot_timeout: 0s   # HA restart must not reboot a healthy panel
+  batch_delay: 50ms    # faster state push
 ```
-
-Old reboot_timeout 30min caused checks, now 0s = never reboot on HA disconnect. batch_delay 50ms faster state push.
 
 ### 5. ESP32 SDK Optimizations
 
@@ -60,52 +62,37 @@ CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
 CONFIG_SPIRAM_RODATA: y
 CONFIG_SPIRAM_SPEED_80M: y
 CONFIG_ESP32S3_DATA_CACHE_64KB: y
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
+CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB: y
 CONFIG_COMPILER_OPTIMIZATION_PERF: y
 ```
 
-Executes from PSRAM, faster cache.
+Executes from PSRAM, faster cache lines. Hardware file also sets
+`compiler_optimization: PERF`, `execute_from_psram: true`,
+`watchdog_timeout: 60s`.
 
 ### 6. Loading Screen 20s → 8s
 
-Old: delay 20s before offline message, animation 1s+1s+0.5s = 2.5s
-
-New: delay 8s, animation 0.15s+0.2s = 0.35s, spinner 1s instead of 2s
-
+Delay before the offline message dropped to 8 s, spinner sped up.
 File: `pages/loading_480px.yaml`
 
 ### 7. Settings Rewrite — Biggest Win
 
-**Before:**
-- 3 dropdowns (LVGL dropdown widget = heavy, creates hidden list)
-- Scrollable container with `scrollbar_mode: auto` → LVGL calculates scroll every frame
-- Grid layout 2 columns
-- Border 1px radius 14 style
-- 421 lines
-
-**After:**
-- 0 dropdowns, 12 buttons
-- Fixed container 460×380, no scrollable
-- Flex only
-- Template selects (no LVGL widget) — HA still works
-- Highlight via `update_settings_highlight` script — sets bg_color orange for active
-- Sliders 14px height, knob 16×16
-- ~280 lines
-
-File: `pages/settings.yaml`
+**Before:** 3 dropdowns, scrollable container, grid layout, 421 lines
+**After:** 0 dropdowns, 15 buttons, fixed 460 px non-scrolling flex layout,
+template selects (no LVGL widget), highlight via `update_settings_highlight`,
+sliders 12 px / knobs 14×14, ~830 lines including 4-theme repaint logic
+(see [Settings.md](Settings.md))
 
 ### 8. Info Page 10s → 30s
 
-Free heap/PSRAM sensors update_interval 10s → 30s, less CPU.
-
-Grid → flex, fewer nested objs.
+Free heap/PSRAM sensors update every 30 s, flex layout, alternating flat rows.
 
 ### 9. Screensaver Flex
 
-Old: nested obj with absolute x/y, 220px height top + 180px bottom
+Flex column/row, no absolute positioning except the clock label.
 
-New: flex column/row, no absolute positioning except time
-
-### 10. Theme No Shadows
+### 10. Base Theme: No Shadows
 
 ```yaml
 shadow_width: 0
@@ -113,22 +100,29 @@ border_width: 0
 scroll_on_focus: false
 ```
 
-Every shadow is a draw call.
+Every shadow is a draw call — glows/shadows exist only as opt-in styles for
+Modern/Daylight tiles (`depth_dark`, `depth_light`, `glow_*`).
 
-### 11. Assets Resize 480×480 Explicit
+### 11. Assets Resized Explicitly
 
-Ensures no runtime scaling, RGB565 only.
+All LVGL images sized at load (RGB565, alpha channel where needed) — no
+runtime scaling.
 
-## Measured Improvements
+## Theme speed ranking
 
-- Boot to main_page: ~60% faster
-- Settings open: instant vs 300-500ms lag
+1. **Performance** — flat fills, radius 4, monochrome, zero style stacking
+2. **Classic** — flat fills, radius 14
+3. **Daylight / Modern** — gradient tiles + borders + shadows + glow rings
+   (still smooth at 480×480 with the 50% buffer)
+
+## Measured Improvements (v2.1 baseline)
+
+- Boot to main page: ~60% faster
+- Settings open: instant vs 300–500 ms lag
 - Touch response: no dropped frames
-- RAM: ~15% more free heap due to fewer fonts
 
 ## Further Ideas
 
-- Use LVGL `page_wrap: false` if not needed
 - Reduce weather icons to 2 colors
-- Disable buzzer if not used (save PWM)
-- Use `psram: mode: octal` already
+- Disable buzzer if unused (save PWM)
+- Profile Modern glow styles if a future device feels slow

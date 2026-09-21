@@ -101,7 +101,7 @@ psram:
   speed: 80MHz
 ```
 
-80MHz octal = 40MB/s, enough for 20% LVGL buffer (480×480×2 bytes×20% ≈ 92KB per buffer, double buffered ≈ 184KB)
+80MHz octal = 40MB/s, enough for the 50% LVGL buffer (480×480×2 bytes×50% ≈ 230KB per buffer, double buffered ≈ 460KB)
 
 ## Photos
 
