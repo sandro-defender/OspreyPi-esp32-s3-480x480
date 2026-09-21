@@ -158,7 +158,8 @@ script:
                 text: "Connected!"
             - lvgl.label.update:
                 id: ha_connection_label
-                text: "Connected"
+                text: "● Connected"
+                text_color: 0x00E676
             - lvgl.widget.hide: boot_homeassistant_spiner
             - lvgl.widget.enable:
                 - ac_main_temp_arc
@@ -169,6 +170,7 @@ script:
                 - ac_main_eco_btn
                 - ac_main_sleep_btn
                 - ac_main_turbo_btn
+                - ac_main_preset_btn
             - script.execute: check_boot_status
 
 api:
@@ -189,7 +191,8 @@ api:
               value: 'false'
           - lvgl.label.update:
               id: ha_connection_label
-              text: "Offline"
+              text: "● Offline"
+              text_color: 0xFF5252
           - lvgl.label.update:
               id: boot_homeassistant_label
               text: 'HA disconnected'
@@ -205,4 +208,5 @@ api:
               - ac_main_eco_btn
               - ac_main_sleep_btn
               - ac_main_turbo_btn
+              - ac_main_preset_btn
           - script.execute: update_loading_page
