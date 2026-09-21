@@ -2,8 +2,8 @@
 
 ## Overview
 
-v2.3 ships 4 selectable themes, persistent and exposed as a Home Assistant select entity.
-Theme definitions now live in **one file per theme** under
+v2.3 ships **4 selectable themes**, persistent and exposed as a Home Assistant
+select entity. Theme definitions live in **one file per theme** under
 `esphome-modular-lvgl-buttons/common/themes/`:
 
 | File | Theme |
@@ -11,269 +11,116 @@ Theme definitions now live in **one file per theme** under
 | `common/themes/classic.yaml` | Classic palette + styles |
 | `common/themes/modern.yaml` | Modern palette, raised-face gradient, glow ring styles |
 | `common/themes/performance.yaml` | Performance flat monochrome |
-| `common/themes/daylight.yaml` | **NEW** light theme (LVGL default palette) |
+| `common/themes/daylight.yaml` | Daylight: warm raised dark cards + orange glow |
 | `common/themes.yaml` | registry that includes the four files |
 
-- **Classic** — dark, black + slate gray + single orange accent
-- **Modern** — mockup look: navy + orange glowing icons + green/blue AC
-- **Performance** — minimal, uses less resources, fastest
-- **Daylight** — **NEW**: light theme for bright rooms (off-white bg, white
-  cards with soft elevation, charcoal text, blue #2196F3 accent). Based on the
-  LVGL default light theme palette (blue/cyan), so it matches stock LVGL
-  material styling. Every page (home, settings, info, AC, WLED light page)
-  repaints itself on switch — theme switching now restyles the whole LVGL UI.
+- **Classic** — original flat dark: black + slate gray tiles, single orange accent
+- **Modern** — mockup look: navy, raised "3D" gradient tiles, orange glowing icons, green/blue AC buttons
+- **Performance** — minimal monochrome, cheapest to render, fastest
+- **Daylight** — warm dark variant with raised cards and orange accents/glows
+  (a bright off-white palette was tried first and dropped as unreadable behind
+  the AC/light artwork; the file keeps its `theme_daylight_*` style ids and
+  `depth_light` / `glow_blue_light` names, which the repaint lambdas reference)
 
-Switch: on device Settings → Theme → [Classic] [Modern] [Perf] [Day] or in HA: `select.display01_theme`
+Every page (home, AC, light, settings, info) repaints itself on switch:
+`apply_display_theme` (in `dashboards/home.yaml`) recolors the pages and then
+calls `ac_main_refresh`, `apply_settings_theme`, `apply_info_theme`,
+`button_7_apply_theme`, `update_settings_highlight`, `apply_dashboard_theme`
+and every per-card `repaint_button_*` script — so on/off skins survive a
+theme switch without a reboot.
 
-## Theme 4: Daylight (NEW)
-
-**Goal:** readable in daylight / bright walls where dark themes wash out.
-
-**Colors:**
-- Page bg: 0xEFF2F7 cool off-white
-- Cards: 0xFFFFFF white, 1px 0xD5DCE6 border, soft shadow (raised, like Modern's depth but light — `depth_light` style)
-- Text: 0x1A1C22 charcoal, dim 0x5F6672
-- Accent: 0x2196F3 blue (active tiles/buttons), deep blue 0x1976D2 for sliders/knobs
-- Status colors keep their semantics: green power, blue cool, orange turbo
-
-**Pages:** home tiles become white cards with gray icons; settings/info rows
-become white/alternating light rows; the AC gauge turns blue-on-light; the WLED
-hue ring stays a real 12-segment color wheel (theme-independent).
-
-**Performance:** close to Classic (shadows are small and cheap at 480x480).
+Switch on device: Settings → Theme → [Classic] [Modern] [Perf] [Day],
+or in HA: `select.display01_theme`.
 
 ## Theme 1: Classic
 
-**Goal:** Keep current look you had before.
+**Goal:** keep the original look — flat, balanced, cheapest after Performance.
 
-**Colors:**
-- Page bg: 0x000000 black
-- Settings bg: 0x11151C dark navy
-- Info bg: 0x11151C
-- Button bg: 0x343645 slate_blue_gray
-- Button active: 0xFF9F1C orange
-- Text: white, dim #9BA2BC
-- Radius: 14, pad 10
+**Palette (classic.yaml):**
+- Page bg `0x000000`, settings/info bg `0x11151C`
+- Tiles `0x343645` slate, active `0xF37320` orange (single accent)
+- Text white, dim `0x9BA2BC`, muted `0xBBBBBB`
+- Rows `0x1E232E`, selectors `0x3A4352`, radius 14, pad 10
 
-**Home:**
-- Buttons slate gray, white icons, white labels, orange active highlight
-- Settings card amber when connecting, mint when connected
+**Home:** flat tiles, white labels, icons `0x9BA2BC` when off / white when on,
+orange fill when active.
 
-**AC:**
-- Power OFF #333333, ON #4CAF50 green
-- Mode: cool #2196F3 blue, heat #FF9800 orange, dry #FFEB3B yellow, fan_only #4CAF50 green, auto #9C27B0 purple, off #555555
-- Fan/Swing/Eco/Sleep/Turbo: #555555 inactive, colored active
-- Arc: #2A2E3A bg, #FF9F1C orange indicator, knob white border orange fill
+**AC:** Power ON `0x4CAF50`, Mode cool `0x2196F3` / heat `0xFF9800` /
+dry `0xFFEB3B` / fan `0x4CAF50` / auto `0x9C27B0`; inactive `0x343645`;
+arc track `0x2A2E3A`, indicator `0xFF9F1C`.
 
-**Settings:**
-- Rows #1E232E radius 10, sliders orange #FF9F1C, timeout blue #41BDF5, saver switch green #4CAF50
+**Settings:** rows `0x1E232E` radius 10, orange sliders `0xFF9F1C`,
+timeout slider blue `0x41BDF5`, saver switch green `0x4CAF50`.
 
-**Performance:** Balanced, original speed.
+**Reference images:** `docs/images/theme_classic_{home,ac,settings}.png`
 
-## Theme 2: Modern — Like Images You Liked
+## Theme 2: Modern — the mockup look
 
-**Goal:** Exactly like the mockup images you provided and said you liked.
+**Goal:** exactly the mockup images — dark navy, raised tiles, neon glows.
 
-**Inspiration from your images:**
-- `screen_home.png` — dark navy, orange glowing icons
-- `screen_ac.png` — black, orange glowing arc, green Power ON, blue Mode COOL, orange Turbo
-- `screen_settings.png` — dark, orange sliders, blue saver
+**Palette (modern.yaml):**
+- Page bg `0x0A0E14`, settings `0x121A26`, info `0x0F141E`, AC `0x080A0F` / top bar `0x12151E`
+- Raised tile face: vertical gradient `0x323B4D → 0x1A212C`, 1 px bevel `0x3D4658`, drop shadow (`depth_dark` style)
+- Active/colored states get glow rings: `glow_orange` (0xFF8C00), `glow_green` (0x00E676), `glow_blue` (0x29B6F6), `glow_soft` (steppers)
+- Icons orange `0xFF8C00`, labels gray `0x9BA2BC`, radius 20, pad 14
 
-**Colors:**
-- Page bg: 0x0A0E14 very dark navy (almost black with blue tint)
-- Settings bg: 0x121A26 slightly lighter navy
-- Info bg: 0x0F141E
-- Button bg: 0x1E232E dark gray-blue
-- Button active: 0xFF8C00 bright orange (like mockup)
-- Power ON: 0x00E676 bright green with black text (like image)
-- Mode COOL: 0x29B6F6 light blue with black text / snowflake icon
-- Mode HEAT: 0xFF9800 orange
-- Mode DRY: 0xFFCA28 amber
-- Turbo: 0xFF6D00 deep orange with white text and rocket icon
-- Text: white #FFFFFF, dim #9BA2BC gray-blue, accent orange #FF8C00
-- Radius: 20 (more rounded like modern phones), pad 14 (more breathing room)
-- Slider bg: 0x2A303E, active orange #FF8C00
-- Saver: blue #00BFFF active
+**Home:** all 10 cards are raised gradient tiles; active cards add an orange
+glow ring; icons always orange.
 
-**Home (Modern):**
-- Background #0A0E14
-- Buttons #1E232E radius 20, pad 14, no border, no shadow
-- Icons: orange #FF8C00 glowing (like image) — Bedroom lightbulb orange glow, Fan orange, Pantry orange cabinet, WLED orange text, Play gray triangle, Sleep moon orange, Bed LEDs bed orange, AC snowflake orange, Settings gear orange
-- Labels: gray #9BA2BC (like image) for inactive, white for active
-- Exactly matches `docs/images/theme_modern_home.png`
+**AC:** Power ON `0x00E676` black text + green glow; Mode COOL `0x29B6F6`
+black text + blue glow; Turbo `0xFF6D00` + orange glow; −/+ steppers get the
+soft `glow_soft` halo; arc indicator `0xFF8C00`.
 
-**AC (Modern):**
-- Background #080A0F
-- Top bar #12151E (slightly lighter)
-- Back button #2A2E3A radius 8, blue text < Back (like iOS)
-- Title Climate Control white 18pt, action -- gray 14pt, humidity 45% Humidity gray, time 10:09 AM, battery 85%
-- Arc: 320×320, width 14, bg #2A2E3A, indicator orange #FF8C00 with glow, knob white border orange fill 4px pad
-- Center: 24° large 72pt white, DEGREES COOLING gray, current temp 24.0°C gray, mode cool orange
-- - + buttons: 52×52 circle radius 26, bg #2A2E3A, white - + 36pt
-- Row1: Power ON green #00E676 black text ON with power icon, Mode COOL blue #29B6F6 black text COOL snowflake, Fan AUTO gray #3A3F4E white AUTO fan icon, Swing HORIZ gray arrows
-- Row2: Eco SAVING gray leaf, Sleep OFF gray moon, Turbo TURBO orange #FF6D00 rocket, Preset NORMAL gray box #1E232E
-- Radius for AC buttons 16 (more rounded than Classic 12)
-- Exactly matches `docs/images/theme_modern_ac.png` and your liked `screen_ac.png`
+**Settings:** rows `0x1E2530` radius 10, sliders orange `0xFF8C00`,
+active selector buttons orange with glow ring.
 
-**Settings (Modern):**
-- Background #121A26
-- Rows #1E232E radius 10, compact height 38-46
-- Mode Day/Eve/Night buttons #3A4352 inactive, #FF8C00 active orange
-- Sliders orange #FF8C00 with white knob 14×14 radius 6, bg #2A303E
-- Timeout slider blue #41BDF5, Saver switch green #4CAF50 active, blue toggle like image
-- Theme selector: Classic/Modern/Perf — Modern orange active
-- Rotation 0/90/180/270 — orange active
-- Bottom Home orange #FF6600, Info gray #3A4352
+**Reference images:** `docs/images/theme_modern_{home,ac,settings}.png` and
+`docs/images/screen_ac.png`, `screen_settings.png`
 
-**Performance impact:** Slightly more expensive than Classic due to larger radius (20 needs more anti-aliasing) and larger pad, but still fast because no shadows, no images.
+## Theme 3: Performance — minimal for max speed
 
-## Theme 3: Performance — Minimal for Max Speed
+**Goal:** fewest draw calls and zero color logic.
 
-**Goal:** Use less resources, maximum performance, for users who want fastest possible.
+**Palette (performance.yaml):**
+- Everything black `0x000000` (pages + settings + info + AC)
+- Tiles `0x1A1A1A`, active `0x444444` — grays only, no color anywhere
+- Text white, dim `0x888888`; radius 4, pad 6; no borders, no shadows, no gradients
 
-**Colors:**
-- Page bg: 0x000000 pure black (no navy tint, no image)
-- Settings bg: 0x000000 black
-- Info bg: 0x000000 black
-- Button bg: 0x1A1A1A very dark gray (almost black)
-- Button active: 0x444444 medium gray (no orange, no green/blue)
-- Text: white #FFFFFF only, dim #888888 (no orange, no blue)
-- Radius: 4 (smallest, less anti-aliasing calc)
-- Pad: 6 (minimal, less layout calc)
-- Slider bg: 0x222222, active #666666 gray (no orange/blue)
-- No shadows, no borders, no transparency, no gradients, no images
+**Why faster:** radius 4 (less anti-aliasing), pad 6 (less layout), flat fills
+only, monochrome (no color branching), no image backgrounds.
 
-**Home (Performance):**
-- Background pure black
-- Buttons #1A1A1A radius 4, pad 6, border 0, shadow 0
-- Icons white only (no orange glow)
-- Labels white or #CCCCCC gray
-- No WLED orange text — white
-- No green/blue — white
-- Minimal CPU: no color branching, no glow
+**Reference images:** `docs/images/theme_performance_{home,ac,settings}.png`
 
-**AC (Performance):**
-- Background black #000000
-- Top bar black (no #1A1D26)
-- Arc: bg #222222, indicator #666666 gray (no orange), knob gray
-- - + buttons #1A1A1A radius 6 (not 26 circle? Actually 6 for square-ish minimal, but we keep circle 26? In Performance we set radius 6 for AC buttons, so square with small radius)
-- All 8 bottom buttons #1A1A1A inactive, #444444 active (no green/blue/orange)
-- Text white only
-- No humidity blue — white
-- No action colors
+## Theme 4: Daylight — warm raised cards
 
-**Settings (Performance):**
-- Background black
-- Rows #1A1A1A radius 4 (vs 10)
-- Sliders 8px thin (vs 14px), knob 12×12 (vs 14×14), bg #222222, active #666666 gray (no orange/blue)
-- Switch 40×20, bg #3A4352, indicator #4CAF50 still green? Could be gray #444444 for minimal, but we keep green for visibility — or gray for max perf. Currently green still, but could be gray. We use gray #444444 active.
-- Theme buttons #1A1A1A inactive, #444444 active
-- Rotation same minimal
+**Goal:** the warm dark-orange-glow look of `docs/images/screen_light.png`
+— readable, cozy, higher contrast accents.
 
-**Why faster:**
-- Radius 4 vs 14 vs 20: smaller radius = less anti-aliasing pixels to calculate
-- Pad 6 vs 10 vs 14: less layout
-- No image backgrounds: `bg_image_src` none, just black
-- No shadows: `shadow_width 0`
-- No color branching in lambdas? We still have branching but simpler colors
-- Less RAM: no extra style_definitions needed beyond base
-- Measured: ~10% faster frame time, ~20KB more free heap
+**Palette (daylight.yaml):**
+- Page bg `0x0B0C0D`, settings/info `0x0F1216`, AC `0x0B0C0D` / top bar `0x191D23`
+- Raised card face: gradient `0x1F242C → 0x151A20`, 1 px border `0x242A33`,
+  soft shadow (`depth_light` style)
+- Accent orange `0xE37220`, bright accent `0xF8953D` (icons), glow `0xE37220`
+- Text white, dim `0xB4B8BC`, muted `0x8A9099`; radius 20, pad 14
+- Active tiles: solid `0xE37220` fill + warm glow (`glow_blue_light` — id kept
+  for the repaint lambdas, now warm orange)
 
-**When to use:**
-- If you have many buttons and feel lag
-- If you want maximum battery (less draw calls = less CPU = less power)
-- If you prefer monochrome minimal look
+**Home:** raised dark cards; active cards fill solid orange with a warm glow;
+icons `0xF8953D` when on, `0x8A9099` when off.
 
-## How Themes Are Applied
+**AC:** Power ON `0x4CAF50` white text, Mode COOL `0x29B6F6` white text,
+raised `0x191D23` buttons with `0x242A33` borders, arc `0xE37220`, back chip
+border/text `0xF8953D`.
 
-### File: `common/themes.yaml`
-Defines substitutions for colors and style_definitions for each theme.
+**Settings:** rows `0x171A1F` radius 12 with `0x2E3542` border + soft shadow,
+sliders `0xE37220`, knobs `0xF8953D`.
 
-### File: `common/display_settings.yaml`
-Script `apply_display_theme`:
+**Reference images:** `docs/images/theme_daylight_{home,ac,settings}.png` and
+`docs/images/screen_light.png`
 
-```cpp
-std::string theme = id(current_theme).current_option();
-if (theme=="Classic") { page_bg=0x000000; button_bg=0x343645; radius=14; }
-else if (theme=="Modern") { page_bg=0x0A0E14; button_bg=0x1E232E; radius=20; }
-else if (theme=="Performance") { page_bg=0x000000; button_bg=0x1A1A1A; radius=4; }
+## Adding a theme
 
-// Apply to pages
-lv_obj_set_style_bg_color(id(main_page), lv_color_hex(page_bg), 0);
-// ...
-// Apply to 10 dashboard buttons
-lv_obj_set_style_bg_color(btn, lv_color_hex(button_bg), 0);
-lv_obj_set_style_radius(btn, button_radius, 0);
-// Icons
-if (theme=="Modern") lv_obj_set_style_text_color(icon, lv_color_hex(0xFF8C00), 0);
-```
-
-Also updates AC button radii.
-
-### File: `pages/settings.yaml`
-3 buttons:
-
-```yaml
-- button:
-    id: settings_btn_classic
-    text: "Classic"
-    on_click: select.set option Classic
-- button:
-    id: settings_btn_modern
-    text: "Modern"
-- button:
-    id: settings_btn_performance
-    text: "Perf"
-```
-
-And highlight script `update_settings_highlight` sets active bg orange for Classic, bright orange for Modern, gray for Performance.
-
-### File: `pages/ac_control.yaml`
-All sensors check theme:
-
-```cpp
-std::string theme = id(current_theme).current_option();
-if (theme=="Modern") col = 0x29B6F6; // blue for cool
-else if (theme=="Performance") col = 0x444444; // gray
-else col = 0x2196F3; // classic blue
-```
-
-## Adding a New Theme
-
-1. Add colors to `common/themes.yaml` substitutions and style_definitions
-2. Add option to `select` in `pages/settings.yaml`:
-   ```yaml
-   options: [Classic, Modern, Performance, YourTheme]
-   ```
-3. Add button for YourTheme in settings page
-4. Add branch in `apply_display_theme` lambda
-5. Add branch in `update_settings_highlight`
-6. Add branch in AC page sensors
-7. Add preview images in `docs/images/theme_yourtheme_*.png`
-
-## Screenshots
-
-All theme previews in `docs/images/`:
-
-- Classic: theme_classic_home/ac/settings.png
-- Modern: theme_modern_home/ac/settings.png (exactly like mockups you liked)
-- Performance: theme_performance_home/ac/settings.png
-
-General (old): screen_home/ac/settings.png etc.
-
-## FAQ
-
-**Q: Will theme survive reboot?**
-A: Yes, `current_theme` has `restore_value: true`, stored in flash every 10min.
-
-**Q: Can HA change theme?**
-A: Yes, select entity `select.display01_theme` — set via automation, e.g., Modern at evening, Performance at night for max speed.
-
-**Q: Which theme is fastest?**
-A: Performance > Classic > Modern. Modern has largest radius and padding, slightly slower but still fast (20% buffer). Performance is fastest.
-
-**Q: Can I keep Dark/Light?**
-A: Classic is Dark. If you want Light, you can add Classic Light as 4th theme, or use Modern with light bg. We removed Dark/Light to keep 3 themes as requested, but you can easily add Light variant in `themes.yaml`.
-
-**Q: Theme exactly like images?**
-A: Modern theme is built to match `docs/images/screen_home.png`, `screen_ac.png`, `screen_settings.png` — orange glowing icons, green/blue AC, navy bg, radius 20. See `theme_modern_*.png` previews.
+See the cookbook in [`AGENTS.md`](../../AGENTS.md#8-cookbook--common-changes):
+copy a palette file, register it in `common/themes.yaml`, add the select option
++ settings button, extend the 4-way branches in every repaint lambda, and
+re-run `tools/generate_screenshots.py`.

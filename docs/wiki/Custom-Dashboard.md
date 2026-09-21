@@ -83,6 +83,12 @@ packages:
 
 Hardware, settings, OTA, weather remain.
 
+**Important:** keep the `script:` block from home.yaml
+(`apply_display_theme`, `update_settings_highlight`, `apply_dashboard_theme`
+and the `repaint_button_*` calls) in the new profile — that is the 4-theme
+repaint engine. Without it the device boots Classic-colored and on/off skins
+stop updating.
+
 ## Button Templates
 
 In `buttons/`:

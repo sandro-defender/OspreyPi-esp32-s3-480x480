@@ -39,7 +39,7 @@ esphome config Display01.yaml
 esphome config Display02.yaml
 ```
 
-Should pass with no errors. New v2.1 validates faster due to fewer fonts.
+Should pass with no errors.
 
 ## 3. Flash
 

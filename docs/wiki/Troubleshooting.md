@@ -2,7 +2,7 @@
 
 ## Card Does Nothing
 
-1. Check HA connected — Settings card should say "Connected" green, not amber
+1. Check HA connected — the Settings card status icon on its colored halo should be the connected (mint/green) state, not amber (connecting) or red (offline)
 2. Enable **Allow the device to perform Home Assistant actions** in ESPHome integration → device → settings
 3. Check action matches domain: light.toggle for light, switch.toggle for switch
 4. Check ESPHome logs: `esphome logs Display01.yaml` — look for "Home Assistant is offline; ignored"
