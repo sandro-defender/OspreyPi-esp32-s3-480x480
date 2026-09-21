@@ -1,5 +1,9 @@
 ---
 # Script state (theme-aware skin)
+#
+# Skin lives in script `repaint_${uid}` so both HA state changes and theme
+# switches (apply_display_theme) re-apply it; previously a theme change
+# wiped the state skin until reboot.
 # vars:
 #   uid: <unique identifer for the switch. Must match the ID of the button>
 #   state_entity_id: <Home Assistant entity_id for the object we are monitoring (e.g. light, switch)>
@@ -10,11 +14,19 @@ binary_sensor:
     entity_id: ${state_entity_id}
     trigger_on_initial_state: true
     on_state:
+      - script.execute: repaint_${uid}
+
+script:
+  - id: repaint_${uid}
+    mode: restart
+    then:
       - lambda: |-
           auto skin = [](lv_obj_t *b, bool active, const std::string &theme) {
             if (!b) return;
             lv_obj_remove_style(b, id(depth_dark), 0);
             lv_obj_remove_style(b, id(glow_orange), 0);
+            lv_obj_remove_style(b, id(depth_light), 0);
+            lv_obj_remove_style(b, id(glow_blue_light), 0);
             if (theme == "Modern") {
               lv_obj_add_style(b, id(depth_dark), 0);
               if (active) lv_obj_add_style(b, id(glow_orange), 0);
@@ -33,7 +45,7 @@ binary_sensor:
           };
           std::string theme = id(current_theme).current_option();
           if (theme.empty()) theme = "Classic";
-          bool on = x;
+          bool on = id(widget_sensor_${uid}).state;
           skin(id(button_${uid}), on, theme);
           if (id(icon_${uid})) {
             uint32_t c = (theme == "Modern") ? 0xFF8C00

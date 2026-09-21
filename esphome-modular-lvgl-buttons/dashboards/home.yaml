@@ -349,6 +349,16 @@ script:
       - script.execute: button_7_apply_theme
       - script.execute: update_settings_highlight
       - script.execute: apply_dashboard_theme
+      # Re-apply the live on/off skins AFTER the theme repaint, otherwise a
+      # theme switch flattens every tile to its inactive look until reboot.
+      - script.execute: repaint_button_1
+      - script.execute: repaint_button_2
+      - script.execute: repaint_button_3
+      - script.execute: repaint_button_4
+      - script.execute: repaint_button_5
+      - script.execute: repaint_button_6
+      - script.execute: repaint_button_7
+      - script.execute: repaint_button_9
       - lvgl.widget.redraw:
 
   - id: update_settings_highlight

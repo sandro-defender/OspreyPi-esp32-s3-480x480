@@ -415,10 +415,13 @@ lvgl:
         # ── Bulb: glowing disc (recolored live) + bulb image ─────────────
         # tap = toggle, long press = switch HS / white mode
         - obj:
+            # The bulb sits concentric with the hue / temp ring (same x/y as
+            # the ring arcs) so it is centered in the wheel and never covers
+            # the color selector band.
             id: ${widget_name}_lightbulb_btn
             align: center
-            x: -18
-            y: -34
+            x: 80
+            y: -14
             width: 130
             height: 160
             radius: 20
@@ -915,7 +918,8 @@ script:
                 x: -104
             - lvgl.obj.update:
                 id: ${widget_name}_lightbulb_btn
-                x: -40
+                x: 80
+                y: -14
             - lambda: |-
                 for (int i = 0; i < 12; i++) {
                   std::string n = "${widget_name}_hue_seg_" + std::to_string(i);
@@ -976,14 +980,16 @@ script:
                       x: -186
                   - lvgl.obj.update:
                       id: ${widget_name}_lightbulb_btn
-                      x: -18
+                      x: 80
+                      y: -14
                 else:
                   - lvgl.obj.update:
                       id: ${widget_name}_light_brightness_background
                       x: -60
                   - lvgl.obj.update:
                       id: ${widget_name}_lightbulb_btn
-                      x: -18
+                      x: 80
+                      y: -14
 
   # ── Recolor the bulb glow (and its halo) from hue/sat/brightness ───────
   - id: ${widget_name}_update_lightbulb_color
@@ -1092,6 +1098,11 @@ script:
             - lvgl.obj.update:
                 id: ${widget_name}_light_brightness_background
                 x: -60
+            # no ring on screen -> bulb goes back to the screen center
+            - lvgl.obj.update:
+                id: ${widget_name}_lightbulb_btn
+                x: 0
+                y: 0
 
   # ── Theme-aware repaint of this page (Classic/Modern/Perf/Daylight) ────
   - id: ${widget_name}_apply_theme

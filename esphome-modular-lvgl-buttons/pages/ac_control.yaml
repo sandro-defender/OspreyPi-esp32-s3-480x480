@@ -368,9 +368,6 @@ script:
           if (id(${widget_name}_current_temp_label))
             lv_obj_set_style_text_color(id(${widget_name}_current_temp_label),
                 lv_color_hex(day ? 0x8A93A3 : 0x6C7382), 0);
-          if (id(${widget_name}_degrees_label))
-            lv_obj_set_style_text_color(id(${widget_name}_degrees_label),
-                lv_color_hex(day ? 0x5F6672 : 0x9BA2BC), 0);
 
 lvgl:
   pages:
@@ -416,6 +413,7 @@ lvgl:
             bg_opa: transp
             border_width: 0
             pad_all: 0
+            scrollable: false
             widgets:
               - label:
                   id: ${widget_name}_title_label
@@ -431,11 +429,12 @@ lvgl:
             align: top_right
             x: -8
             y: 5
-            width: 150
-            height: 42
+            width: 160
+            height: 50
             bg_opa: transp
             border_width: 0
             pad_all: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: column
@@ -448,14 +447,16 @@ lvgl:
                   text_font: nunito_18
                   text_color: 0x9BA2BC
                   text_align: right
-                  width: 150
+                  long_mode: clip
+                  width: 160
               - label:
                   id: ${widget_name}_current_temp_label
                   text: ""
                   text_font: nunito_14
                   text_color: 0x6C7382
                   text_align: right
-                  width: 150
+                  long_mode: clip
+                  width: 160
 
         # ── Temperature gauge ─────────────────────────────────────────
         - arc:
@@ -495,12 +496,13 @@ lvgl:
 
         - obj:
             align: top_mid
-            y: 92
+            y: 98
             width: 200
             height: 132
             bg_opa: transp
             border_width: 0
             pad_all: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: column
@@ -513,19 +515,13 @@ lvgl:
                   text_font: nunito_72
                   text_color: white
                   text_align: center
-              - label:
-                  id: ${widget_name}_degrees_label
-                  text: "DEGREES"
-                  text_font: nunito_14
-                  text_color: 0x6C7382
-                  text_align: center
-                  text_letter_space: 3
               - obj:
                   width: 200
                   height: 24
                   bg_opa: transp
                   border_width: 0
                   pad_all: 0
+                  scrollable: false
                   layout:
                     type: flex
                     flex_flow: row
@@ -677,6 +673,7 @@ lvgl:
             bg_opa: transp
             border_width: 0
             pad_all: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: row
@@ -853,6 +850,7 @@ lvgl:
             bg_opa: transp
             border_width: 0
             pad_all: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: row

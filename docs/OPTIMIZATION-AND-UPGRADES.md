@@ -9,7 +9,7 @@ Targets: `Display01.yaml`, `Display02.yaml` on ESP32-S3 (ST7701S 480×480, FT633
 
 | # | Item | Result |
 |---|------|--------|
-| 1 | **AC page** redesigned to the repo mockups | Header rebuilt with absolute positioning (no more overflow/clipping), humidity + room temp on the right, big orange gauge with `24° / DEGREES / action`, −/+ steppers **beside** the gauge like `theme_modern_home.png` |
+| 1 | **AC page** redesigned to the repo mockups | Header rebuilt with absolute positioning (no more overflow/clipping), humidity + room temp on the right, big orange gauge with `24° / action` (the redundant `DEGREES` caption was removed so everything fits), −/+ steppers **beside** the gauge like `theme_modern_home.png` |
 | 1b | **Real AC state on buttons** | 8 two-line buttons (title + icon + live value): Power `ON/OFF`, Mode `COOL/HEAT/…`, Fan `AUTO/LOW/MED/HIGH`, Swing `OFF/VERT/HORIZ/BOTH`, Eco `SAVING/OFF`, Sleep `ON/OFF`, Turbo `TURBO/OFF`, Preset `NORMAL/…` — all driven by HA attributes |
 | 1c | Fixed latent AC bugs | Power state used `attribute: state` (not a real HA attribute → never updated); the Mode button updated the wrong label id; Eco/Sleep/Turbo/Preset values never refreshed; the preset chip was a dead `obj` (now a cycling button) |
 | 2 | **Theme 2 (Modern) depth** | Raised buttons: vertical gradient face + 1px bevel border + drop shadow (`depth_dark`), colored glows for active fills (`glow_green/blue/orange`), soft halo on −/+ (`glow_soft`), orange ring-glow for active dashboard tiles (matches `screen_ac.png` mockup) |
