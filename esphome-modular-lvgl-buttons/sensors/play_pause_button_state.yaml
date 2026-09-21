@@ -41,7 +41,7 @@ script:
                   } else if (theme == "Daylight") {
                     lv_obj_add_style(b, id(depth_light), 0);
                     if (active) lv_obj_add_style(b, id(glow_blue_light), 0);
-                    lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0x2196F3 : 0xFFFFFF), 0);
+                    lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0xE37220 : 0x191D23), 0);
                   } else {
                     lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0xF37320 : 0x343645), 0);
                   }
@@ -51,7 +51,7 @@ script:
                 if (theme.empty()) theme = "Classic";
                 skin(id(button_${uid}), true, theme);
                 if (id(icon_${uid})) {
-                  uint32_t c = (theme == "Modern") ? 0xFF8C00 : (theme == "Daylight") ? 0xFFFFFF : 0xFFFFFF;
+                  uint32_t c = (theme == "Modern") ? 0xFF8C00 : (theme == "Daylight") ? 0xF8953D : 0xFFFFFF;
                   lv_obj_set_style_text_color(id(icon_${uid}), lv_color_hex(c), 0);
                 }
             - lvgl.label.update:
@@ -75,7 +75,7 @@ script:
                   } else if (theme == "Daylight") {
                     lv_obj_add_style(b, id(depth_light), 0);
                     if (active) lv_obj_add_style(b, id(glow_blue_light), 0);
-                    lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0x2196F3 : 0xFFFFFF), 0);
+                    lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0xE37220 : 0x191D23), 0);
                   } else {
                     lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0x343645), 0);
                   }
@@ -87,7 +87,7 @@ script:
                 if (id(icon_${uid})) {
                   uint32_t c = (theme == "Modern") ? 0xFF8C00
                              : (theme == "Performance") ? 0xFFFFFF
-                             : (theme == "Daylight") ? 0x5F6672
+                             : (theme == "Daylight") ? 0x8A9099
                              : 0x9BA2BC;
                   lv_obj_set_style_text_color(id(icon_${uid}), lv_color_hex(c), 0);
                 }

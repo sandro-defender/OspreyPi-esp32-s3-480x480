@@ -8,6 +8,7 @@
 # 20  - settings, info, secondary labels (replaces 20,18,32)
 # 14  - small labels, status
 # georgian 32 - date (optimized from 48)
+# bold_* - screensaver (clock, Georgian date, weather) - DejaVu Sans Bold
 
 font:
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
@@ -71,3 +72,42 @@ font:
     glyphs:
       - " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
       - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
+
+  # ── Bold screensaver set (DejaVu Sans Bold) ────────────────────────────────
+  # Used by the screensaver: big clock + Georgian date + weather readout.
+  # DejaVu Sans Bold covers the full Georgian Mkhedruli block and Latin.
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
+    id: bold_time_144
+    size: 144
+    bpp: 4
+    glyphs:
+      - "0123456789:"
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
+    id: bold_geo_32
+    size: 32
+    bpp: 4
+    glyphs:
+      - "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
+    id: bold_72
+    size: 72
+    bpp: 4
+    glyphs:
+      - "0123456789°-"
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
+    id: bold_24
+    size: 24
+    bpp: 4
+    glyphs:
+      - "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
+    id: bold_20
+    size: 20
+    bpp: 4
+    glyphs:
+      - "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"

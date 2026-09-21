@@ -137,6 +137,7 @@ Targets: `Display01.yaml`, `Display02.yaml` on ESP32-S3 (ST7701S 480×480, FT633
 | Weather strip on Home header | Medium | Low | `weather/weather_today.yaml` logic exists but is unused |
 | Scene/Quick-info overlay on long-press tiles | Medium | Med | The Settings tile already does “Tap · hold for info” — copy the pattern |
 | Per-page theme previews in Settings | Low | Med | Nice, but the three galleries in the README cover it |
+| Screensaver text sizes / Georgian date | Done | - | Clock is now 144px bold (458/480 px wide), date 32px bold in Georgian (`სამშაბათი, 28 სექტემბერი`), weather readout bumped to 72/24/20px bold (DejaVu Sans Bold) |
 | Battery/voltage tile (if OspreyPi exposes ADC) | Low | Med | Check `DEVICE_SPECS.md` before promising UI space |
 | Adaptive brightness from an ALS sensor | High | Med | Settings already has Day/Evening/Night — an ALS would close the loop |
 | `improv_serial` / `esp32_improv` for first-run Wi-Fi | Medium | Low | Nicer than the fallback AP QR alone (keep both) |
