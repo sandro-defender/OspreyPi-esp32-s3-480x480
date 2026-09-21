@@ -32,17 +32,18 @@ jobs:
       - name: Validate Display01
         run: |
           set -o pipefail
-          esphome config Display01.yaml 2>&1 | tee /tmp/display01.log
+          esphome config Display01.yaml 2>&1 | tee /tmp/display01.log || (cat /tmp/display01.log >> $GITHUB_STEP_SUMMARY; echo "---FAILED---" >> $GITHUB_STEP_SUMMARY; exit 1)
       - name: Validate Display02
         run: |
           set -o pipefail
-          esphome config Display02.yaml 2>&1 | tee /tmp/display02.log
-      - name: Upload logs on failure
+          esphome config Display02.yaml 2>&1 | tee /tmp/display02.log || (cat /tmp/display02.log >> $GITHUB_STEP_SUMMARY; echo "---FAILED---" >> $GITHUB_STEP_SUMMARY; exit 1)
+      - name: Show summary on failure
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: esphome-logs
-          path: /tmp/*.log
+        run: |
+          echo "## Display01 log" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/display01.log >> $GITHUB_STEP_SUMMARY || true
+          echo "## Display02 log" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/display02.log >> $GITHUB_STEP_SUMMARY || true
 
   release:
     name: Publish GitHub release
