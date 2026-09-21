@@ -1,0 +1,27 @@
+---
+# Boot and idle handling - included AFTER dashboard so all theme scripts exist
+# This fixes forward ID references: on_boot calls apply_display_theme etc.
+lvgl:
+  on_boot:
+    - script.execute: apply_display_theme
+    - script.execute: apply_display_rotation
+    - script.execute: apply_display_brightness
+  on_idle:
+    timeout: !lambda |-
+      float seconds = id(screen_timeout).state;
+      if (std::isnan(seconds) || seconds < 5.0f) seconds = ${screen_timeout_default};
+      return static_cast<uint32_t>(seconds * 1000.0f);
+    then:
+      - if:
+          condition:
+            switch.is_on: screensaver_enabled
+          then:
+            - lvgl.page.show: screensaver_page
+            - script.execute: time_update
+            - if:
+                condition:
+                  lambda: 'return id(brightness_mode).current_option() == "Night";'
+                then:
+                  - light.turn_off: display_backlight
+                else:
+                  - script.execute: apply_display_brightness

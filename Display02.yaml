@@ -18,6 +18,7 @@ substitutions:
 packages:
   display: !include esphome-modular-lvgl-buttons/common/display.yaml
   dashboard: !include esphome-modular-lvgl-buttons/dashboards/home.yaml
+  boot: !include esphome-modular-lvgl-buttons/common/lvgl_boot.yaml
 
 api:
   encryption:
