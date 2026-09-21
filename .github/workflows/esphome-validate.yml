@@ -30,9 +30,19 @@ jobs:
           longitude: 44.8271
           EOF
       - name: Validate Display01
-        run: esphome config Display01.yaml
+        run: |
+          esphome config Display01.yaml 2>&1 | tee /tmp/display01.log
+          cat /tmp/display01.log
       - name: Validate Display02
-        run: esphome config Display02.yaml
+        run: |
+          esphome config Display02.yaml 2>&1 | tee /tmp/display02.log
+          cat /tmp/display02.log
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esphome-logs
+          path: /tmp/*.log
 
   release:
     name: Publish GitHub release
