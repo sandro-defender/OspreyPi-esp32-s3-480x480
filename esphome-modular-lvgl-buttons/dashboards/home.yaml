@@ -239,6 +239,11 @@ lvgl:
               # halo colour follows the state (mint / amber / red).
               - obj:
                   id: dashboard_status_halo
+                  # FIX v2.5: the 68px halo disc (and the status icon inside)
+                  # used to be clickable, so taps and swipes starting on the
+                  # middle of the Settings card died on this obj and never
+                  # reached the button. Pass touches through to the parent.
+                  clickable: false
                   align: center
                   y: -4
                   width: 68
@@ -251,6 +256,7 @@ lvgl:
                   widgets:
                     - image:
                         id: dashboard_connection_status
+                        clickable: false
                         align: center
                         src: conn_status_connecting
               - label:

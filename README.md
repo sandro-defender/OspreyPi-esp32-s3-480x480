@@ -30,6 +30,8 @@ testing). Full details: [docs/CHANGELOG-v2.5-PERFORMANCE.md](docs/CHANGELOG-v2.5
 - **Quick taps no longer dropped** on the Light page (`min_length` 50 ms → 10 ms)
 - **Wake script gated** — the brightness service call no longer restarts on
   every touch while the panel is already awake
+- **Homescreen fix: the status halo/icon on the Settings card no longer
+  swallow taps and swipes** (`clickable: false` — touches pass through)
 - **Page transitions 300 ms → 150 ms** (Home ↔ AC ↔ Light swipe ring)
 - **WiFi `fast_connect`** — boot associates in ~1–2 s instead of ~5–8 s
 - **API batch delay 50 ms → 20 ms**, UART logger fully disabled (`baud_rate: 0`)
