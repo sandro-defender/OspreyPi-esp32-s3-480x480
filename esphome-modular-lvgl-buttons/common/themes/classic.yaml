@@ -1,0 +1,52 @@
+---
+# ── Classic theme ────────────────────────────────────────────────────────────
+# Original look: pure black background, slate blue-gray tiles, single orange
+# accent reserved for the ACTIVE tile (border + icon), 14px radius, flat.
+# Ref: docs/images/theme_classic_*.png
+
+substitutions:
+  classic_bg: "0x000000"
+  classic_page_bg: "0x000000"
+  classic_settings_bg: "0x11151C"
+  classic_info_bg: "0x11151C"
+  classic_button_bg: "0x343645"
+  classic_button_off: "0x2A2E3A"
+  classic_button_active: "0xFF9F1C"
+  classic_text: "0xFFFFFF"
+  classic_text_dim: "0x9BA2BC"
+  classic_text_muted: "0xBBBBBB"
+  classic_row_bg: "0x1E232E"
+  classic_row_bg_alt: "0x151A24"
+  classic_selector_off: "0x3A4352"
+  classic_radius: "14"
+  classic_radius_small: "8"
+  classic_pad: "10"
+
+lvgl:
+  style_definitions:
+    - id: theme_classic_page
+      bg_color: 0x000000
+      bg_opa: cover
+      text_color: white
+      pad_all: 4
+      border_width: 0
+      shadow_width: 0
+      radius: 0
+
+    - id: theme_classic_button
+      bg_color: 0x343645
+      bg_opa: cover
+      text_color: white
+      radius: 14
+      border_width: 0
+      shadow_width: 0
+      pad_all: 10
+
+    - id: theme_classic_button_active
+      bg_color: 0xFF9F1C
+      bg_opa: cover
+      text_color: white
+      radius: 14
+      border_width: 0
+      shadow_width: 0
+      pad_all: 10

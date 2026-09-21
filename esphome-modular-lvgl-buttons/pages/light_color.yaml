@@ -1,4 +1,19 @@
 ---
+# ── WLED / light page (rewritten) ────────────────────────────────────────────
+# Matches the mockup (docs/images/screen_home.png): "Bed LEDs" title, labeled
+# vertical Brightness (orange) and Saturation (red) sliders with live %, a
+# glowing bulb (tap = toggle, long-press = switch HS/white mode) and a real
+# 12-segment hue ring with an adjustable knob marker. HOME button at bottom.
+#
+# Rewrite notes vs the old version:
+#   * The fake "rainbow circle with punched hole" is gone — the wheel is now
+#     12 solid hue arc segments (+6 white-temperature segments), so it reads
+#     as a proper color ring and needs no background-colored hole punch.
+#     That also makes it work unchanged on the Daylight theme.
+#   * Geometry fixed: the old ring container ran ~105 px off the right edge.
+#   * All chrome (title, captions, tracks, HOME button) is painted by the
+#     button_7_apply_theme script, so switching themes restyles this page too.
+
 globals:
   - id: ${widget_name}_current_hue
     type: float
@@ -20,7 +35,6 @@ globals:
     type: bool
     initial_value: 'false'
 
-  # New global variables to store supported modes
   - id: ${widget_name}_supports_color_temp
     type: bool
     initial_value: 'false'
@@ -37,7 +51,6 @@ globals:
     type: bool
     initial_value: 'false'
 
-  # Global to store calculated color for thread-safe update
   - id: ${widget_name}_calc_color
     type: int
     initial_value: '0'
@@ -48,15 +61,13 @@ binary_sensor:
     id: ${widget_name}_light_state
     entity_id: "${light_entity}"
     on_state:
-  # On light state change, update the widget color
       - script.execute: ${widget_name}_update_lightbulb_color
 
-  # Light button control
+  # Bulb control: short press toggles the light, long press switches mode
   - platform: lvgl
     id: ${widget_name}_light_btn_control
     widget: ${widget_name}_lightbulb_btn
     on_click:
-  # SHORT press (50-500ms) - ALWAYS toggles the light
       - min_length: 50ms
         max_length: 500ms
         then:
@@ -64,31 +75,21 @@ binary_sensor:
               action: light.toggle
               data:
                 entity_id: "${light_entity}"
-          - lambda: |-
-              ESP_LOGD("light_btn", "Short press - toggling light");
-      
-  # LONG press (800-3000ms) - switch mode (only if supported)
       - min_length: 800ms
         max_length: 3000ms
         then:
           - if:
               condition:
                 lambda: |-
-                  // Switch mode only if the light supports BOTH modes
-                  return id(${widget_name}_supports_color_temp) && 
+                  return id(${widget_name}_supports_color_temp) &&
                          (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb));
               then:
                 - lambda: |-
                     id(${widget_name}_is_temp_mode) = !id(${widget_name}_is_temp_mode);
-                    ESP_LOGD("light_btn", "Long press - switching mode to: %s", 
-                      id(${widget_name}_is_temp_mode) ? "ColorTemp" : "HS");
                 - script.execute: ${widget_name}_toggle_gradient
-              else:
-                - lambda: |-
-                    ESP_LOGD("light_btn", "Long press ignored - only one color mode supported");
 
 sensor:
-  # Brightness sensor
+  # Brightness (0..255)
   - id: ${widget_name}_light_rgb_sensor_brightness
     platform: template
     internal: true
@@ -118,19 +119,19 @@ sensor:
                   char b[8]; snprintf(b, sizeof(b), "%d%%", (int) (x * 100.0f / 255.0f)); return std::string(b);
             - script.execute: ${widget_name}_update_lightbulb_color
 
-  # Color temp sensor
+  # Color temperature (Kelvin)
   - id: ${widget_name}_light_sensor_color_temp
     platform: template
     internal: true
     lambda: |-
       if (id(${widget_name}_color_temp_raw).state == "None" || id(${widget_name}_color_temp_raw).state == "") {
-        return 2700.0f; // Default warm white
+        return 3000.0f;
       }
       auto val = parse_number<float>(id(${widget_name}_color_temp_raw).state);
       if (val.has_value()) {
         return val.value();
       }
-      return 2700.0f;
+      return 3000.0f;
     on_value:
       - if:
           condition:
@@ -142,8 +143,6 @@ sensor:
             - lvgl.arc.update:
                 id: ${widget_name}_light_arc_color_temp
                 value: !lambda return int(x);
-            # Update the light color when temperature changes from HA
-            # But only if we're in color_temp mode
             - if:
                 condition:
                   lambda: 'return id(${widget_name}_is_temp_mode);'
@@ -151,7 +150,7 @@ sensor:
                   - script.execute: ${widget_name}_update_lightbulb_color
 
 text_sensor:
-  # Raw Brightness sensor (to handle None)
+  # Raw brightness attribute
   - platform: homeassistant
     id: ${widget_name}_brightness_raw
     entity_id: "${light_entity}"
@@ -161,7 +160,7 @@ text_sensor:
       then:
         - component.update: ${widget_name}_light_rgb_sensor_brightness
 
-  # Raw Color Temp sensor (to handle None)
+  # Raw color temperature attribute
   - platform: homeassistant
     id: ${widget_name}_color_temp_raw
     entity_id: "${light_entity}"
@@ -171,7 +170,7 @@ text_sensor:
       then:
         - component.update: ${widget_name}_light_sensor_color_temp
 
-  # HS Color sensor
+  # HS color attribute "(h, s)"
   - platform: homeassistant
     id: ${widget_name}_light_sensor_hs
     entity_id: "${light_entity}"
@@ -196,11 +195,10 @@ text_sensor:
             - lvgl.arc.update:
                 id: ${widget_name}_light_arc_hue
                 value: !lambda return id(${widget_name}_current_hue);
-            # Update saturation slider only if it is visible
             - if:
                 condition:
                   lambda: |-
-                    return !id(${widget_name}_is_temp_mode) && 
+                    return !id(${widget_name}_is_temp_mode) &&
                            (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb));
                 then:
                   - lvgl.slider.update:
@@ -210,121 +208,57 @@ text_sensor:
                       id: ${widget_name}_saturation_value
                       text: !lambda |-
                         char b[8]; snprintf(b, sizeof(b), "%d%%", (int) id(${widget_name}_current_saturation)); return std::string(b);
-            
-            # Update the light color when HS changes from HA
-            # But only if we're in HS mode
             - if:
                 condition:
                   lambda: 'return !id(${widget_name}_is_temp_mode);'
                 then:
                   - script.execute: ${widget_name}_update_lightbulb_color
 
-  # Determine supported color modes
-  # This sensor reads the supported_color_modes attribute and determines the light's capabilities
+  # Capability detection
   - platform: homeassistant
     id: ${widget_name}_light_supported_modes
     entity_id: "${light_entity}"
     attribute: supported_color_modes
     on_value:
       - lambda: |-
-          // Parse the string with supported modes
           std::string modes = x;
-          
-          // Check presence of each mode
           id(${widget_name}_supports_color_temp) = (modes.find("color_temp") != std::string::npos);
           id(${widget_name}_supports_hs) = (modes.find("hs") != std::string::npos);
           id(${widget_name}_supports_rgb) = (modes.find("rgb") != std::string::npos);
-          
           id(${widget_name}_supports_brightness) = (
             modes.find("brightness") != std::string::npos ||
             id(${widget_name}_supports_hs) ||
             id(${widget_name}_supports_rgb) ||
             id(${widget_name}_supports_color_temp)
           );
-          
-          ESP_LOGD("light_widget", "═════════════════════════════════════════════════");
-          ESP_LOGD("light_widget", "Supported modes: %s", modes.c_str());
-          ESP_LOGD("light_widget", "Color temp: %d, HS: %d, RGB: %d, Brightness: %d",
-            id(${widget_name}_supports_color_temp),
-            id(${widget_name}_supports_hs),
-            id(${widget_name}_supports_rgb),
-            id(${widget_name}_supports_brightness)
-          );
-          
-          // Smart selection of the initial mode
-          
           if (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb)) {
-            // If HS/RGB is supported - start with it (more versatile)
             id(${widget_name}_is_temp_mode) = false;
-            ESP_LOGD("light_widget", "→ Initial mode: HS (preferred for color lights)");
           } else if (id(${widget_name}_supports_color_temp)) {
-            // If only ColorTemp is supported - use that
             id(${widget_name}_is_temp_mode) = true;
-            ESP_LOGD("light_widget", "→ Initial mode: ColorTemp (only option)");
-          } else {
-            // If nothing is supported - default
-            id(${widget_name}_is_temp_mode) = false;
-            ESP_LOGD("light_widget", "→ Initial mode: N/A (no color modes)");
           }
-          
-          ESP_LOGD("light_widget", "═════════════════════════════════════════════════");
       - script.execute: ${widget_name}_update_widget_visibility
 
   - platform: homeassistant
     id: ${widget_name}_light_name
     entity_id: "${light_entity}"
     attribute: friendly_name
-    on_value: 
+    on_value:
       then:
         - lvgl.label.update:
             id: ${widget_name}_light_name_label
             text: !lambda return x;
 
 lvgl:
-
-  gradients:
-    - id: ${widget_name}_hue_gradient
-      direction: ver
-      stops:
-        - color: 0xFF3B00
-          position: 0
-        - color: 0xFFD400
-          position: 42
-        - color: 0x00E676
-          position: 84
-        - color: 0x00E5FF
-          position: 127
-        - color: 0x2979FF
-          position: 169
-        - color: 0xD500F9
-          position: 212
-        - color: 0xFF1744
-          position: 255
-
-    - id: ${widget_name}_color_temp_gradient
-      direction: ver
-      stops:
-        - color: 0xA0C8FF
-          position: 0
-        - color: 0xE0F7FF
-          position: 80
-        - color: 0xFFFFFF
-          position: 128
-        - color: 0xFFFFE0
-          position: 175
-        - color: 0xFFD6A0
-          position: 255
-
   pages:
     - id: ${widget_name}_light_page
       bg_color: 0x161B26
       bg_opa: cover
       widgets:
-        # ── Title (mockup: "Bed LEDs" centered on top) ─────────────────
+        # ── Title ────────────────────────────────────────────────────────
         - label:
             id: ${widget_name}_light_name_label
             align: top_mid
-            y: 14
+            y: 12
             width: 300
             height: 34
             long_mode: dot
@@ -333,41 +267,43 @@ lvgl:
             text_color: white
             text: "Bed LEDs"
 
-        # ── Brightness column: caption / glowing vertical slider / % ──
+        # ── Brightness column (caption / slider / %) ─────────────────────
         - obj:
             id: ${widget_name}_light_brightness_background
             align: center
-            x: -180
-            y: 12
-            width: 68
-            height: 306
-            radius: 18
+            x: -186
+            y: 18
+            width: 66
+            height: 300
             bg_opa: transp
             pad_all: 0
             border_width: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: column
               flex_align_main: center
               flex_align_cross: center
-              pad_row: 6
+              pad_row: 8
             widgets:
               - label:
+                  id: ${widget_name}_brightness_caption
                   text: "Brightness"
                   text_font: nunito_14
                   text_color: 0x9BA2BC
                   text_align: center
               - slider:
                   id: ${widget_name}_light_brightness_slider
-                  width: 36
-                  height: 224
-                  radius: 18
+                  width: 34
+                  height: 218
+                  radius: 17
                   bg_color: 0x0F141E
                   min_value: 2
                   max_value: 255
+                  value: 128
                   indicator:
                     bg_color: 0xFF8C00
-                    radius: 14
+                    radius: 15
                   knob:
                     width: 24
                     height: 24
@@ -398,41 +334,43 @@ lvgl:
                   text_color: 0xFF8C00
                   text_align: center
 
-        # ── Saturation column (red accent like the mockup) ─────────────
+        # ── Saturation column (red accent like the mockup) ───────────────
         - obj:
             id: ${widget_name}_light_saturation_background
             align: center
-            x: -112
-            y: 12
-            width: 68
-            height: 306
-            radius: 18
+            x: -104
+            y: 18
+            width: 66
+            height: 300
             bg_opa: transp
             pad_all: 0
             border_width: 0
+            scrollable: false
             layout:
               type: flex
               flex_flow: column
               flex_align_main: center
               flex_align_cross: center
-              pad_row: 6
+              pad_row: 8
             widgets:
               - label:
+                  id: ${widget_name}_saturation_caption
                   text: "Saturation"
                   text_font: nunito_14
                   text_color: 0x9BA2BC
                   text_align: center
               - slider:
                   id: ${widget_name}_light_saturation_slider
-                  width: 36
-                  height: 224
-                  radius: 18
+                  width: 34
+                  height: 218
+                  radius: 17
                   bg_color: 0x0F141E
                   min_value: 0
                   max_value: 100
+                  value: 0
                   indicator:
                     bg_color: 0xFF1744
-                    radius: 14
+                    radius: 15
                   knob:
                     width: 24
                     height: 24
@@ -467,180 +405,473 @@ lvgl:
                   text_color: 0xFF1744
                   text_align: center
 
-        # ── Lightbulb (tap = toggle, long press = switch color mode) ──
+        # ── Bulb: glowing disc (recolored live) + bulb image ─────────────
+        # tap = toggle, long press = switch HS / white mode
         - obj:
             id: ${widget_name}_lightbulb_btn
             align: center
-            x: -5
-            y: -40
-            width: 150
-            height: 150
-            radius: 75
+            x: -18
+            y: -34
+            width: 130
+            height: 160
+            radius: 20
             bg_opa: transp
             pad_all: 0
             border_width: 0
+            scrollable: false
+            clickable: true
             widgets:
-              # glowing disc behind the glass — recolored live
               - obj:
                   id: ${widget_name}_lightbulb_color
                   clickable: false
                   x: 0
-                  y: -28
-                  width: 70
-                  height: 70
-                  radius: 35
+                  y: -24
+                  width: 84
+                  height: 84
+                  radius: 42
                   align: center
-                  bg_color: light_gray
+                  bg_color: 0x999999
                   bg_opa: cover
                   border_width: 0
-                  border_opa: transp
+                  shadow_width: 0
                   shadow_opa: transp
               - image:
                   id: ${widget_name}_lightbulb_image
                   x: 0
-                  y: 22
+                  y: 26
                   align: center
                   src: lightbulb_image
 
-        # ── Color ring: big rainbow "C" with the gap on the left ──────
-        - obj:
-            id: ${widget_name}_light_bg_main_temperature
+        # ── Hue ring: 12 solid segments (the actual color wheel) ─────────
+        # Sweep 225° → 135° (270° total, gap on the left like the mockup).
+        # Hue h sits at angle 225 + h * 0.75; each segment spans 30° of hue.
+        - arc:
+            id: ${widget_name}_hue_seg_0
             align: center
-            x: 175
-            y: 5
-            width: 340
-            height: 340
-            bg_opa: transp
+            x: 80
+            y: -14
+            width: 250
+            height: 250
             clickable: false
-            scrollable: false
-            border_width: 0
-            pad_all: 0
-            widgets:
-              - obj:
-                  id: ${widget_name}_hue_gradient_obj
-                  hidden: true
-                  align: center
-                  width: 320
-                  height: 320
-                  radius: 160
-                  bg_grad: ${widget_name}_hue_gradient
-                  bg_grad_dir: ver
-                  bg_opa: cover
-                  border_width: 0
-                  pad_all: 0
-                  clickable: false
-              - obj:
-                  id: ${widget_name}_color_temp_gradient_obj
-                  align: center
-                  width: 320
-                  height: 320
-                  radius: 160
-                  bg_grad: ${widget_name}_color_temp_gradient
-                  bg_grad_dir: ver
-                  bg_opa: cover
-                  border_width: 0
-                  pad_all: 0
-                  clickable: false
-              # inner disc punches the ring hole
-              - obj:
-                  align: center
-                  width: 250
-                  height: 250
-                  radius: 125
-                  bg_color: 0x161B26
-                  bg_opa: cover
-                  border_width: 0
-                  pad_all: 0
-                  clickable: false
-              # interactive hue arc (invisible track, white knob marker)
-              - arc:
-                  id: ${widget_name}_light_arc_hue
-                  hidden: true
-                  clickable: true
-                  adjustable: true
-                  adv_hittest: true
-                  align: center
-                  width: 320
-                  height: 320
-                  start_angle: 225
-                  end_angle: 135
-                  min_value: 0
-                  max_value: 360
-                  value: 265
-                  arc_width: 34
-                  arc_opa: transp
-                  indicator:
-                    arc_opa: transp
-                    arc_width: 34
-                  knob:
-                    width: 26
-                    height: 26
-                    radius: 13
-                    bg_color: 0x161B26
-                    border_width: 3
-                    border_color: white
-                    pad_all: 0
-                  on_value:
-                    - globals.set:
-                        id: ${widget_name}_current_hue
-                        value: !lambda return x;
-                    - script.execute: ${widget_name}_update_lightbulb_color
-                  on_release:
-                    - homeassistant.action:
-                        action: light.turn_on
-                        data:
-                          entity_id: "${light_entity}"
-                        data_template:
-                          hs_color: "{{ (hue|float, sat|float)|list }}"
-                        variables:
-                          hue: !lambda return x;
-                          sat: !lambda return id(${widget_name}_current_saturation);
-              # interactive white-temperature arc
-              - arc:
-                  id: ${widget_name}_light_arc_color_temp
-                  clickable: true
-                  adjustable: true
-                  adv_hittest: true
-                  align: center
-                  width: 320
-                  height: 320
-                  start_angle: 225
-                  end_angle: 135
-                  min_value: 2000
-                  max_value: 6500
-                  value: 3000
-                  arc_width: 34
-                  arc_opa: transp
-                  indicator:
-                    arc_opa: transp
-                    arc_width: 34
-                  knob:
-                    width: 26
-                    height: 26
-                    radius: 13
-                    bg_color: 0x161B26
-                    border_width: 3
-                    border_color: white
-                    pad_all: 0
-                  on_value:
-                    - globals.set:
-                        id: ${widget_name}_current_color_temp
-                        value: !lambda return x;
-                    - script.execute: ${widget_name}_update_lightbulb_color
-                  on_release:
-                    - homeassistant.action:
-                        action: light.turn_on
-                        data:
-                          entity_id: "${light_entity}"
-                          color_temp_kelvin: !lambda return int(x);
+            adjustable: false
+            start_angle: 227
+            end_angle: 245
+            arc_color: 0xFF4000
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_1
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 250
+            end_angle: 268
+            arc_color: 0xFF8000
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_2
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 272
+            end_angle: 290
+            arc_color: 0xBFFF00
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_3
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 295
+            end_angle: 313
+            arc_color: 0x40FF00
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_4
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 317
+            end_angle: 335
+            arc_color: 0x00FFBF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_5
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 340
+            end_angle: 358
+            arc_color: 0x00FF40
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_6
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 2
+            end_angle: 20
+            arc_color: 0x00BFFF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_7
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 25
+            end_angle: 43
+            arc_color: 0x0040FF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_8
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 47
+            end_angle: 65
+            arc_color: 0xBF00FF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_9
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 70
+            end_angle: 88
+            arc_color: 0x4000FF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_10
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 92
+            end_angle: 110
+            arc_color: 0xFF00BF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_hue_seg_11
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 115
+            end_angle: 133
+            arc_color: 0xFF0040
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            min_value: 0
+            max_value: 100
+            value: 0
 
-        # ── HOME button (mockup: rounded square + HOME caption) ───────
+        # ── White-temperature ring: 6 segments, cool → warm ──────────────
+        - arc:
+            id: ${widget_name}_temp_seg_0
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 227
+            end_angle: 268
+            arc_color: 0xA6CBFF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_temp_seg_1
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 272
+            end_angle: 313
+            arc_color: 0xC4E0FF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_temp_seg_2
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 317
+            end_angle: 358
+            arc_color: 0xE8F4FF
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_temp_seg_3
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 2
+            end_angle: 43
+            arc_color: 0xFFF4D6
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_temp_seg_4
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 47
+            end_angle: 88
+            arc_color: 0xFFE0A6
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+        - arc:
+            id: ${widget_name}_temp_seg_5
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: false
+            adjustable: false
+            start_angle: 92
+            end_angle: 133
+            arc_color: 0xFFC880
+            arc_width: 32
+            arc_rounded: false
+            arc_opa: cover
+            hidden: true
+            min_value: 0
+            max_value: 100
+            value: 0
+
+        # ── Interactive hue selector (invisible track, knob marker) ──────
+        - arc:
+            id: ${widget_name}_light_arc_hue
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: true
+            adjustable: true
+            adv_hittest: true
+            start_angle: 225
+            end_angle: 135
+            min_value: 0
+            max_value: 360
+            value: 265
+            arc_width: 32
+            arc_opa: transp
+            indicator:
+              arc_opa: transp
+              arc_width: 32
+            knob:
+              width: 26
+              height: 26
+              radius: 13
+              bg_color: 0x161B26
+              border_width: 3
+              border_color: white
+              pad_all: 0
+            on_value:
+              - globals.set:
+                  id: ${widget_name}_current_hue
+                  value: !lambda return x;
+              - script.execute: ${widget_name}_update_lightbulb_color
+            on_release:
+              - homeassistant.action:
+                  action: light.turn_on
+                  data:
+                    entity_id: "${light_entity}"
+                  data_template:
+                    hs_color: "{{ (hue|float, sat|float)|list }}"
+                  variables:
+                    hue: !lambda return x;
+                    sat: !lambda return id(${widget_name}_current_saturation);
+
+        # ── Interactive white-temperature selector ───────────────────────
+        - arc:
+            id: ${widget_name}_light_arc_color_temp
+            align: center
+            x: 80
+            y: -14
+            width: 250
+            height: 250
+            clickable: true
+            adjustable: true
+            adv_hittest: true
+            start_angle: 225
+            end_angle: 135
+            min_value: 2000
+            max_value: 6500
+            value: 3000
+            arc_width: 32
+            arc_opa: transp
+            hidden: true
+            indicator:
+              arc_opa: transp
+              arc_width: 32
+            knob:
+              width: 26
+              height: 26
+              radius: 13
+              bg_color: 0x161B26
+              border_width: 3
+              border_color: white
+              pad_all: 0
+            on_value:
+              - globals.set:
+                  id: ${widget_name}_current_color_temp
+                  value: !lambda return x;
+              - script.execute: ${widget_name}_update_lightbulb_color
+            on_release:
+              - homeassistant.action:
+                  action: light.turn_on
+                  data:
+                    entity_id: "${light_entity}"
+                    color_temp_kelvin: !lambda return int(x);
+
+        # ── HOME button (mockup: rounded square + HOME caption) ──────────
         - button:
             id: ${widget_name}_home_button
             align: bottom_mid
             y: -52
-            width: 58
-            height: 58
+            width: 56
+            height: 56
             radius: 14
             bg_color: 0x2A3142
             border_width: 0
@@ -654,6 +885,7 @@ lvgl:
             on_click:
               - lvgl.page.show: main_page
         - label:
+            id: ${widget_name}_home_caption
             align: bottom_mid
             y: -10
             text: "HOME"
@@ -661,35 +893,72 @@ lvgl:
             text_color: 0x9BA2BC
 
 script:
-  # ═══════════════════════════════════════════════════════════════════════════
-  # SCRIPT: Toggle between color_temp and hs modes
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ── Switch between hue ring and white-temperature ring ─────────────────
   - id: ${widget_name}_toggle_gradient
     then:
       - if:
           condition:
             lambda: return id(${widget_name}_is_temp_mode);
           then:
-            # ─────────────────────────────────────────────────────────────────
-            # COLOR_TEMP MODE
-            # ─────────────────────────────────────────────────────────────────
-            - lvgl.widget.hide: ${widget_name}_hue_gradient_obj
+            # COLOR_TEMP mode
             - lvgl.widget.hide: ${widget_name}_light_arc_hue
-            - lvgl.widget.show: ${widget_name}_color_temp_gradient_obj
-            - lvgl.widget.show: ${widget_name}_light_arc_color_temp
             - lvgl.widget.hide: ${widget_name}_light_saturation_background
             - lvgl.obj.update:
                 id: ${widget_name}_light_brightness_background
-                x: -112
-
+                x: -104
+            - lvgl.obj.update:
+                id: ${widget_name}_lightbulb_btn
+                x: -40
+            - lambda: |-
+                for (int i = 0; i < 12; i++) {
+                  std::string n = "${widget_name}_hue_seg_" + std::to_string(i);
+                  // hide via widget calls below (ids resolved at compile time)
+                }
+            - lvgl.widget.hide: ${widget_name}_hue_seg_0
+            - lvgl.widget.hide: ${widget_name}_hue_seg_1
+            - lvgl.widget.hide: ${widget_name}_hue_seg_2
+            - lvgl.widget.hide: ${widget_name}_hue_seg_3
+            - lvgl.widget.hide: ${widget_name}_hue_seg_4
+            - lvgl.widget.hide: ${widget_name}_hue_seg_5
+            - lvgl.widget.hide: ${widget_name}_hue_seg_6
+            - lvgl.widget.hide: ${widget_name}_hue_seg_7
+            - lvgl.widget.hide: ${widget_name}_hue_seg_8
+            - lvgl.widget.hide: ${widget_name}_hue_seg_9
+            - lvgl.widget.hide: ${widget_name}_hue_seg_10
+            - lvgl.widget.hide: ${widget_name}_hue_seg_11
+            - if:
+                condition:
+                  lambda: 'return id(${widget_name}_supports_color_temp);'
+                then:
+                  - lvgl.widget.show: ${widget_name}_light_arc_color_temp
+                  - lvgl.widget.show: ${widget_name}_temp_seg_0
+                  - lvgl.widget.show: ${widget_name}_temp_seg_1
+                  - lvgl.widget.show: ${widget_name}_temp_seg_2
+                  - lvgl.widget.show: ${widget_name}_temp_seg_3
+                  - lvgl.widget.show: ${widget_name}_temp_seg_4
+                  - lvgl.widget.show: ${widget_name}_temp_seg_5
           else:
-            # ─────────────────────────────────────────────────────────────────
-            # HUE/SATURATION MODE
-            # ─────────────────────────────────────────────────────────────────
-            - lvgl.widget.hide: ${widget_name}_color_temp_gradient_obj
+            # HUE/SATURATION mode
             - lvgl.widget.hide: ${widget_name}_light_arc_color_temp
-            - lvgl.widget.show: ${widget_name}_hue_gradient_obj
+            - lvgl.widget.hide: ${widget_name}_temp_seg_0
+            - lvgl.widget.hide: ${widget_name}_temp_seg_1
+            - lvgl.widget.hide: ${widget_name}_temp_seg_2
+            - lvgl.widget.hide: ${widget_name}_temp_seg_3
+            - lvgl.widget.hide: ${widget_name}_temp_seg_4
+            - lvgl.widget.hide: ${widget_name}_temp_seg_5
             - lvgl.widget.show: ${widget_name}_light_arc_hue
+            - lvgl.widget.show: ${widget_name}_hue_seg_0
+            - lvgl.widget.show: ${widget_name}_hue_seg_1
+            - lvgl.widget.show: ${widget_name}_hue_seg_2
+            - lvgl.widget.show: ${widget_name}_hue_seg_3
+            - lvgl.widget.show: ${widget_name}_hue_seg_4
+            - lvgl.widget.show: ${widget_name}_hue_seg_5
+            - lvgl.widget.show: ${widget_name}_hue_seg_6
+            - lvgl.widget.show: ${widget_name}_hue_seg_7
+            - lvgl.widget.show: ${widget_name}_hue_seg_8
+            - lvgl.widget.show: ${widget_name}_hue_seg_9
+            - lvgl.widget.show: ${widget_name}_hue_seg_10
+            - lvgl.widget.show: ${widget_name}_hue_seg_11
             - if:
                 condition:
                   lambda: 'return id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb);'
@@ -697,52 +966,35 @@ script:
                   - lvgl.widget.show: ${widget_name}_light_saturation_background
                   - lvgl.obj.update:
                       id: ${widget_name}_light_brightness_background
-                      x: -180
+                      x: -186
+                  - lvgl.obj.update:
+                      id: ${widget_name}_lightbulb_btn
+                      x: -18
+                else:
+                  - lvgl.obj.update:
+                      id: ${widget_name}_light_brightness_background
+                      x: -60
+                  - lvgl.obj.update:
+                      id: ${widget_name}_lightbulb_btn
+                      x: -18
 
-  # ═══════════════════════════════════════════════════════════════════════════
-  # SCRIPT: Update the lightbulb widget color
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ── Recolor the bulb glow (and its halo) from hue/sat/brightness ───────
   - id: ${widget_name}_update_lightbulb_color
     then:
       - lambda: |-
           int r = 255, g = 255, b = 255;
-          
-          // ═══════════════════════════════════════════════════════════════════
-          // CHECK: Does the light support color modes?
-          // ═══════════════════════════════════════════════════════════════════
-          bool has_color_modes = id(${widget_name}_supports_hs) || 
-                                 id(${widget_name}_supports_rgb) || 
+          bool has_color_modes = id(${widget_name}_supports_hs) ||
+                                 id(${widget_name}_supports_rgb) ||
                                  id(${widget_name}_supports_color_temp);
-          
-          // ═══════════════════════════════════════════════════════════════════
-          // CHECK: Is the light turned on?
-          // ═══════════════════════════════════════════════════════════════════
           bool is_light_on = id(${widget_name}_light_state).state;
-          
+
           if (!is_light_on) {
-            // ═════════════════════════════════════════════════════════════════
-            // LIGHT IS OFF -> GREY COLOR (regardless of mode)
-            // ═════════════════════════════════════════════════════════════════
-            r = 153;  // 60% от 255
-            g = 153;
-            b = 153;
-            
+            // OFF -> neutral gray, no halo
+            r = 140; g = 146; b = 158;
           } else if (has_color_modes) {
-            // ═════════════════════════════════════════════════════════════════
-            // MODE 1: LIGHT ON + COLOR SUPPORTED (HS/RGB/ColorTemp)
-            // ═════════════════════════════════════════════════════════════════
-            
             if (id(${widget_name}_is_temp_mode)) {
-              // ───────────────────────────────────────────────────────────────
-              // SUBMODE: COLOR TEMPERATURE (Color Temp)
-              // Convert Kelvin → RGB
-              // ───────────────────────────────────────────────────────────────
+              // Kelvin -> RGB (Tanner Helland)
               float temp = id(${widget_name}_current_color_temp) / 100.0;
-              
-              // Algorithm to convert color temperature to RGB
-              // Source: Tanner Helland algorithm
-              
-              // Red channel
               if (temp <= 66) {
                 r = 255;
               } else {
@@ -750,8 +1002,6 @@ script:
                 r = 329.698727446 * pow(r, -0.1332047592);
                 r = (r < 0) ? 0 : ((r > 255) ? 255 : r);
               }
-              
-              // Green channel
               if (temp <= 66) {
                 g = temp;
                 g = 99.4708025861 * log(g) - 161.1195681661;
@@ -760,8 +1010,6 @@ script:
                 g = 288.1221695283 * pow(g, -0.0755148492);
               }
               g = (g < 0) ? 0 : ((g > 255) ? 255 : g);
-              
-              // Blue channel
               if (temp >= 66) {
                 b = 255;
               } else if (temp <= 19) {
@@ -770,104 +1018,58 @@ script:
                 b = temp - 10;
                 b = 138.5177312231 * log(b) - 305.0447927307;
                 b = (b < 0) ? 0 : ((b > 255) ? 255 : b);
-              }            
-              
+              }
             } else {
-              // ───────────────────────────────────────────────────────────────
-              // SUBMODE: HUE/SATURATION (HS)
-              // Convert HSV → RGB
-              // ───────────────────────────────────────────────────────────────
+              // HSV -> RGB
               float h = id(${widget_name}_current_hue);
               float s = id(${widget_name}_current_saturation) / 100.0;
-              float v = 1.0; // Use full brightness to display the color
-              
+              float v = 1.0;
               float c = v * s;
-              float x = c * (1 - fabs(fmod(h / 60.0, 2) - 1));
+              float xx = c * (1 - fabs(fmod(h / 60.0, 2) - 1));
               float m = v - c;
-              
-              float r_prime, g_prime, b_prime;
-              
-              if (h >= 0 && h < 60) {
-                r_prime = c; g_prime = x; b_prime = 0;
-              } else if (h >= 60 && h < 120) {
-                r_prime = x; g_prime = c; b_prime = 0;
-              } else if (h >= 120 && h < 180) {
-                r_prime = 0; g_prime = c; b_prime = x;
-              } else if (h >= 180 && h < 240) {
-                r_prime = 0; g_prime = x; b_prime = c;
-              } else if (h >= 240 && h < 300) {
-                r_prime = x; g_prime = 0; b_prime = c;
-              } else {
-                r_prime = c; g_prime = 0; b_prime = x;
-              }
-              
-              r = (r_prime + m) * 255;
-              g = (g_prime + m) * 255;
-              b = (b_prime + m) * 255;
-              
+              float rp, gp, bp;
+              if (h >= 0 && h < 60)      { rp = c;  gp = xx; bp = 0;  }
+              else if (h < 120)          { rp = xx; gp = c;  bp = 0;  }
+              else if (h < 180)          { rp = 0;  gp = c;  bp = xx; }
+              else if (h < 240)          { rp = 0;  gp = xx; bp = c;  }
+              else if (h < 300)          { rp = xx; gp = 0;  bp = c;  }
+              else                       { rp = c;  gp = 0;  bp = xx; }
+              r = (rp + m) * 255;
+              g = (gp + m) * 255;
+              b = (bp + m) * 255;
             }
-            
-            // ─────────────────────────────────────────────────────────────────
-            // Apply brightness scaling: 60% → 100%
-            // ─────────────────────────────────────────────────────────────────
             float real_brightness = id(${widget_name}_current_brightness) / 255.0;
-            float brightness_display = 0.6 + (real_brightness * 0.4);
-            
-            r = r * brightness_display;
-            g = g * brightness_display;
-            b = b * brightness_display;     
-            
+            float display = 0.6 + (real_brightness * 0.4);
+            r = r * display; g = g * display; b = b * display;
           } else {
-            // ═════════════════════════════════════════════════════════════════
-            // MODE 2: LIGHT ON + NO COLOR (brightness/onoff)
-            // ═════════════════════════════════════════════════════════════════
-            
-            // ───────────────────────────────────────────────────────────────
-            // LIGHT IS ON -> YELLOW COLOR (0xFFFF00)
-            // ───────────────────────────────────────────────────────────────
-            r = 255;
-            g = 255;
-            b = 0;
-            
-            // If brightness is supported - apply scaling
-            if (id(${widget_name}_supports_brightness)) {
-              float real_brightness = id(${widget_name}_current_brightness) / 255.0;
-              float brightness_display = 0.6 + (real_brightness * 0.4);
-              
-              r = r * brightness_display;
-              g = g * brightness_display;
-              b = b * brightness_display;
-              
-            } else {
-              // No brightness support - use yellow at 80%
-              r = 204; // 80% of 255
-              g = 204;
-              b = 0;
-              
-            }
+            // dimmable white light -> warm yellow
+            r = 255; g = 255; b = 0;
+            float real_brightness = id(${widget_name}_current_brightness) / 255.0;
+            float display = id(${widget_name}_supports_brightness) ? (0.6 + (real_brightness * 0.4)) : 0.8;
+            r = r * display; g = g * display; b = b * display;
           }
-          
-          // ═══════════════════════════════════════════════════════════════════
-          // APPLYING COLOR TO THE WIDGET
-          // ═══════════════════════════════════════════════════════════════════
-          
-          // Form the color as 0xRRGGBB
-          uint32_t color = (r << 16) | (g << 8) | b;
-          
-          // Store in global for thread-safe update
-          id(${widget_name}_calc_color) = color;
 
+          uint32_t color = ((uint32_t) r << 16) | ((uint32_t) g << 8) | (uint32_t) b;
+          id(${widget_name}_calc_color) = color;
       - lvgl.obj.update:
           id: ${widget_name}_lightbulb_color
           bg_color: !lambda return lv_color_hex(id(${widget_name}_calc_color));
+      - lambda: |-
+          // live halo: shadow takes the bulb color when ON, disappears when OFF
+          if (id(${widget_name}_lightbulb_color)) {
+            if (id(${widget_name}_light_state).state) {
+              lv_obj_set_style_shadow_width(id(${widget_name}_lightbulb_color), 34, 0);
+              lv_obj_set_style_shadow_opa(id(${widget_name}_lightbulb_color), LV_OPA_60, 0);
+              lv_obj_set_style_shadow_color(id(${widget_name}_lightbulb_color),
+                  lv_color_hex(id(${widget_name}_calc_color)), 0);
+            } else {
+              lv_obj_set_style_shadow_width(id(${widget_name}_lightbulb_color), 0, 0);
+            }
+          }
 
-
-  # ═══════════════════════════════════════════════════════════════════════════
-  # SCRIPT: Update widget visibility
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ── Show/hide widgets based on light capabilities ──────────────────────
   - id: ${widget_name}_update_widget_visibility
     then:
-      # ── ring only when the light has color/white modes ────────────────
       - if:
           condition:
             lambda: |-
@@ -875,124 +1077,72 @@ script:
                      id(${widget_name}_supports_rgb) ||
                      id(${widget_name}_supports_color_temp);
           then:
-            - lvgl.widget.show: ${widget_name}_light_bg_main_temperature
+            - script.execute: ${widget_name}_toggle_gradient
           else:
-            - lvgl.widget.hide: ${widget_name}_light_bg_main_temperature
-
-      # ── brightness slider ─────────────────────────────────────────────
-      - if:
-          condition:
-            lambda: 'return id(${widget_name}_supports_brightness);'
-          then:
-            - lvgl.widget.show: ${widget_name}_light_brightness_background
-            - if:
-                condition:
-                  lambda: |-
-                    return id(${widget_name}_supports_hs) ||
-                           id(${widget_name}_supports_rgb) ||
-                           id(${widget_name}_supports_color_temp);
-                then:
-                  # vertical slider on the left (sat column beside it in HS mode)
-                  - if:
-                      condition:
-                        lambda: |-
-                          return !id(${widget_name}_is_temp_mode) &&
-                                 (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb));
-                      then:
-                        - lvgl.obj.update:
-                            id: ${widget_name}_light_brightness_background
-                            align: center
-                            x: -180
-                            y: 12
-                            width: 68
-                            height: 306
-                        - lvgl.slider.update:
-                            id: ${widget_name}_light_brightness_slider
-                            width: 36
-                            height: 224
-                      else:
-                        - lvgl.obj.update:
-                            id: ${widget_name}_light_brightness_background
-                            align: center
-                            x: -112
-                            y: 12
-                            width: 68
-                            height: 306
-                        - lvgl.slider.update:
-                            id: ${widget_name}_light_brightness_slider
-                            width: 36
-                            height: 224
-                else:
-                  # no color ring → horizontal slider under the bulb
-                  - lvgl.obj.update:
-                      id: ${widget_name}_light_brightness_background
-                      align: center
-                      x: 0
-                      y: 110
-                      width: 280
-                      height: 80
-                  - lvgl.slider.update:
-                      id: ${widget_name}_light_brightness_slider
-                      width: 250
-                      height: 36
-          else:
-            - lvgl.widget.hide: ${widget_name}_light_brightness_background
-
-      # ── saturation slider (HS mode only) ─────────────────────────────
-      - if:
-          condition:
-            lambda: |-
-              return (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb)) &&
-                     !id(${widget_name}_is_temp_mode);
-          then:
-            - lvgl.widget.show: ${widget_name}_light_saturation_background
+            - lvgl.widget.hide: ${widget_name}_light_arc_hue
+            - lvgl.widget.hide: ${widget_name}_light_arc_color_temp
+            - lvgl.widget.hide: ${widget_name}_light_saturation_background
             - lvgl.obj.update:
                 id: ${widget_name}_light_brightness_background
-                x: -180
-          else:
-            - lvgl.widget.hide: ${widget_name}_light_saturation_background
+                x: -60
 
-      # ── hue ring / white ring ────────────────────────────────────────
-      - if:
-          condition:
-            lambda: |-
-              return (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb)) &&
-                     !id(${widget_name}_is_temp_mode);
-          then:
-            - lvgl.widget.show: ${widget_name}_hue_gradient_obj
-            - lvgl.widget.show: ${widget_name}_light_arc_hue
-            - lvgl.widget.hide: ${widget_name}_color_temp_gradient_obj
-            - lvgl.widget.hide: ${widget_name}_light_arc_color_temp
-          else:
-            - lvgl.widget.hide: ${widget_name}_hue_gradient_obj
-            - lvgl.widget.hide: ${widget_name}_light_arc_hue
-            - if:
-                condition:
-                  lambda: 'return id(${widget_name}_supports_color_temp) && id(${widget_name}_is_temp_mode);'
-                then:
-                  - lvgl.widget.show: ${widget_name}_color_temp_gradient_obj
-                  - lvgl.widget.show: ${widget_name}_light_arc_color_temp
-                else:
-                  - lvgl.widget.hide: ${widget_name}_color_temp_gradient_obj
-                  - lvgl.widget.hide: ${widget_name}_light_arc_color_temp
+  # ── Theme-aware repaint of this page (Classic/Modern/Perf/Daylight) ────
+  - id: ${widget_name}_apply_theme
+    then:
+      - lambda: |-
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme = "Classic";
+          bool day = (theme == "Daylight");
+          bool perf = (theme == "Performance");
 
-      # ── automatic mode selection when only one mode exists ───────────
-      - if:
-          condition:
-            lambda: |-
-              return !(id(${widget_name}_supports_color_temp) &&
-                      (id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb)));
-          then:
-            - if:
-                condition:
-                  lambda: 'return id(${widget_name}_supports_hs) || id(${widget_name}_supports_rgb);'
-                then:
-                  - lambda: 'id(${widget_name}_is_temp_mode) = false;'
-                  - script.execute: ${widget_name}_toggle_gradient
-                else:
-                  - if:
-                      condition:
-                        lambda: 'return id(${widget_name}_supports_color_temp);'
-                      then:
-                        - lambda: 'id(${widget_name}_is_temp_mode) = true;'
-                        - script.execute: ${widget_name}_toggle_gradient
+          uint32_t title_c  = day ? 0x1A1C22 : 0xFFFFFF;
+          uint32_t cap_c    = day ? 0x5F6672 : (perf ? 0x888888 : 0x9BA2BC);
+          uint32_t track_c  = day ? 0xD8DEE9 : (perf ? 0x222222 : 0x0F141E);
+          uint32_t knob_bd  = day ? 0x8A93A3 : 0xFFFFFF;
+          uint32_t arc_knob_bg = day ? 0xFFFFFF : (perf ? 0x000000 : 0x161B26);
+          uint32_t home_bg  = day ? 0xFFFFFF : (perf ? 0x1A1A1A : 0x2A3142);
+          uint32_t home_tc  = day ? 0x1A1C22 : 0xFFFFFF;
+
+          if (id(${widget_name}_light_name_label))
+            lv_obj_set_style_text_color(id(${widget_name}_light_name_label), lv_color_hex(title_c), 0);
+          if (id(${widget_name}_brightness_caption))
+            lv_obj_set_style_text_color(id(${widget_name}_brightness_caption), lv_color_hex(cap_c), 0);
+          if (id(${widget_name}_saturation_caption))
+            lv_obj_set_style_text_color(id(${widget_name}_saturation_caption), lv_color_hex(cap_c), 0);
+          if (id(${widget_name}_home_caption))
+            lv_obj_set_style_text_color(id(${widget_name}_home_caption), lv_color_hex(cap_c), 0);
+
+          auto track = [&](lv_obj_t *s) {
+            if (!s) return;
+            lv_obj_set_style_bg_color(s, lv_color_hex(track_c), LV_PART_MAIN);
+            lv_obj_set_style_border_color(s, lv_color_hex(knob_bd), LV_PART_KNOB);
+          };
+          track(id(${widget_name}_light_brightness_slider));
+          track(id(${widget_name}_light_saturation_slider));
+
+          auto arc_knob = [&](lv_obj_t *a) {
+            if (!a) return;
+            lv_obj_set_style_bg_color(a, lv_color_hex(arc_knob_bg), LV_PART_KNOB);
+            lv_obj_set_style_border_color(a, lv_color_hex(day ? 0x1976D2 : 0xFFFFFF), LV_PART_KNOB);
+          };
+          arc_knob(id(${widget_name}_light_arc_hue));
+          arc_knob(id(${widget_name}_light_arc_color_temp));
+
+          if (id(${widget_name}_home_button)) {
+            lv_obj_t *hb = id(${widget_name}_home_button);
+            lv_obj_set_style_bg_color(hb, lv_color_hex(home_bg), 0);
+            lv_obj_set_style_bg_opa(hb, LV_OPA_COVER, 0);
+            lv_obj_set_style_text_color(hb, lv_color_hex(home_tc), 0);
+            lv_obj_set_style_radius(hb, day ? 14 : (perf ? 6 : 14), 0);
+            if (day) {
+              lv_obj_set_style_border_width(hb, 1, 0);
+              lv_obj_set_style_border_color(hb, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_shadow_width(hb, 8, 0);
+              lv_obj_set_style_shadow_opa(hb, LV_OPA_20, 0);
+              lv_obj_set_style_shadow_color(hb, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_offset_y(hb, 2, 0);
+            } else {
+              lv_obj_set_style_border_width(hb, 0, 0);
+              lv_obj_set_style_shadow_width(hb, 0, 0);
+            }
+          }

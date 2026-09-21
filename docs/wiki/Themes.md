@@ -1,14 +1,46 @@
-# Themes — 3 Selectable Designs
+# Themes — 4 Selectable Designs
 
 ## Overview
 
-v2.2 introduces 3 selectable themes, persistent and exposed as Home Assistant select entity.
+v2.3 ships 4 selectable themes, persistent and exposed as a Home Assistant select entity.
+Theme definitions now live in **one file per theme** under
+`esphome-modular-lvgl-buttons/common/themes/`:
 
-- **Classic** — your current dark theme (black + slate gray + orange)
-- **Modern** — exactly like the mockup images you liked (navy + orange glowing icons + green/blue AC)
+| File | Theme |
+|------|-------|
+| `common/themes/classic.yaml` | Classic palette + styles |
+| `common/themes/modern.yaml` | Modern palette, raised-face gradient, glow ring styles |
+| `common/themes/performance.yaml` | Performance flat monochrome |
+| `common/themes/daylight.yaml` | **NEW** light theme (LVGL default palette) |
+| `common/themes.yaml` | registry that includes the four files |
+
+- **Classic** — dark, black + slate gray + single orange accent
+- **Modern** — mockup look: navy + orange glowing icons + green/blue AC
 - **Performance** — minimal, uses less resources, fastest
+- **Daylight** — **NEW**: light theme for bright rooms (off-white bg, white
+  cards with soft elevation, charcoal text, blue #2196F3 accent). Based on the
+  LVGL default light theme palette (blue/cyan), so it matches stock LVGL
+  material styling. Every page (home, settings, info, AC, WLED light page)
+  repaints itself on switch — theme switching now restyles the whole LVGL UI.
 
-Switch: on device Settings → Theme → [Classic] [Modern] [Perf] or in HA: `select.display01_theme`
+Switch: on device Settings → Theme → [Classic] [Modern] [Perf] [Day] or in HA: `select.display01_theme`
+
+## Theme 4: Daylight (NEW)
+
+**Goal:** readable in daylight / bright walls where dark themes wash out.
+
+**Colors:**
+- Page bg: 0xEFF2F7 cool off-white
+- Cards: 0xFFFFFF white, 1px 0xD5DCE6 border, soft shadow (raised, like Modern's depth but light — `depth_light` style)
+- Text: 0x1A1C22 charcoal, dim 0x5F6672
+- Accent: 0x2196F3 blue (active tiles/buttons), deep blue 0x1976D2 for sliders/knobs
+- Status colors keep their semantics: green power, blue cool, orange turbo
+
+**Pages:** home tiles become white cards with gray icons; settings/info rows
+become white/alternating light rows; the AC gauge turns blue-on-light; the WLED
+hue ring stays a real 12-segment color wheel (theme-independent).
+
+**Performance:** close to Classic (shadows are small and cheap at 480x480).
 
 ## Theme 1: Classic
 

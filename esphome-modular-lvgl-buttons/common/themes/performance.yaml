@@ -1,0 +1,54 @@
+---
+# ── Performance theme ────────────────────────────────────────────────────────
+# Minimal, cheapest to render: pure black, flat near-black tiles, monochrome
+# text, tiny 4px radius, no borders / shadows / gradients at all.
+
+substitutions:
+  perf_bg: "0x000000"
+  perf_page_bg: "0x000000"
+  perf_settings_bg: "0x000000"
+  perf_info_bg: "0x000000"
+  perf_ac_bg: "0x000000"
+  perf_ac_topbar_bg: "0x000000"
+  perf_button_bg: "0x1A1A1A"
+  perf_button_active: "0x444444"
+  perf_text: "0xFFFFFF"
+  perf_text_dim: "0x888888"
+  perf_text_muted: "0xCCCCCC"
+  perf_row_bg: "0x141414"
+  perf_row_bg_alt: "0x0A0A0A"
+  perf_selector_off: "0x1A1A1A"
+  perf_slider_bg: "0x222222"
+  perf_slider_active: "0x666666"
+  perf_radius: "4"
+  perf_radius_small: "2"
+  perf_pad: "6"
+
+lvgl:
+  style_definitions:
+    - id: theme_perf_page
+      bg_color: 0x000000
+      bg_opa: cover
+      text_color: white
+      pad_all: 2
+      border_width: 0
+      shadow_width: 0
+      radius: 0
+
+    - id: theme_perf_button
+      bg_color: 0x1A1A1A
+      bg_opa: cover
+      text_color: white
+      radius: 4
+      border_width: 0
+      shadow_width: 0
+      pad_all: 6
+
+    - id: theme_perf_button_active
+      bg_color: 0x444444
+      bg_opa: cover
+      text_color: white
+      radius: 4
+      border_width: 0
+      shadow_width: 0
+      pad_all: 6

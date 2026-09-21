@@ -1,6 +1,7 @@
 ---
-# Fast settings with 3 selectable themes: Classic, Modern, Performance
-# Theme 1 Classic = current dark, Theme 2 Modern = like mockup images, Theme 3 Performance = minimal
+# Fast settings with 4 selectable themes: Classic, Modern, Performance, Daylight
+# Theme definitions live in common/themes/<name>.yaml; this page paints itself
+# via apply_settings_theme (called from apply_display_theme on every switch).
 
 lvgl:
   pages:
@@ -9,6 +10,7 @@ lvgl:
       bg_opa: cover
       widgets:
         - label:
+            id: settings_title_label
             align: top_mid
             y: 6
             text: "Settings"
@@ -30,6 +32,7 @@ lvgl:
             widgets:
               # Brightness Mode - 3 buttons
               - obj:
+                  id: settings_row_mode
                   width: 100%
                   height: 42
                   bg_color: 0x1E232E
@@ -44,6 +47,7 @@ lvgl:
                     flex_align_cross: center
                   widgets:
                     - label:
+                        id: settings_mode_label
                         text: "Mode"
                         text_font: nunito_14
                         text_color: 0xAAAAAA
@@ -109,6 +113,7 @@ lvgl:
 
               # Brightness sliders - compact
               - obj:
+                  id: settings_row_day
                   width: 100%
                   height: 38
                   bg_color: 0x1E232E
@@ -145,6 +150,7 @@ lvgl:
                           height: 14
 
               - obj:
+                  id: settings_row_eve
                   width: 100%
                   height: 38
                   bg_color: 0x1E232E
@@ -181,6 +187,7 @@ lvgl:
                           height: 14
 
               - obj:
+                  id: settings_row_night
                   width: 100%
                   height: 38
                   bg_color: 0x1E232E
@@ -218,6 +225,7 @@ lvgl:
 
               # Timeout + Saver
               - obj:
+                  id: settings_row_timeout
                   width: 100%
                   height: 42
                   bg_color: 0x1E232E
@@ -276,6 +284,7 @@ lvgl:
                           flex_align_cross: center
                         widgets:
                           - label:
+                              id: settings_saver_label
                               text: "Saver"
                               text_font: nunito_12
                               text_color: 0x888888
@@ -291,8 +300,9 @@ lvgl:
                               state:
                                 checked: true
 
-              # Theme selector - 3 themes
+              # Theme selector - 4 themes
               - obj:
+                  id: settings_row_theme
                   width: 100%
                   height: 46
                   bg_color: 0x1E232E
@@ -307,6 +317,7 @@ lvgl:
                     flex_align_cross: center
                   widgets:
                     - label:
+                        id: settings_theme_label
                         text: "Theme"
                         text_font: nunito_14
                         text_color: 0xAAAAAA
@@ -324,7 +335,7 @@ lvgl:
                         widgets:
                           - button:
                               id: settings_btn_classic
-                              width: 110
+                              width: 91
                               height: 32
                               radius: 8
                               bg_color: 0x3A4352
@@ -340,7 +351,7 @@ lvgl:
                                     option: "Classic"
                           - button:
                               id: settings_btn_modern
-                              width: 110
+                              width: 91
                               height: 32
                               radius: 8
                               bg_color: 0x3A4352
@@ -356,7 +367,7 @@ lvgl:
                                     option: "Modern"
                           - button:
                               id: settings_btn_performance
-                              width: 110
+                              width: 91
                               height: 32
                               radius: 8
                               bg_color: 0x3A4352
@@ -370,9 +381,26 @@ lvgl:
                                 - select.set:
                                     id: current_theme
                                     option: "Performance"
+                          - button:
+                              id: settings_btn_daylight
+                              width: 91
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Day"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: current_theme
+                                    option: "Daylight"
 
               # Rotation selector
               - obj:
+                  id: settings_row_rotation
                   width: 100%
                   height: 46
                   bg_color: 0x1E232E
@@ -387,6 +415,7 @@ lvgl:
                     flex_align_cross: center
                   widgets:
                     - label:
+                        id: settings_rotate_label
                         text: "Rotate"
                         text_font: nunito_14
                         text_color: 0xAAAAAA
@@ -468,6 +497,7 @@ lvgl:
                                     option: "270"
 
         - button:
+            id: settings_home_btn
             align: bottom_left
             x: 10
             y: -6
@@ -481,11 +511,11 @@ lvgl:
                   align: center
                   text: "Home"
                   text_font: nunito_18
-                  text_color: white
             on_click:
               - lvgl.page.show: main_page
 
         - button:
+            id: settings_info_btn
             align: bottom_right
             x: -10
             y: -6
@@ -499,7 +529,6 @@ lvgl:
                   align: center
                   text: "Info"
                   text_font: nunito_18
-                  text_color: white
             on_click:
               - lvgl.page.show: info_screen
 
@@ -591,7 +620,7 @@ select:
   - platform: template
     id: current_theme
     name: "Theme"
-    options: [Classic, Modern, Performance]
+    options: [Classic, Modern, Performance, Daylight]
     initial_option: Classic
     restore_value: true
     entity_category: config
@@ -617,3 +646,95 @@ switch:
     widget: settings_screensaver_enabled
     restore_mode: RESTORE_DEFAULT_ON
     entity_category: config
+
+# Theme-aware repaint of this page. Called by apply_display_theme on every
+# theme switch (and after boot). Uses the same 4-way palette switch as the
+# rest of the UI: Classic / Modern / Performance / Daylight.
+script:
+  - id: apply_settings_theme
+    mode: restart
+    then:
+      - lambda: |-
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme = "Classic";
+          bool day = (theme == "Daylight");
+          bool perf = (theme == "Performance");
+          bool modern = (theme == "Modern");
+
+          uint32_t row_bg     = day ? 0xFFFFFF : (perf ? 0x141414 : (modern ? 0x1E2530 : 0x1E232E));
+          uint32_t title_c    = day ? 0x1A1C22 : 0xFFFFFF;
+          uint32_t label_c    = day ? 0x5F6672 : (perf ? 0x888888 : 0xAAAAAA);
+          uint32_t value_c    = day ? 0x1A1C22 : (perf ? 0xCCCCCC : 0xCCCCCC);
+          uint32_t track_c    = day ? 0xD8DEE9 : (perf ? 0x222222 : 0x2A303E);
+          uint32_t accent_c   = day ? 0x2196F3 : (perf ? 0x666666 : (modern ? 0xFF8C00 : 0xFF9F1C));
+          uint32_t timeout_c  = day ? 0x1976D2 : 0x41BDF5;
+          uint32_t home_bg    = day ? 0x2196F3 : 0xFF6600;
+          uint32_t info_bg    = day ? 0xFFFFFF : (perf ? 0x1A1A1A : 0x3A4352);
+          uint32_t sel_off    = day ? 0xE1E6EE : (perf ? 0x1A1A1A : 0x3A4352);
+
+          lv_obj_t* rows[] = { id(settings_row_mode), id(settings_row_day), id(settings_row_eve),
+                               id(settings_row_night), id(settings_row_timeout),
+                               id(settings_row_theme), id(settings_row_rotation) };
+          for (auto r : rows) {
+            if (!r) continue;
+            lv_obj_set_style_bg_color(r, lv_color_hex(row_bg), 0);
+            lv_obj_set_style_bg_opa(r, LV_OPA_COVER, 0);
+            lv_obj_set_style_radius(r, day ? 12 : (perf ? 4 : 10), 0);
+            if (day) {
+              lv_obj_set_style_border_width(r, 1, 0);
+              lv_obj_set_style_border_color(r, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_shadow_width(r, 8, 0);
+              lv_obj_set_style_shadow_opa(r, LV_OPA_20, 0);
+              lv_obj_set_style_shadow_color(r, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_offset_y(r, 2, 0);
+            } else {
+              lv_obj_set_style_border_width(r, 0, 0);
+              lv_obj_set_style_shadow_width(r, 0, 0);
+            }
+          }
+          auto lab = [](lv_obj_t *l, uint32_t c) { if (l) lv_obj_set_style_text_color(l, lv_color_hex(c), 0); };
+          lab(id(settings_title_label), title_c);
+          lab(id(settings_mode_label), label_c);
+          lab(id(settings_theme_label), label_c);
+          lab(id(settings_rotate_label), label_c);
+          lab(id(settings_saver_label), perf ? 0x888888 : 0x888888);
+          lab(id(settings_day_label), value_c);
+          lab(id(settings_evening_label), value_c);
+          lab(id(settings_night_label), value_c);
+          lab(id(settings_timeout_label), value_c);
+
+          auto slider_style = [&](lv_obj_t *s, uint32_t ind) {
+            if (!s) return;
+            lv_obj_set_style_bg_color(s, lv_color_hex(track_c), LV_PART_MAIN);
+            lv_obj_set_style_bg_color(s, lv_color_hex(ind), LV_PART_INDICATOR);
+            lv_obj_set_style_bg_color(s, lv_color_hex(day ? 0x1976D2 : 0xFFFFFF), LV_PART_KNOB);
+          };
+          slider_style(id(settings_day_brightness), accent_c);
+          slider_style(id(settings_evening_brightness), accent_c);
+          slider_style(id(settings_night_brightness), accent_c);
+          slider_style(id(settings_screen_timeout), timeout_c);
+
+          if (id(settings_screensaver_enabled)) {
+            lv_obj_set_style_bg_color(id(settings_screensaver_enabled), lv_color_hex(sel_off), 0);
+            lv_obj_set_style_bg_color(id(settings_screensaver_enabled), lv_color_hex(day ? 0x4CAF50 : 0x4CAF50), LV_PART_INDICATOR);
+          }
+          auto btn = [&](lv_obj_t *b, uint32_t bg) {
+            if (!b) return;
+            lv_obj_set_style_bg_color(b, lv_color_hex(bg), 0);
+            lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0);
+            lv_obj_set_style_radius(b, day ? 10 : (perf ? 4 : 10), 0);
+            lv_obj_set_style_text_color(b, lv_color_hex(day && bg == 0xFFFFFF ? 0x1A1C22 : 0xFFFFFF), 0);
+            if (day) {
+              lv_obj_set_style_border_width(b, 1, 0);
+              lv_obj_set_style_border_color(b, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_shadow_width(b, 6, 0);
+              lv_obj_set_style_shadow_opa(b, LV_OPA_20, 0);
+              lv_obj_set_style_shadow_color(b, lv_color_hex(0x9AA4B5), 0);
+            } else {
+              lv_obj_set_style_border_width(b, 0, 0);
+              lv_obj_set_style_shadow_width(b, 0, 0);
+            }
+          };
+          btn(id(settings_home_btn), home_bg);
+          btn(id(settings_info_btn), info_bg);
+      - script.execute: update_settings_highlight

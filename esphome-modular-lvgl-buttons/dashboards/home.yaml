@@ -282,11 +282,12 @@ script:
           if (theme == "Classic") { page_bg = 0x000000; settings_bg = 0x11151C; info_bg = 0x11151C; }
           else if (theme == "Modern") { page_bg = 0x0A0E14; settings_bg = 0x121A26; info_bg = 0x0F141E; }
           else if (theme == "Performance") { page_bg = 0x000000; settings_bg = 0x000000; info_bg = 0x000000; }
+          else if (theme == "Daylight") { page_bg = 0xEFF2F7; settings_bg = 0xF2F4F8; info_bg = 0xF2F4F8; }
 
           if (id(main_page)) {
             lv_obj_set_style_bg_color(id(main_page)->obj, lv_color_hex(page_bg), 0);
             lv_obj_set_style_bg_opa(id(main_page)->obj, LV_OPA_COVER, 0);
-            lv_obj_set_style_pad_all(id(main_page)->obj, theme=="Performance" ? 2 : (theme=="Modern" ? 6 : 4), 0);
+            lv_obj_set_style_pad_all(id(main_page)->obj, (theme=="Performance" || theme=="Daylight") ? 4 : (theme=="Modern" ? 6 : 4), 0);
           }
           if (id(settings_page)) {
             lv_obj_set_style_bg_color(id(settings_page)->obj, lv_color_hex(settings_bg), 0);
@@ -299,25 +300,40 @@ script:
           if (id(ac_main_page)) {
             uint32_t ac_bg = (theme=="Modern") ? 0x080A0F : 0x0F1115;
             if (theme=="Performance") ac_bg = 0x000000;
+            if (theme=="Daylight") ac_bg = 0xE9EEF5;
             lv_obj_set_style_bg_color(id(ac_main_page)->obj, lv_color_hex(ac_bg), 0);
             lv_obj_set_style_bg_opa(id(ac_main_page)->obj, LV_OPA_COVER, 0);
           }
           if (id(ac_main_top_bar)) {
             uint32_t top_bg = (theme=="Modern") ? 0x12151E : 0x1A1D26;
             if (theme=="Performance") top_bg = 0x000000;
+            if (theme=="Daylight") top_bg = 0xFFFFFF;
             lv_obj_set_style_bg_color(id(ac_main_top_bar), lv_color_hex(top_bg), 0);
           }
+          if (id(button_7_light_page)) {
+            uint32_t light_bg = (theme=="Modern") ? 0x0F141E : 0x161B26;
+            if (theme=="Performance") light_bg = 0x000000;
+            if (theme=="Daylight") light_bg = 0xE9EEF5;
+            lv_obj_set_style_bg_color(id(button_7_light_page)->obj, lv_color_hex(light_bg), 0);
+            lv_obj_set_style_bg_opa(id(button_7_light_page)->obj, LV_OPA_COVER, 0);
+          }
           // AC button radius/color/depth now owned by script ac_main_refresh
+          // settings/info/light pages repaint themselves via their theme scripts
       - lvgl.style.update:
           id: page_style
           bg_color: !lambda |-
             std::string t = id(current_theme).current_option();
             if (t=="Modern") return lv_color_hex(0x0A0E14);
             if (t=="Performance") return lv_color_hex(0x000000);
+            if (t=="Daylight") return lv_color_hex(0xEFF2F7);
             return lv_color_hex(0x000000);
           text_color: !lambda |-
-            return lv_color_hex(0xFFFFFF);
+            std::string t = id(current_theme).current_option();
+            return lv_color_hex(t=="Daylight" ? 0x1A1C22 : 0xFFFFFF);
       - script.execute: ac_main_refresh
+      - script.execute: apply_settings_theme
+      - script.execute: apply_info_theme
+      - script.execute: button_7_apply_theme
       - script.execute: update_settings_highlight
       - script.execute: apply_dashboard_theme
       - lvgl.widget.redraw:
@@ -355,6 +371,7 @@ script:
           set_btn(id(settings_btn_classic), theme=="Classic", theme);
           set_btn(id(settings_btn_modern), theme=="Modern", theme);
           set_btn(id(settings_btn_performance), theme=="Performance", theme);
+          set_btn(id(settings_btn_daylight), theme=="Daylight", theme);
           std::string rot = id(display_rotation_select).current_option();
           set_btn(id(settings_btn_rot0), rot=="0", theme);
           set_btn(id(settings_btn_rot90), rot=="90", theme);
@@ -369,9 +386,11 @@ script:
           if (theme.empty()) theme = "Classic";
           uint32_t button_bg = 0x343645;
           uint32_t button_radius = 14;
+          bool day = (theme == "Daylight");
           if (theme == "Classic") { button_bg = 0x343645; button_radius = 14; }
           else if (theme == "Modern") { button_bg = 0x1E232E; button_radius = 20; }
           else if (theme == "Performance") { button_bg = 0x1A1A1A; button_radius = 4; }
+          else if (theme == "Daylight") { button_bg = 0xFFFFFF; button_radius = 16; }
 
           lv_obj_t* buttons[] = {
             id(button_button_1),
