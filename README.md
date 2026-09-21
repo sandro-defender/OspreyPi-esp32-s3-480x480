@@ -93,9 +93,9 @@ Uses less resources — pure black, #1A1A1A buttons radius 4, white only, no col
 
 ### All Screens Gallery (General)
 
-| Home | AC | Settings | Screensaver | Light | Info |
+| Home | AC | Settings | Screensaver | Light |
 |---|---|---|---|---|---|
-| ![Home](docs/images/screen_home.png) | ![AC](docs/images/screen_ac.png) | ![Settings](docs/images/screen_settings.png) | ![Saver](docs/images/screen_screensaver.png) | ![Light](docs/images/screen_light.png) | ![Info](docs/images/screen_info.png) |
+| ![Home](docs/images/theme_modern_home.png) | ![AC](docs/images/screen_ac.png) | ![Settings](docs/images/screen_settings.png) | ![Saver](docs/images/screen_screensaver.png) | ![Light](docs/images/screen_light.png) |
 
 ---
 
@@ -127,7 +127,7 @@ Uses less resources — pure black, #1A1A1A buttons radius 4, white only, no col
 ├── README.md
 ├── docs/
 │   ├── images/
-│   │   ├── screen_home.png, screen_ac.png... (6 general)
+│   │   ├── screen_ac.png, screen_light.png, screen_settings.png...
 │   │   ├── theme_classic_home/ac/settings.png (3 classic)
 │   │   ├── theme_modern_home/ac/settings.png (3 modern like mockup)
 │   │   └── theme_performance_home/ac/settings.png (3 perf)

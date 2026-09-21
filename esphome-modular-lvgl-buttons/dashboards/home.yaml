@@ -128,7 +128,20 @@ lvgl:
       styles: page_style
       bg_color: black
       bg_opa: cover
-      <<: !include ../widgets/swipe_navigation.yaml
+      # Swipe ring: Home <-> AC <-> Light (explicit targets so page order
+      # in the config can never break navigation)
+      on_swipe_left:
+        - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
+        - lvgl.page.show:
+            id: ac_main_page
+            animation: OUT_LEFT
+            time: 300ms
+      on_swipe_right:
+        - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
+        - lvgl.page.show:
+            id: button_7_light_page
+            animation: OUT_RIGHT
+            time: 300ms
       widgets:
         - button: !include
             file: ../buttons/entity_button.yaml

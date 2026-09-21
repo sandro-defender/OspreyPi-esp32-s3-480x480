@@ -253,6 +253,13 @@ lvgl:
     - id: ${widget_name}_light_page
       bg_color: 0x161B26
       bg_opa: cover
+      # swipe left = back to Home (Home <-> AC <-> Light swipe ring)
+      on_swipe_left:
+        - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
+        - lvgl.page.show:
+            id: main_page
+            animation: OUT_LEFT
+            time: 300ms
       widgets:
         # ── Title ────────────────────────────────────────────────────────
         - label:

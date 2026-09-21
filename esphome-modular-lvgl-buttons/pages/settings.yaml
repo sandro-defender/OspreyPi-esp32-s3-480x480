@@ -9,19 +9,57 @@ lvgl:
       bg_color: 0x11151C
       bg_opa: cover
       widgets:
-        - label:
-            id: settings_title_label
+        # Header bar: back arrow + centered title (mockup: screen_settings.png)
+        - obj:
+            id: settings_header
             align: top_mid
             y: 6
-            text: "Settings"
-            text_font: nunito_24
-            text_color: white
+            width: 460
+            height: 44
+            radius: 10
+            bg_color: 0x252B38
+            bg_opa: cover
+            border_width: 0
+            pad_left: 6
+            pad_right: 6
+            layout:
+              type: flex
+              flex_flow: row
+              flex_align_main: space_between
+              flex_align_cross: center
+            widgets:
+              - button:
+                  id: settings_back_btn
+                  width: 56
+                  height: 36
+                  radius: 8
+                  bg_opa: transp
+                  border_width: 0
+                  pad_all: 0
+                  widgets:
+                    - label:
+                        align: center
+                        text: $mdi_arrow_left
+                        text_font: mdi_icons_22
+                  on_click:
+                    - lvgl.page.show: main_page
+              - label:
+                  id: settings_title_label
+                  text: "Settings"
+                  text_font: nunito_24
+                  text_color: white
+              - obj:
+                  width: 56
+                  height: 36
+                  bg_opa: transp
+                  border_width: 0
+                  pad_all: 0
 
         - obj:
             align: top_mid
-            y: 34
+            y: 56
             width: 460
-            height: 400
+            height: 378
             bg_opa: transp
             border_width: 0
             pad_all: 0
@@ -132,10 +170,10 @@ lvgl:
                         text: "Day · ${daytime_brightness_default}%"
                         text_font: nunito_14
                         text_color: 0xCCCCCC
-                        width: 90
+                        width: 74
                     - slider:
                         id: settings_day_brightness
-                        width: 330
+                        width: 296
                         height: 12
                         min_value: 5
                         max_value: 100
@@ -148,6 +186,13 @@ lvgl:
                           radius: 6
                           width: 14
                           height: 14
+                    - label:
+                        id: settings_day_value
+                        text: "${daytime_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
+                        width: 56
+                        text_align: right
 
               - obj:
                   id: settings_row_eve
@@ -169,10 +214,10 @@ lvgl:
                         text: "Eve · ${evening_brightness_default}%"
                         text_font: nunito_14
                         text_color: 0xCCCCCC
-                        width: 90
+                        width: 74
                     - slider:
                         id: settings_evening_brightness
-                        width: 330
+                        width: 296
                         height: 12
                         min_value: 5
                         max_value: 100
@@ -185,6 +230,13 @@ lvgl:
                           radius: 6
                           width: 14
                           height: 14
+                    - label:
+                        id: settings_evening_value
+                        text: "${evening_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
+                        width: 56
+                        text_align: right
 
               - obj:
                   id: settings_row_night
@@ -206,10 +258,10 @@ lvgl:
                         text: "Night · ${nighttime_brightness_default}%"
                         text_font: nunito_14
                         text_color: 0xCCCCCC
-                        width: 90
+                        width: 74
                     - slider:
                         id: settings_night_brightness
-                        width: 330
+                        width: 296
                         height: 12
                         min_value: 5
                         max_value: 100
@@ -222,6 +274,13 @@ lvgl:
                           radius: 6
                           width: 14
                           height: 14
+                    - label:
+                        id: settings_night_value
+                        text: "${nighttime_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
+                        width: 56
+                        text_align: right
 
               # Timeout + Saver
               - obj:
@@ -546,6 +605,11 @@ number:
           text:
             format: "Day · %.0f%%"
             args: [ x ]
+      - lvgl.label.update:
+          id: settings_day_value
+          text:
+            format: "%.0f%%"
+            args: [ x ]
       - if:
           condition:
             lambda: 'return id(brightness_mode).current_option() == "Day";'
@@ -565,6 +629,11 @@ number:
           text:
             format: "Eve · %.0f%%"
             args: [ x ]
+      - lvgl.label.update:
+          id: settings_evening_value
+          text:
+            format: "%.0f%%"
+            args: [ x ]
       - if:
           condition:
             lambda: 'return id(brightness_mode).current_option() == "Evening";'
@@ -583,6 +652,11 @@ number:
           id: settings_night_label
           text:
             format: "Night · %.0f%%"
+            args: [ x ]
+      - lvgl.label.update:
+          id: settings_night_value
+          text:
+            format: "%.0f%%"
             args: [ x ]
       - if:
           condition:
@@ -694,6 +768,24 @@ script:
           }
           auto lab = [](lv_obj_t *l, uint32_t c) { if (l) lv_obj_set_style_text_color(l, lv_color_hex(c), 0); };
           lab(id(settings_title_label), title_c);
+          lab(id(settings_day_value), value_c);
+          lab(id(settings_evening_value), value_c);
+          lab(id(settings_night_value), value_c);
+          if (id(settings_header)) {
+            lv_obj_set_style_bg_color(id(settings_header), lv_color_hex(row_bg), 0);
+            lv_obj_set_style_bg_opa(id(settings_header), LV_OPA_COVER, 0);
+            lv_obj_set_style_radius(id(settings_header), day ? 12 : (perf ? 4 : 10), 0);
+            if (day) {
+              lv_obj_set_style_border_width(id(settings_header), 1, 0);
+              lv_obj_set_style_border_color(id(settings_header), lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_shadow_width(id(settings_header), 8, 0);
+              lv_obj_set_style_shadow_opa(id(settings_header), LV_OPA_20, 0);
+              lv_obj_set_style_shadow_color(id(settings_header), lv_color_hex(0x9AA4B5), 0);
+            } else {
+              lv_obj_set_style_border_width(id(settings_header), 0, 0);
+              lv_obj_set_style_shadow_width(id(settings_header), 0, 0);
+            }
+          }
           lab(id(settings_mode_label), label_c);
           lab(id(settings_theme_label), label_c);
           lab(id(settings_rotate_label), label_c);
@@ -735,6 +827,7 @@ script:
               lv_obj_set_style_shadow_width(b, 0, 0);
             }
           };
+          btn(id(settings_back_btn), info_bg);
           btn(id(settings_home_btn), home_bg);
           btn(id(settings_info_btn), info_bg);
       - script.execute: update_settings_highlight

@@ -147,7 +147,10 @@ sensor:
       - lvgl.label.update:
           id: ${widget_name}_target_temp_label
           text: !lambda |-
-            char b[8]; snprintf(b, sizeof(b), "%d°", (int) x); return std::string(b);
+            char b[8];
+            if (x == (float)(int) x) snprintf(b, sizeof(b), "%d°", (int) x);
+            else snprintf(b, sizeof(b), "%.1f°", x);
+            return std::string(b);
 
   - platform: homeassistant
     id: ${widget_name}_current_temp_sensor
@@ -374,6 +377,13 @@ lvgl:
     - id: ${widget_name}_page
       bg_color: 0x0A0E14
       bg_opa: cover
+      # swipe right = back to Home (part of Home <-> AC <-> Light swipe ring)
+      on_swipe_right:
+        - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
+        - lvgl.page.show:
+            id: main_page
+            animation: OUT_RIGHT
+            time: 300ms
       widgets:
         # ── Header: Back | Climate Control | humidity / room ──────────
         - button:
@@ -562,7 +572,34 @@ lvgl:
               - lvgl.label.update:
                   id: ${widget_name}_target_temp_label
                   text: !lambda |-
-                    char b[8]; snprintf(b, sizeof(b), "%d°", (int) id(${widget_name}_target_temp)); return std::string(b);
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+            # long press = fine 0.5° step (mockup/doc feature)
+            on_long_press:
+              - lambda: |-
+                  float n = id(${widget_name}_target_temp) - 0.5f;
+                  if (n < 16) n = 16;
+                  id(${widget_name}_target_temp) = n;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                  id: ${widget_name}_target_temp_label
+                  text: !lambda |-
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
               - homeassistant.action:
                   action: climate.set_temperature
                   data:
@@ -596,7 +633,34 @@ lvgl:
               - lvgl.label.update:
                   id: ${widget_name}_target_temp_label
                   text: !lambda |-
-                    char b[8]; snprintf(b, sizeof(b), "%d°", (int) id(${widget_name}_target_temp)); return std::string(b);
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
+              - homeassistant.action:
+                  action: climate.set_temperature
+                  data:
+                    entity_id: "${climate_entity}"
+                    temperature: !lambda return id(${widget_name}_target_temp);
+
+            # long press = fine 0.5° step (mockup/doc feature)
+            on_long_press:
+              - lambda: |-
+                  float n = id(${widget_name}_target_temp) + 0.5f;
+                  if (n > 31) n = 31;
+                  id(${widget_name}_target_temp) = n;
+              - lvgl.arc.update:
+                  id: ${widget_name}_temp_arc
+                  value: !lambda return id(${widget_name}_target_temp);
+              - lvgl.label.update:
+                  id: ${widget_name}_target_temp_label
+                  text: !lambda |-
+                    float v = id(${widget_name}_target_temp);
+                    char b[8];
+                    if (v == (float)(int) v) snprintf(b, sizeof(b), "%d°", (int) v);
+                    else snprintf(b, sizeof(b), "%.1f°", v);
+                    return std::string(b);
               - homeassistant.action:
                   action: climate.set_temperature
                   data:

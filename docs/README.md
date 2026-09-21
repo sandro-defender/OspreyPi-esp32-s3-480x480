@@ -3,12 +3,13 @@
 ## Images
 
 ### General Screens (v2.1)
-- `images/screen_home.png` — Home dashboard mockup
-- `images/screen_ac.png` — AC control expanded
+- `images/screen_ac.png` — AC climate control mockup
+- `images/screen_light.png` — WLED / light page mockup (Bed LEDs)
 - `images/screen_settings.png` — Fast settings page
 - `images/screen_screensaver.png` — Screensaver clock + weather
-- `images/screen_light.png` — Light color picker
-- `images/screen_info.png` — Device info diagnostics
+
+Home-screen references: use the `theme_*_home.png` gallery images (there is
+no dedicated home-grid mockup).
 
 ### Themes (v2.2) — 3 Selectable
 - **Classic**: `theme_classic_home.png`, `theme_classic_ac.png`, `theme_classic_settings.png` — original dark
