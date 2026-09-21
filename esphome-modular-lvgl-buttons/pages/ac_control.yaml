@@ -443,7 +443,7 @@ lvgl:
                   border_width: 0
                   widgets:
                     - label:
-                        id: ${widget_name}_mode_label
+                        id: ${widget_name}_mode_btn_label
                         align: center
                         text: "Mode"
                         text_font: nunito_14
