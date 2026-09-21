@@ -25,6 +25,8 @@ jobs:
           wifi_password2: validation-password
           api_encryption_key: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
           api_encryption_key2: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
+          latitude: 41.7151
+          longitude: 44.8271
           EOF
       - name: Validate Display01
         run: esphome config Display01.yaml

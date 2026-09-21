@@ -37,7 +37,7 @@ binary_sensor:
                   id: ap_mode_qr
                   text: !lambda |-
                     char buffer[64];
-                    snprintf(buffer, sizeof(buffer), "WIFI:S:%s;T:nopass;;", App.get_name().c_str());
+                    snprintf(buffer, sizeof(buffer), "WIFI:S:${fallback_ap_ssid};T:nopass;;");
                     return std::string(buffer);
             else:
               - lvgl.widget.hide: ap_mode_qr_container
@@ -112,6 +112,7 @@ lvgl:
         - obj:
             width: 100%
             height: 460
+            scrollable: true
             scrollbar_mode: "auto"
             border_width: 0
             bg_opa: transp
@@ -373,7 +374,7 @@ lvgl:
                         align: center
                         y: 15
                         size: 100
-                        text: "WIFI:S:display01;T:nopass;;"
+                        text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
                     - label:
                         align: bottom_mid
                         y: 0

@@ -1,0 +1,47 @@
+---
+# Controls exposed by the display to Home Assistant.
+# Runtime display settings are defined by pages/settings.yaml so the same
+# controls are available both on the touchscreen and in Home Assistant.
+
+switch:
+  - platform: template
+    name: "Buzzer"
+    id: ha_buzzer_switch
+    icon: mdi:volume-high
+    entity_category: config
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - output.set_level:
+          id: buzzer_output
+          level: 50%
+    turn_off_action:
+      - output.turn_off: buzzer_output
+
+button:
+  - platform: template
+    name: "Show Home Page"
+    id: ha_show_home_page
+    icon: mdi:home
+    entity_category: config
+    on_press:
+      - script.execute: wake_display
+      - lvgl.page.show: main_page
+
+  - platform: template
+    name: "Show Settings Page"
+    id: ha_show_settings_page
+    icon: mdi:cog
+    entity_category: config
+    on_press:
+      - script.execute: wake_display
+      - lvgl.page.show: settings_page
+
+  - platform: template
+    name: "Exit Screensaver"
+    id: ha_exit_screensaver
+    icon: mdi:monitor-eye
+    entity_category: config
+    on_press:
+      - script.execute: wake_display
+      - lvgl.page.show: main_page

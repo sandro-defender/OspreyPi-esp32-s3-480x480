@@ -9,8 +9,8 @@ esphome:
 
       
   project:
-    name: "osptek-esp32-s3.display01"
-    version: "1.0"
+    name: "${project_name}"
+    version: "${project_version}"
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -98,35 +98,11 @@ touchscreen:
   platform: ft63x6
   id: my_touchscreen
   display: my_display
-  # Note: When using 'lvgl: rotation:', the touch input is rotated automatically.
-  # Manual transforms below should usually remain 'false' for 0 and 180 rotations.
-  # Current: 180° rotation (handled by LVGL)
+  # LVGL rotates touch coordinates automatically with the display. Keep this
+  # transform disabled unless a particular panel has physically mirrored axes.
   transform:
-    mirror_x: $touch_mirror_x
-    mirror_y: $touch_mirror_y
-  
-  # --- ROTATION OPTIONS (uncomment matching transform when changing display_rotation) ---
-  # For 0° rotation (normal):
-  # transform:
-  #   mirror_x: false
-  #   mirror_y: false
-  
-  # For 90° rotation (clockwise):
-  # transform:
-  #   swap_xy: true
-  #   mirror_x: true
-  #   mirror_y: false
-  
-  # For 180° rotation (upside-down) - CURRENT
-  # transform:
-  #   mirror_x: true
-  #   mirror_y: true
-  
-  # For 270° rotation (counter-clockwise):
-  # transform:
-  #   swap_xy: true
-  #   mirror_x: false
-  #   mirror_y: true
+    mirror_x: false
+    mirror_y: false
 
 # -------------------------------------------
 # Display st7701s spi

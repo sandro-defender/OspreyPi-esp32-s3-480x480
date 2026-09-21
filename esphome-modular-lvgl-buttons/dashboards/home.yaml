@@ -1,0 +1,224 @@
+---
+# Default home dashboard shared by Display01 and Display02.
+#
+# QUICK CUSTOMIZATION
+# Override any value below in the `substitutions:` block of a DisplayXX.yaml.
+# Generic cards accept any Home Assistant action (for example light.toggle,
+# switch.toggle, script.turn_on, scene.turn_on) and entity ID. The entity is
+# declared once here and reused by both the button and its state listener.
+
+substitutions:
+  dashboard_button_1_text: "bedroom"
+  dashboard_button_1_entity: "light.bedroom_lights"
+  dashboard_button_1_action: "light.toggle"
+  dashboard_button_1_icon: "\U000F0335" # mdi-lightbulb
+  dashboard_button_1_height: "228px"
+
+  dashboard_button_2_text: "fun"
+  dashboard_button_2_entity: "switch.fun_group"
+  dashboard_button_2_action: "switch.toggle"
+  dashboard_button_2_icon: "\U000F0210" # mdi-fan
+  dashboard_button_2_height: "109px"
+
+  dashboard_button_3_text: "pantry light"
+  dashboard_button_3_entity: "light.pantry_light"
+  dashboard_button_3_action: "light.toggle"
+  dashboard_button_3_icon: "\U000F0335" # mdi-lightbulb
+  dashboard_button_3_height: "109px"
+
+  dashboard_button_4_text: "wled"
+  dashboard_button_4_entity: "script.wled_light_togle_animated"
+  dashboard_button_4_action: "script.turn_on"
+  dashboard_button_4_state_entity: "light.wled_new"
+  dashboard_button_4_icon: "\U000F12BA" # mdi-string-lights
+  dashboard_button_4_height: "109px"
+
+  dashboard_button_5_entity: "switch.media_play_pause"
+  dashboard_button_5_action: "switch.toggle"
+  dashboard_button_5_icon: "\U000F040E" # mdi-play-pause
+  dashboard_button_5_height: "109px"
+
+  dashboard_button_6_text: "sleep"
+  dashboard_button_6_entity: "switch.call_sleep_script"
+  dashboard_button_6_action: "switch.toggle"
+  dashboard_button_6_icon: "\U000F0594" # mdi-weather-night
+  dashboard_button_6_height: "109px"
+
+  dashboard_button_7_text: "wled bed"
+  dashboard_button_7_entity: "light.wled_new"
+  dashboard_button_7_icon: "\U000F12BA" # mdi-string-lights
+  dashboard_button_7_height: "228px"
+
+  dashboard_button_9_text: "exit"
+  dashboard_button_9_entity: "switch.call_exit_script"
+  dashboard_button_9_action: "switch.toggle"
+  dashboard_button_9_icon: "\U000F0FC5" # mdi-location-exit
+  dashboard_button_9_height: "109px"
+
+packages:
+  ac_screen: !include
+    file: ../pages/ac_control.yaml
+    vars:
+      widget_name: ac_main
+      climate_entity: "${climate_entity}"
+
+  button_1_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_1
+      entity_id: "${dashboard_button_1_entity}"
+
+  button_2_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_2
+      entity_id: "${dashboard_button_2_entity}"
+
+  button_3_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_3
+      entity_id: "${dashboard_button_3_entity}"
+
+  button_4_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_4
+      entity_id: "${dashboard_button_4_state_entity}"
+
+  button_5_state: !include
+    file: ../sensors/play_pause_button_state.yaml
+    vars:
+      uid: button_5
+      entity_id: "${dashboard_button_5_entity}"
+
+  button_6_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_6
+      entity_id: "${dashboard_button_6_entity}"
+
+  button_7_state: !include
+    file: ../sensors/dimmer_light_state.yaml
+    vars:
+      uid: button_7
+      entity_id: "${dashboard_button_7_entity}"
+
+  button_7_page: !include
+    file: ../pages/light_color.yaml
+    vars:
+      widget_name: button_7
+      light_entity: "${dashboard_button_7_entity}"
+
+  button_9_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_9
+      entity_id: "${dashboard_button_9_entity}"
+
+lvgl:
+  pages:
+    - id: main_page
+      layout:
+        type: flex
+        flex_flow: column_wrap
+      width: 100%
+      styles: page_style
+      <<: !include ../widgets/swipe_navigation.yaml
+      widgets:
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_1
+              height: "${dashboard_button_1_height}"
+              text: "${dashboard_button_1_text}"
+              icon: "${dashboard_button_1_icon}"
+              action: "${dashboard_button_1_action}"
+              entity_id: "${dashboard_button_1_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_2
+              height: "${dashboard_button_2_height}"
+              text: "${dashboard_button_2_text}"
+              icon: "${dashboard_button_2_icon}"
+              action: "${dashboard_button_2_action}"
+              entity_id: "${dashboard_button_2_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_3
+              height: "${dashboard_button_3_height}"
+              text: "${dashboard_button_3_text}"
+              icon: "${dashboard_button_3_icon}"
+              action: "${dashboard_button_3_action}"
+              entity_id: "${dashboard_button_3_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_4
+              height: "${dashboard_button_4_height}"
+              text: "${dashboard_button_4_text}"
+              icon: "${dashboard_button_4_icon}"
+              action: "${dashboard_button_4_action}"
+              entity_id: "${dashboard_button_4_entity}"
+
+        - button: !include
+            file: ../buttons/page_button.yaml
+            vars:
+              uid: ac_nav
+              height: $button_height_single
+              text: AC
+              icon: $mdi_air_conditioner
+              page: ac_main_page
+
+        - button: !include
+            file: ../buttons/fullscreen_entity_button.yaml
+            vars:
+              uid: button_5
+              height: "${dashboard_button_5_height}"
+              icon: "${dashboard_button_5_icon}"
+              font: mdi_icons_80
+              action: "${dashboard_button_5_action}"
+              entity_id: "${dashboard_button_5_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_6
+              height: "${dashboard_button_6_height}"
+              text: "${dashboard_button_6_text}"
+              icon: "${dashboard_button_6_icon}"
+              action: "${dashboard_button_6_action}"
+              entity_id: "${dashboard_button_6_entity}"
+
+        - button: !include
+            file: ../buttons/dimmer_light_button.yaml
+            vars:
+              uid: button_7
+              height: "${dashboard_button_7_height}"
+              text: "${dashboard_button_7_text}"
+              icon: "${dashboard_button_7_icon}"
+              entity_id: "${dashboard_button_7_entity}"
+
+        - button: !include
+            file: ../buttons/page_button.yaml
+            vars:
+              uid: settings_nav
+              height: $button_height_single
+              text: settings
+              icon: $mdi_cog
+              page: settings_page
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_9
+              height: "${dashboard_button_9_height}"
+              text: "${dashboard_button_9_text}"
+              icon: "${dashboard_button_9_icon}"
+              action: "${dashboard_button_9_action}"
+              entity_id: "${dashboard_button_9_entity}"
