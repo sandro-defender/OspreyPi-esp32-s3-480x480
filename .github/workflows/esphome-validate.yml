@@ -32,22 +32,20 @@ jobs:
       - name: Validate Display01
         run: |
           set -o pipefail
-          esphome config Display01.yaml > /tmp/display01_full.log 2>&1 || (echo "=== FULL LOG ==="; cat /tmp/display01_full.log; echo "=== FAILED CONFIG ==="; esphome config Display01.yaml 2>&1 | grep -A 200 "Failed config" | tee /tmp/display01.log; exit 1)
+          esphome config Display01.yaml > /tmp/display01_full.log 2>&1 || (echo "=== FULL LOG TAIL ==="; tail -n 300 /tmp/display01_full.log; echo "=== FAILED CONFIG GREP ==="; esphome config Display01.yaml 2>&1 | grep -A 300 "Failed config" | tee /tmp/display01.log; echo "=== DISPLAY01 LOG ==="; cat /tmp/display01.log; exit 1)
       - name: Validate Display02
         run: |
           set -o pipefail
-          esphome config Display02.yaml > /tmp/display02_full.log 2>&1 || (echo "=== FULL LOG ==="; cat /tmp/display02_full.log; echo "=== FAILED CONFIG ==="; esphome config Display02.yaml 2>&1 | grep -A 200 "Failed config" | tee /tmp/display02.log; exit 1)
-      - name: Show failure details
+          esphome config Display02.yaml > /tmp/display02_full.log 2>&1 || (echo "=== FULL LOG TAIL ==="; tail -n 300 /tmp/display02_full.log; echo "=== FAILED CONFIG GREP ==="; esphome config Display02.yaml 2>&1 | grep -A 300 "Failed config" | tee /tmp/display02.log; echo "=== DISPLAY02 LOG ==="; cat /tmp/display02.log; exit 1)
+      - name: Annotate failure with grep output
         if: failure()
         run: |
-          echo "=== DISPLAY01 FULL TAIL ==="
-          tail -n 300 /tmp/display01_full.log || true
-          echo "=== DISPLAY02 FULL TAIL ==="
-          tail -n 300 /tmp/display02_full.log || true
-          # Annotate with tail of full log
-          tail -n 100 /tmp/display01_full.log | while IFS= read -r line; do
-            # Escape % and newlines for annotation
+          echo "=== ANNOTATING DISPLAY01 LOG ==="
+          cat /tmp/display01.log | head -n 100 | while IFS= read -r line; do
             echo "::error::${line}"
+          done
+          cat /tmp/display01.log | tail -n 100 | while IFS= read -r line; do
+            echo "::warning::${line}"
           done
           exit 1
 
