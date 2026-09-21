@@ -2,6 +2,11 @@
 # Basic switch or light state (theme-aware skin)
 # Modern (theme 2): raised dark tile + orange glow ring when active (mockup look)
 # Classic: orange fill when active. Performance: flat grays only.
+#
+# The skin lives in script `repaint_${uid}` so it is re-applied both when the
+# HA entity changes (on_state) AND when the theme changes
+# (apply_display_theme calls every repaint_* script). Without this a theme
+# switch wiped the on/off skin until the device rebooted.
 # vars:
 #   uid: <unique identifer for the switch. Must match the ID of the button>
 #   entity_id: <Home Assistant entity_id for the object we are controlling>
@@ -12,11 +17,19 @@ binary_sensor:
     entity_id: ${entity_id}
     trigger_on_initial_state: true
     on_state:
+      - script.execute: repaint_${uid}
+
+script:
+  - id: repaint_${uid}
+    mode: restart
+    then:
       - lambda: |-
           auto skin = [](lv_obj_t *b, bool active, const std::string &theme) {
             if (!b) return;
             lv_obj_remove_style(b, id(depth_dark), 0);
             lv_obj_remove_style(b, id(glow_orange), 0);
+            lv_obj_remove_style(b, id(depth_light), 0);
+            lv_obj_remove_style(b, id(glow_blue_light), 0);
             if (theme == "Modern") {
               lv_obj_add_style(b, id(depth_dark), 0);
               if (active) lv_obj_add_style(b, id(glow_orange), 0);
@@ -24,10 +37,10 @@ binary_sensor:
             } else if (theme == "Performance") {
               lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0x444444 : 0x1A1A1A), 0);
             } else if (theme == "Daylight") {
-              // raised white card, blue fill + blue ring when active
+              // raised dark card, orange fill + orange glow when active
               lv_obj_add_style(b, id(depth_light), 0);
               if (active) lv_obj_add_style(b, id(glow_blue_light), 0);
-              lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0x2196F3 : 0xFFFFFF), 0);
+              lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0xE37220 : 0x191D23), 0);
             } else {
               lv_obj_set_style_bg_color(b, lv_color_hex(active ? 0xF37320 : 0x343645), 0);
             }
@@ -35,16 +48,16 @@ binary_sensor:
           };
           std::string theme = id(current_theme).current_option();
           if (theme.empty()) theme = "Classic";
-          bool on = x;
+          bool on = id(widget_sensor_${uid}).state;
           skin(id(button_${uid}), on, theme);
           if (id(icon_${uid})) {
             uint32_t c = (theme == "Modern") ? 0xFF8C00
                        : (theme == "Performance") ? 0xFFFFFF
-                       : (theme == "Daylight") ? (on ? 0xFFFFFF : 0x5F6672)
+                       : (theme == "Daylight") ? (on ? 0xF8953D : 0x8A9099)
                        : (on ? 0xFFFFFF : 0x9BA2BC);
             lv_obj_set_style_text_color(id(icon_${uid}), lv_color_hex(c), 0);
           }
           if (id(label_${uid})) {
-            uint32_t c = (theme == "Modern") ? 0x9BA2BC : (theme == "Daylight") ? (on ? 0xFFFFFF : 0x1A1C22) : 0xFFFFFF;
+            uint32_t c = (theme == "Modern") ? 0x9BA2BC : 0xFFFFFF;
             lv_obj_set_style_text_color(id(label_${uid}), lv_color_hex(c), 0);
           }

@@ -735,16 +735,16 @@ script:
           bool perf = (theme == "Performance");
           bool modern = (theme == "Modern");
 
-          uint32_t row_bg     = day ? 0xFFFFFF : (perf ? 0x141414 : (modern ? 0x1E2530 : 0x1E232E));
-          uint32_t title_c    = day ? 0x1A1C22 : 0xFFFFFF;
-          uint32_t label_c    = day ? 0x5F6672 : (perf ? 0x888888 : 0xAAAAAA);
-          uint32_t value_c    = day ? 0x1A1C22 : (perf ? 0xCCCCCC : 0xCCCCCC);
-          uint32_t track_c    = day ? 0xD8DEE9 : (perf ? 0x222222 : 0x2A303E);
-          uint32_t accent_c   = day ? 0x2196F3 : (perf ? 0x666666 : (modern ? 0xFF8C00 : 0xFF9F1C));
-          uint32_t timeout_c  = day ? 0x1976D2 : 0x41BDF5;
-          uint32_t home_bg    = day ? 0x2196F3 : 0xFF6600;
-          uint32_t info_bg    = day ? 0xFFFFFF : (perf ? 0x1A1A1A : 0x3A4352);
-          uint32_t sel_off    = day ? 0xE1E6EE : (perf ? 0x1A1A1A : 0x3A4352);
+          uint32_t row_bg     = day ? 0x171A1F : (perf ? 0x141414 : (modern ? 0x1E2530 : 0x1E232E));
+          uint32_t title_c    = 0xFFFFFF;
+          uint32_t label_c    = day ? 0xB4B8BC : (perf ? 0x888888 : 0xAAAAAA);
+          uint32_t value_c    = day ? 0xFFFFFF : (perf ? 0xCCCCCC : 0xCCCCCC);
+          uint32_t track_c    = day ? 0x2A303E : (perf ? 0x222222 : 0x2A303E);
+          uint32_t accent_c   = day ? 0xE37220 : (perf ? 0x666666 : (modern ? 0xFF8C00 : 0xFF9F1C));
+          uint32_t timeout_c  = day ? 0xE37220 : 0x41BDF5;
+          uint32_t home_bg    = 0xFF6600;
+          uint32_t info_bg    = day ? 0x22262E : (perf ? 0x1A1A1A : 0x3A4352);
+          uint32_t sel_off    = day ? 0x2E3542 : (perf ? 0x1A1A1A : 0x3A4352);
 
           lv_obj_t* rows[] = { id(settings_row_mode), id(settings_row_day), id(settings_row_eve),
                                id(settings_row_night), id(settings_row_timeout),
@@ -756,10 +756,10 @@ script:
             lv_obj_set_style_radius(r, day ? 12 : (perf ? 4 : 10), 0);
             if (day) {
               lv_obj_set_style_border_width(r, 1, 0);
-              lv_obj_set_style_border_color(r, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(r, lv_color_hex(0x2E3542), 0);
               lv_obj_set_style_shadow_width(r, 8, 0);
               lv_obj_set_style_shadow_opa(r, LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(r, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(r, lv_color_hex(0x000000), 0);
               lv_obj_set_style_shadow_offset_y(r, 2, 0);
             } else {
               lv_obj_set_style_border_width(r, 0, 0);
@@ -777,10 +777,10 @@ script:
             lv_obj_set_style_radius(id(settings_header), day ? 12 : (perf ? 4 : 10), 0);
             if (day) {
               lv_obj_set_style_border_width(id(settings_header), 1, 0);
-              lv_obj_set_style_border_color(id(settings_header), lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(id(settings_header), lv_color_hex(0x2E3542), 0);
               lv_obj_set_style_shadow_width(id(settings_header), 8, 0);
               lv_obj_set_style_shadow_opa(id(settings_header), LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(id(settings_header), lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(id(settings_header), lv_color_hex(0x000000), 0);
             } else {
               lv_obj_set_style_border_width(id(settings_header), 0, 0);
               lv_obj_set_style_shadow_width(id(settings_header), 0, 0);
@@ -799,7 +799,7 @@ script:
             if (!s) return;
             lv_obj_set_style_bg_color(s, lv_color_hex(track_c), LV_PART_MAIN);
             lv_obj_set_style_bg_color(s, lv_color_hex(ind), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_color(s, lv_color_hex(day ? 0x1976D2 : 0xFFFFFF), LV_PART_KNOB);
+            lv_obj_set_style_bg_color(s, lv_color_hex(day ? 0xF8953D : 0xFFFFFF), LV_PART_KNOB);
           };
           slider_style(id(settings_day_brightness), accent_c);
           slider_style(id(settings_evening_brightness), accent_c);
@@ -815,13 +815,13 @@ script:
             lv_obj_set_style_bg_color(b, lv_color_hex(bg), 0);
             lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0);
             lv_obj_set_style_radius(b, day ? 10 : (perf ? 4 : 10), 0);
-            lv_obj_set_style_text_color(b, lv_color_hex(day && bg == 0xFFFFFF ? 0x1A1C22 : 0xFFFFFF), 0);
+            lv_obj_set_style_text_color(b, lv_color_hex(0xFFFFFF), 0);
             if (day) {
               lv_obj_set_style_border_width(b, 1, 0);
-              lv_obj_set_style_border_color(b, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(b, lv_color_hex(0x2E3542), 0);
               lv_obj_set_style_shadow_width(b, 6, 0);
               lv_obj_set_style_shadow_opa(b, LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(b, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(b, lv_color_hex(0x000000), 0);
             } else {
               lv_obj_set_style_border_width(b, 0, 0);
               lv_obj_set_style_shadow_width(b, 0, 0);

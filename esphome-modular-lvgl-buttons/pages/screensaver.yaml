@@ -10,10 +10,35 @@ script:
       - lvgl.label.update:
           id: screensaver_date
           text: !lambda |-
-            static const char *DAYS[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-            static const char *MONTHS[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+            // Georgian (ka_GE) weekday + month names, UTF-8 hex escapes.
+            // t.day_of_week is 1..7 (Sunday == 7), so % 7 indexes Sunday first.
+            static const char *DAYS[] = {
+              "\xE1\x83\x99\xE1\x83\x95\xE1\x83\x98\xE1\x83\xA0\xE1\x83\x90",  // kvira - Sunday
+              "\xE1\x83\x9D\xE1\x83\xA0\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98",  // orshabati - Monday
+              "\xE1\x83\xA1\xE1\x83\x90\xE1\x83\x9B\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98",  // samshabati - Tuesday
+              "\xE1\x83\x9D\xE1\x83\x97\xE1\x83\xAE\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98",  // otkhshabati - Wednesday
+              "\xE1\x83\xAE\xE1\x83\xA3\xE1\x83\x97\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98",  // khutshabati - Thursday
+              "\xE1\x83\x9E\xE1\x83\x90\xE1\x83\xA0\xE1\x83\x90\xE1\x83\xA1\xE1\x83\x99\xE1\x83\x94\xE1\x83\x95\xE1\x83\x98",  // paraskevi - Friday
+              "\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98"  // shabati - Saturday
+            };
+            static const char *MONTHS[] = {
+              "\xE1\x83\x98\xE1\x83\x90\xE1\x83\x9C\xE1\x83\x95\xE1\x83\x90\xE1\x83\xA0\xE1\x83\x98",  // ianvari
+              "\xE1\x83\x97\xE1\x83\x94\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x95\xE1\x83\x90\xE1\x83\x9A\xE1\x83\x98",  // tebervali
+              "\xE1\x83\x9B\xE1\x83\x90\xE1\x83\xA0\xE1\x83\xA2\xE1\x83\x98",  // marti
+              "\xE1\x83\x90\xE1\x83\x9E\xE1\x83\xA0\xE1\x83\x98\xE1\x83\x9A\xE1\x83\x98",  // aprili
+              "\xE1\x83\x9B\xE1\x83\x90\xE1\x83\x98\xE1\x83\xA1\xE1\x83\x98",  // maisi
+              "\xE1\x83\x98\xE1\x83\x95\xE1\x83\x9C\xE1\x83\x98\xE1\x83\xA1\xE1\x83\x98",  // ivnisi
+              "\xE1\x83\x98\xE1\x83\x95\xE1\x83\x9A\xE1\x83\x98\xE1\x83\xA1\xE1\x83\x98",  // ivlisi
+              "\xE1\x83\x90\xE1\x83\x92\xE1\x83\x95\xE1\x83\x98\xE1\x83\xA1\xE1\x83\xA2\xE1\x83\x9D",  // agvisto
+              "\xE1\x83\xA1\xE1\x83\x94\xE1\x83\xA5\xE1\x83\xA2\xE1\x83\x94\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98",  // sektemberi
+              "\xE1\x83\x9D\xE1\x83\xA5\xE1\x83\xA2\xE1\x83\x9D\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98",  // oktomberi
+              "\xE1\x83\x9C\xE1\x83\x9D\xE1\x83\x94\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98",  // noemberi
+              "\xE1\x83\x93\xE1\x83\x94\xE1\x83\x99\xE1\x83\x94\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98"  // dekemberi
+            };
             auto t = id(system_time).now();
-            char b[48]; snprintf(b,sizeof(b),"%s, %02d %s", DAYS[t.day_of_week%7], t.day_of_month, MONTHS[t.month-1]);
+            int m = (t.month >= 1 && t.month <= 12) ? (t.month - 1) : 0;
+            char b[64];
+            snprintf(b, sizeof(b), "%s, %d %s", DAYS[t.day_of_week % 7], t.day_of_month, MONTHS[m]);
             return std::string(b);
 
   - id: update_weather_image
@@ -91,21 +116,21 @@ lvgl:
         - label:
             id: screensaver_time
             text: "--:--"
-            text_font: nunito_120
+            text_font: bold_time_148
             align: top_mid
-            y: 50
+            y: 16
             text_color: white
         - label:
             id: screensaver_date
             text: "..."
-            text_font: nunito_24
+            text_font: bold_geo_32
             align: top_mid
-            y: 180
+            y: 206
             text_color: white
         - obj:
-            y: 280
-            width: 440
-            height: 140
+            y: 296
+            width: 460
+            height: 150
             align: top_mid
             bg_opa: transp
             border_width: 0
@@ -118,14 +143,14 @@ lvgl:
               - label:
                   id: screensaver_temp
                   text: "--°"
-                  text_font: nunito_72
+                  text_font: bold_96
                   text_color: white
               - image:
                   id: screensaver_icon
                   src: weather_sunny
               - obj:
-                  width: 100
-                  height: 80
+                  width: 124
+                  height: 90
                   bg_opa: transp
                   border_width: 0
                   layout:
@@ -136,12 +161,12 @@ lvgl:
                     - label:
                         id: screensaver_humidity
                         text: "--%"
-                        text_font: nunito_20
+                        text_font: bold_28
                         text_color: white
                     - label:
                         id: screensaver_wind
                         text: "--"
-                        text_font: nunito_18
+                        text_font: bold_24
                         text_color: 0xCCCCCC
         - button:
             id: screensaver_exit_btn

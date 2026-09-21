@@ -415,10 +415,13 @@ lvgl:
         # ── Bulb: glowing disc (recolored live) + bulb image ─────────────
         # tap = toggle, long press = switch HS / white mode
         - obj:
+            # The bulb sits concentric with the hue / temp ring (same x/y as
+            # the ring arcs) so it is centered in the wheel and never covers
+            # the color selector band.
             id: ${widget_name}_lightbulb_btn
             align: center
-            x: -18
-            y: -34
+            x: 80
+            y: -14
             width: 130
             height: 160
             radius: 20
@@ -915,7 +918,8 @@ script:
                 x: -104
             - lvgl.obj.update:
                 id: ${widget_name}_lightbulb_btn
-                x: -40
+                x: 80
+                y: -14
             - lambda: |-
                 for (int i = 0; i < 12; i++) {
                   std::string n = "${widget_name}_hue_seg_" + std::to_string(i);
@@ -976,14 +980,16 @@ script:
                       x: -186
                   - lvgl.obj.update:
                       id: ${widget_name}_lightbulb_btn
-                      x: -18
+                      x: 80
+                      y: -14
                 else:
                   - lvgl.obj.update:
                       id: ${widget_name}_light_brightness_background
                       x: -60
                   - lvgl.obj.update:
                       id: ${widget_name}_lightbulb_btn
-                      x: -18
+                      x: 80
+                      y: -14
 
   # ── Recolor the bulb glow (and its halo) from hue/sat/brightness ───────
   - id: ${widget_name}_update_lightbulb_color
@@ -1092,6 +1098,11 @@ script:
             - lvgl.obj.update:
                 id: ${widget_name}_light_brightness_background
                 x: -60
+            # no ring on screen -> bulb goes back to the screen center
+            - lvgl.obj.update:
+                id: ${widget_name}_lightbulb_btn
+                x: 0
+                y: 0
 
   # ── Theme-aware repaint of this page (Classic/Modern/Perf/Daylight) ────
   - id: ${widget_name}_apply_theme
@@ -1102,13 +1113,13 @@ script:
           bool day = (theme == "Daylight");
           bool perf = (theme == "Performance");
 
-          uint32_t title_c  = day ? 0x1A1C22 : 0xFFFFFF;
-          uint32_t cap_c    = day ? 0x5F6672 : (perf ? 0x888888 : 0x9BA2BC);
-          uint32_t track_c  = day ? 0xD8DEE9 : (perf ? 0x222222 : 0x0F141E);
-          uint32_t knob_bd  = day ? 0x8A93A3 : 0xFFFFFF;
-          uint32_t arc_knob_bg = day ? 0xFFFFFF : (perf ? 0x000000 : 0x161B26);
-          uint32_t home_bg  = day ? 0xFFFFFF : (perf ? 0x1A1A1A : 0x2A3142);
-          uint32_t home_tc  = day ? 0x1A1C22 : 0xFFFFFF;
+          uint32_t title_c  = 0xFFFFFF;
+          uint32_t cap_c    = day ? 0xB4B8BC : (perf ? 0x888888 : 0x9BA2BC);
+          uint32_t track_c  = day ? 0x232932 : (perf ? 0x222222 : 0x0F141E);
+          uint32_t knob_bd  = 0xFFFFFF;
+          uint32_t arc_knob_bg = day ? 0x161B26 : (perf ? 0x000000 : 0x161B26);
+          uint32_t home_bg  = day ? 0x191D23 : (perf ? 0x1A1A1A : 0x2A3142);
+          uint32_t home_tc  = 0xFFFFFF;
 
           if (id(${widget_name}_light_name_label))
             lv_obj_set_style_text_color(id(${widget_name}_light_name_label), lv_color_hex(title_c), 0);
@@ -1130,7 +1141,7 @@ script:
           auto arc_knob = [&](lv_obj_t *a) {
             if (!a) return;
             lv_obj_set_style_bg_color(a, lv_color_hex(arc_knob_bg), LV_PART_KNOB);
-            lv_obj_set_style_border_color(a, lv_color_hex(day ? 0x1976D2 : 0xFFFFFF), LV_PART_KNOB);
+            lv_obj_set_style_border_color(a, lv_color_hex(day ? 0xF8953D : 0xFFFFFF), LV_PART_KNOB);
           };
           arc_knob(id(${widget_name}_light_arc_hue));
           arc_knob(id(${widget_name}_light_arc_color_temp));
@@ -1143,10 +1154,10 @@ script:
             lv_obj_set_style_radius(hb, day ? 14 : (perf ? 6 : 14), 0);
             if (day) {
               lv_obj_set_style_border_width(hb, 1, 0);
-              lv_obj_set_style_border_color(hb, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(hb, lv_color_hex(0x242A33), 0);
               lv_obj_set_style_shadow_width(hb, 8, 0);
               lv_obj_set_style_shadow_opa(hb, LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(hb, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(hb, lv_color_hex(0x000000), 0);
               lv_obj_set_style_shadow_offset_y(hb, 2, 0);
             } else {
               lv_obj_set_style_border_width(hb, 0, 0);

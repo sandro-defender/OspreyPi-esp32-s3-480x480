@@ -29,7 +29,7 @@
 | **Classic** | Original dark | Black bg, slate_blue_gray #343645 buttons, white text, orange accent | 14px | Balanced |
 | **Modern** | Like mockup images you liked | Navy #0A0E14 bg, #1E232E buttons, glowing orange #FF8C00 icons, green/blue power/mode | 20px | Medium (glow) |
 | **Performance** | Minimal for max speed | Pure black, #1A1A1A buttons, white only, no colors, no glow | 4px | Fastest |
-| **Daylight** | NEW: light theme for bright rooms | Off-white #EFF2F7 bg, white cards, charcoal text, blue #2196F3 accent (LVGL default palette) | 16px | Balanced |
+| **Daylight** | Dark orange-glow variant (matches `docs/images/screen_light.png`) | Near-black #0B0D10 bg, raised dark #171A1F cards with #2E3542 bevel, white text, orange #FF8C00 accent/glow | 20px | Balanced |
 
 **Selectable on device:** Settings → Theme → [ Classic ] [ Modern ] [ Perf ] [ Day ] — instant switch, persistent, also exposed as HA select entity `Theme`. One YAML file per theme lives in `esphome-modular-lvgl-buttons/common/themes/`.
 

@@ -29,11 +29,11 @@ script:
           bool perf = (theme == "Performance");
           bool modern = (theme == "Modern");
 
-          uint32_t row_a = day ? 0xFFFFFF : (perf ? 0x141414 : (modern ? 0x1E2530 : 0x1E2530));
-          uint32_t row_b = day ? 0xE7ECF4 : (perf ? 0x0A0A0A : (modern ? 0x151A24 : 0x151A24));
-          uint32_t hdr   = day ? 0xFFFFFF : (perf ? 0x141414 : (modern ? 0x252B38 : 0x252B38));
-          uint32_t key_c = day ? 0x5F6672 : (perf ? 0x888888 : 0x8891A0);
-          uint32_t val_c = day ? 0x1A1C22 : (perf ? 0xCCCCCC : 0xFFFFFF);
+          uint32_t row_a = day ? 0x191D23 : (perf ? 0x141414 : (modern ? 0x1E2530 : 0x1E2530));
+          uint32_t row_b = day ? 0x14181E : (perf ? 0x0A0A0A : (modern ? 0x151A24 : 0x151A24));
+          uint32_t hdr   = day ? 0x191D23 : (perf ? 0x141414 : (modern ? 0x252B38 : 0x252B38));
+          uint32_t key_c = day ? 0xB4B8BC : (perf ? 0x888888 : 0x8891A0);
+          uint32_t val_c = (perf ? 0xCCCCCC : 0xFFFFFF);
 
           lv_obj_t* rows[] = { id(info_row_build), id(info_row_uptime), id(info_row_wifi),
                                id(info_row_ip), id(info_row_mac), id(info_row_signal),
@@ -44,13 +44,13 @@ script:
             if (!r) continue;
             lv_obj_set_style_bg_color(r, lv_color_hex(i % 2 == 0 ? row_a : row_b), 0);
             lv_obj_set_style_bg_opa(r, LV_OPA_COVER, 0);
-            lv_obj_set_style_radius(r, day ? 10 : (perf ? 3 : 8), 0);
+            lv_obj_set_style_radius(r, day ? 18 : (perf ? 3 : 8), 0);
             if (day) {
               lv_obj_set_style_border_width(r, 1, 0);
-              lv_obj_set_style_border_color(r, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(r, lv_color_hex(0x242A33), 0);
               lv_obj_set_style_shadow_width(r, 6, 0);
               lv_obj_set_style_shadow_opa(r, LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(r, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(r, lv_color_hex(0x000000), 0);
             } else {
               lv_obj_set_style_border_width(r, 0, 0);
               lv_obj_set_style_shadow_width(r, 0, 0);
@@ -64,36 +64,36 @@ script:
           if (id(info_header)) {
             lv_obj_set_style_bg_color(id(info_header), lv_color_hex(hdr), 0);
             lv_obj_set_style_bg_opa(id(info_header), LV_OPA_COVER, 0);
-            lv_obj_set_style_radius(id(info_header), day ? 12 : (perf ? 3 : 10), 0);
+            lv_obj_set_style_radius(id(info_header), day ? 18 : (perf ? 3 : 10), 0);
             if (day) {
               lv_obj_set_style_border_width(id(info_header), 1, 0);
-              lv_obj_set_style_border_color(id(info_header), lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(id(info_header), lv_color_hex(0x242A33), 0);
               lv_obj_set_style_shadow_width(id(info_header), 8, 0);
               lv_obj_set_style_shadow_opa(id(info_header), LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(id(info_header), lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(id(info_header), lv_color_hex(0x000000), 0);
             } else {
               lv_obj_set_style_border_width(id(info_header), 0, 0);
               lv_obj_set_style_shadow_width(id(info_header), 0, 0);
             }
             lv_obj_t *t = lv_obj_get_child(id(info_header), 0);
             lv_obj_t *v = lv_obj_get_child(id(info_header), 1);
-            if (t) lv_obj_set_style_text_color(t, lv_color_hex(day ? 0x1A1C22 : 0xFFFFFF), 0);
-            if (v) lv_obj_set_style_text_color(v, lv_color_hex(day ? 0x5F6672 : 0x9BA2BC), 0);
+            if (t) lv_obj_set_style_text_color(t, lv_color_hex(0xFFFFFF), 0);
+            if (v) lv_obj_set_style_text_color(v, lv_color_hex(0x9BA2BC), 0);
           }
           auto btn = [&](lv_obj_t *b, bool accent) {
             if (!b) return;
-            uint32_t bg = accent ? (day ? 0x2196F3 : 0xFF6600)
-                                 : (day ? 0xFFFFFF : (perf ? 0x1A1A1A : 0x2A3142));
+            uint32_t bg = accent ? 0xFF6600
+                                 : (perf ? 0x1A1A1A : 0x2A3142);
             lv_obj_set_style_bg_color(b, lv_color_hex(bg), 0);
             lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0);
-            lv_obj_set_style_radius(b, day ? 12 : (perf ? 4 : 10), 0);
-            lv_obj_set_style_text_color(b, lv_color_hex(day && !accent ? 0x1A1C22 : 0xFFFFFF), 0);
+            lv_obj_set_style_radius(b, (perf ? 4 : 10), 0);
+            lv_obj_set_style_text_color(b, lv_color_hex(0xFFFFFF), 0);
             if (day) {
               lv_obj_set_style_border_width(b, 1, 0);
-              lv_obj_set_style_border_color(b, lv_color_hex(0xD5DCE6), 0);
+              lv_obj_set_style_border_color(b, lv_color_hex(0x242A33), 0);
               lv_obj_set_style_shadow_width(b, 8, 0);
               lv_obj_set_style_shadow_opa(b, LV_OPA_20, 0);
-              lv_obj_set_style_shadow_color(b, lv_color_hex(0x9AA4B5), 0);
+              lv_obj_set_style_shadow_color(b, lv_color_hex(0x000000), 0);
             } else {
               lv_obj_set_style_border_width(b, 0, 0);
               lv_obj_set_style_shadow_width(b, 0, 0);
