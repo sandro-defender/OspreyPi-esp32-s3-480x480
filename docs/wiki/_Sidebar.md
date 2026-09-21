@@ -3,6 +3,7 @@
 - [Home](Home.md)
 - [Installation](Installation.md)
 - [Hardware](Hardware.md)
+- [Themes](Themes.md) — 3 themes
 - [Performance](Performance.md)
 - [AC Control](AC-Control.md)
 - [Settings](Settings.md)

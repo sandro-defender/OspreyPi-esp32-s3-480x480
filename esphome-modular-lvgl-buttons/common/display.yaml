@@ -9,7 +9,7 @@ substitutions:
   device_comment: "OspreyPi ESP32-S3 480x480 smart display"
   project_name: "ospreypi.smart-display"
   # This is also the GitHub release/tag created after a validated main push.
-  project_version: "2.1"
+  project_version: "2.2"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"
@@ -42,7 +42,7 @@ substitutions:
   nighttime_brightness_default: "35"
   screen_timeout_default: "30"
   brightness_mode_index: "0" # 0 Day, 1 Evening, 2 Night
-  theme_index: "0"           # 0 Dark, 1 Light
+  theme_index: "0"           # 0 Classic, 1 Modern, 2 Performance
 
   # Boot/performance defaults - optimized for speed
   boot_screen_delay: "8s"
@@ -111,6 +111,7 @@ packages:
   weather_icons: !include weather_icons.yaml
   sensors: !include ../sensors/sensors_base.yaml
   theme: !include theme_style.yaml
+  themes: !include themes.yaml
   display_settings: !include display_settings.yaml
   hardware: !include ../hardware/osptek-esp32-s3-48x48.yaml
   assets: !include assets.yaml

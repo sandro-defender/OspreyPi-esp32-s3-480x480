@@ -1,7 +1,6 @@
 ---
-# Enhanced AC control page - more options, faster UI
-# Features: Power, Mode (auto/cool/heat/dry/fan/off), Fan (auto/low/med/high), 
-# Swing (off/v/h/both), Presets (eco/sleep/boost/none), Turbo, Quiet, Light toggle
+# Enhanced AC control with 3 themes support
+# Theme 1 Classic: original dark, Theme 2 Modern: like mockup images (green/blue/orange), Theme 3 Performance: minimal gray
 
 globals:
   - id: ${widget_name}_target_temp
@@ -17,10 +16,20 @@ binary_sensor:
     entity_id: "${climate_entity}"
     attribute: state
     on_state:
-      - lvgl.obj.update:
-          id: ${widget_name}_power_btn
-          bg_color: !lambda |-
-            return x ? 0x4CAF50 : 0x333333;
+      - lambda: |-
+          auto btn = id(${widget_name}_power_btn);
+          if (!btn) return;
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          if (x) {
+            if (theme=="Modern") lv_obj_set_style_bg_color(btn, lv_color_hex(0x00E676), 0);
+            else if (theme=="Performance") lv_obj_set_style_bg_color(btn, lv_color_hex(0x444444), 0);
+            else lv_obj_set_style_bg_color(btn, lv_color_hex(0x4CAF50), 0);
+            lv_obj_set_style_text_color(btn, lv_color_hex(theme=="Modern"?0x000000:0xFFFFFF), 0);
+          } else {
+            uint32_t off = (theme=="Modern") ? 0x2A2E3A : (theme=="Performance" ? 0x1A1A1A : 0x333333);
+            lv_obj_set_style_bg_color(btn, lv_color_hex(off), 0);
+          }
       - lvgl.label.update:
           id: ${widget_name}_power_label
           text: !lambda |-
@@ -38,13 +47,20 @@ text_sensor:
       - lambda: |-
           auto btn = id(${widget_name}_mode_btn);
           if (!btn) return;
-          if (x == "cool") lv_obj_set_style_bg_color(btn, lv_color_hex(0x2196F3), 0);
-          else if (x == "heat") lv_obj_set_style_bg_color(btn, lv_color_hex(0xFF9800), 0);
-          else if (x == "dry") lv_obj_set_style_bg_color(btn, lv_color_hex(0xFFEB3B), 0);
-          else if (x == "fan_only") lv_obj_set_style_bg_color(btn, lv_color_hex(0x4CAF50), 0);
-          else if (x == "auto") lv_obj_set_style_bg_color(btn, lv_color_hex(0x9C27B0), 0);
-          else if (x == "off") lv_obj_set_style_bg_color(btn, lv_color_hex(0x555555), 0);
-          else lv_obj_set_style_bg_color(btn, lv_color_hex(0x607D8B), 0);
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          uint32_t col = 0x555555;
+          if (x == "cool") col = (theme=="Modern") ? 0x29B6F6 : 0x2196F3;
+          else if (x == "heat") col = 0xFF9800;
+          else if (x == "dry") col = (theme=="Modern") ? 0xFFCA28 : 0xFFEB3B;
+          else if (x == "fan_only") col = (theme=="Modern") ? 0x66BB6A : 0x4CAF50;
+          else if (x == "auto") col = 0x9C27B0;
+          else if (x == "off") col = (theme=="Modern") ? 0x2A2E3A : (theme=="Performance" ? 0x1A1A1A : 0x555555);
+          else col = 0x607D8B;
+          if (theme=="Performance" && x!="off") col = 0x444444;
+          lv_obj_set_style_bg_color(btn, lv_color_hex(col), 0);
+          if (theme=="Modern" && (x=="cool"||x=="dry")) lv_obj_set_style_text_color(btn, lv_color_hex(0x000000), 0);
+          else lv_obj_set_style_text_color(btn, lv_color_white(), 0);
 
   - platform: homeassistant
     id: ${widget_name}_fan_mode
@@ -54,6 +70,16 @@ text_sensor:
       - lvgl.label.update:
           id: ${widget_name}_fan_label
           text: !lambda return x;
+      - lambda: |-
+          auto btn = id(${widget_name}_fan_btn);
+          if (!btn) return;
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          // Fan button shows active when not auto? Keep gray but highlight if high
+          std::string mode = x;
+          uint32_t col = (theme=="Modern") ? 0x3A3F4E : (theme=="Performance" ? 0x1A1A1A : 0x555555);
+          if (mode=="high") col = (theme=="Modern") ? 0xFF8C00 : 0xFF9800;
+          lv_obj_set_style_bg_color(btn, lv_color_hex(col), 0);
 
   - platform: homeassistant
     id: ${widget_name}_swing_mode
@@ -64,12 +90,23 @@ text_sensor:
           id: ${widget_name}_swing_label
           text: !lambda |-
             if (x=="off" || x=="") return std::string("SWING OFF");
-            return x;
+            std::string up=x; for(auto &c:up) c=toupper(c);
+            return up;
       - lambda: |-
           auto btn = id(${widget_name}_swing_btn);
           if (!btn) return;
-          if (x=="off" || x=="") lv_obj_set_style_bg_color(btn, lv_color_hex(0x555555), 0);
-          else lv_obj_set_style_bg_color(btn, lv_color_hex(0x03A9F4), 0);
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          bool active = !(x=="off" || x=="");
+          uint32_t col;
+          if (active) {
+            if (theme=="Modern") col = 0x03A9F4;
+            else if (theme=="Performance") col = 0x444444;
+            else col = 0x03A9F4;
+          } else {
+            col = (theme=="Modern") ? 0x2A2E3A : (theme=="Performance" ? 0x1A1A1A : 0x555555);
+          }
+          lv_obj_set_style_bg_color(btn, lv_color_hex(col), 0);
 
   - platform: homeassistant
     id: ${widget_name}_preset_mode
@@ -80,14 +117,28 @@ text_sensor:
           id: ${widget_name}_preset_label
           text: !lambda |-
             if (x=="" || x=="none") return std::string("NORMAL");
-            return x;
+            std::string up=x; for(auto &c:up) c=toupper(c);
+            return up;
       - lambda: |-
-          auto turbo_btn = id(${widget_name}_turbo_btn);
-          auto eco_btn = id(${widget_name}_eco_btn);
-          auto sleep_btn = id(${widget_name}_sleep_btn);
-          if (turbo_btn) lv_obj_set_style_bg_color(turbo_btn, lv_color_hex(x=="boost" ? 0xFF5722 : 0x555555), 0);
-          if (eco_btn) lv_obj_set_style_bg_color(eco_btn, lv_color_hex(x=="eco" ? 0x4CAF50 : 0x555555), 0);
-          if (sleep_btn) lv_obj_set_style_bg_color(sleep_btn, lv_color_hex(x=="sleep" ? 0x9C27B0 : 0x555555), 0);
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          uint32_t inactive = (theme=="Modern") ? 0x2A2E3A : (theme=="Performance" ? 0x1A1A1A : 0x555555);
+          uint32_t eco_col = (x=="eco") ? ((theme=="Modern") ? 0x00E676 : 0x4CAF50) : inactive;
+          uint32_t sleep_col = (x=="sleep") ? ((theme=="Modern") ? 0x7C4DFF : 0x9C27B0) : inactive;
+          uint32_t turbo_col = (x=="boost") ? ((theme=="Modern") ? 0xFF6D00 : 0xFF5722) : inactive;
+          if (theme=="Performance") {
+            if (x=="eco" || x=="sleep" || x=="boost") {
+              eco_col = (x=="eco") ? 0x444444 : inactive;
+              sleep_col = (x=="sleep") ? 0x444444 : inactive;
+              turbo_col = (x=="boost") ? 0x444444 : inactive;
+            }
+          }
+          if (id(${widget_name}_eco_btn)) lv_obj_set_style_bg_color(id(${widget_name}_eco_btn), lv_color_hex(eco_col), 0);
+          if (id(${widget_name}_sleep_btn)) lv_obj_set_style_bg_color(id(${widget_name}_sleep_btn), lv_color_hex(sleep_col), 0);
+          if (id(${widget_name}_turbo_btn)) lv_obj_set_style_bg_color(id(${widget_name}_turbo_btn), lv_color_hex(turbo_col), 0);
+          // Text color for Modern active green/blue should be black for contrast
+          if (id(${widget_name}_eco_btn) && theme=="Modern" && x=="eco") lv_obj_set_style_text_color(id(${widget_name}_eco_btn), lv_color_hex(0x000000), 0);
+          else if (id(${widget_name}_eco_btn)) lv_obj_set_style_text_color(id(${widget_name}_eco_btn), lv_color_white(), 0);
 
   - platform: homeassistant
     id: ${widget_name}_hvac_action
@@ -148,8 +199,8 @@ lvgl:
       bg_color: 0x0F1115
       bg_opa: cover
       widgets:
-        # Top bar
         - obj:
+            id: ${widget_name}_top_bar
             align: top_mid
             y: 0
             width: 480
@@ -166,6 +217,7 @@ lvgl:
               flex_align_cross: center
             widgets:
               - button:
+                  id: ${widget_name}_back_btn
                   width: 70
                   height: 36
                   radius: 8
@@ -191,6 +243,7 @@ lvgl:
                     flex_align_cross: center
                   widgets:
                     - label:
+                        id: ${widget_name}_title_label
                         text: "Climate Control"
                         text_font: nunito_18
                         text_color: white
@@ -205,7 +258,6 @@ lvgl:
                   text_font: nunito_14
                   text_color: 0x4FC3F7
 
-        # Center arc area
         - arc:
             id: ${widget_name}_temp_arc
             align: center
@@ -280,8 +332,8 @@ lvgl:
                         text_font: nunito_14
                         text_color: 0xFF9F1C
 
-        # +/- buttons
         - button:
+            id: ${widget_name}_minus_btn
             align: center
             x: -110
             y: -30
@@ -315,6 +367,7 @@ lvgl:
                     temperature: !lambda return id(${widget_name}_target_temp);
 
         - button:
+            id: ${widget_name}_plus_btn
             align: center
             x: 110
             y: -30
@@ -347,8 +400,8 @@ lvgl:
                     entity_id: "${climate_entity}"
                     temperature: !lambda return id(${widget_name}_target_temp);
 
-        # Bottom controls - Row 1: Power, Mode, Fan, Swing
         - obj:
+            id: ${widget_name}_row1
             align: bottom_mid
             y: -92
             width: 460
@@ -462,8 +515,8 @@ lvgl:
                             if (cur=="horizontal") return "both";
                             return "off";
 
-        # Bottom controls - Row 2: Eco, Sleep, Turbo, Preset display
         - obj:
+            id: ${widget_name}_row2
             align: bottom_mid
             y: -34
             width: 460
@@ -540,6 +593,7 @@ lvgl:
                             return (id(${widget_name}_preset_mode).state=="boost") ? "none" : "boost";
 
               - obj:
+                  id: ${widget_name}_preset_box
                   width: 108
                   height: 48
                   radius: 12
