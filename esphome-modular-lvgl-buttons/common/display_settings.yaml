@@ -83,9 +83,3 @@ script:
           else if (r == "180") rot = lvgl::ROTATION_180_DEGREES;
           else if (r == "270") rot = lvgl::ROTATION_270_DEGREES;
           id(lvgl_component).set_rotation(rot);
-
-lvgl:
-  buffer_size: "${lvgl_buffer_size}"
-  refresh_interval: "${lvgl_refresh_interval}"
-  rotation: "${display_rotation}"
-  log_level: NONE

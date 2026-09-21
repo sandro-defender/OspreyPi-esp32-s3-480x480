@@ -112,6 +112,7 @@ packages:
   sensors: !include ../sensors/sensors_base.yaml
   theme: !include theme_style.yaml
   themes: !include themes.yaml
+  display_core: !include display_core.yaml
   hardware: !include ../hardware/osptek-esp32-s3-48x48.yaml
   assets: !include assets.yaml
   loading_screen: !include ../pages/loading_480px.yaml

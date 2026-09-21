@@ -1,0 +1,7 @@
+---
+# Core LVGL settings - must be defined before pages
+lvgl:
+  buffer_size: "${lvgl_buffer_size}"
+  refresh_interval: "${lvgl_refresh_interval}"
+  rotation: "${display_rotation}"
+  log_level: NONE
