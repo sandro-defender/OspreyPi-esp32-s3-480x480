@@ -7,9 +7,9 @@ wifi:
       password: !secret wifi_password
       priority: 10  # Primary network
     
-    - ssid: !secret wifi_ssid2
-      password: !secret wifi_password2
-      priority: 5  # Secondary network (lower priority)
+#    - ssid: !secret wifi_ssid2
+#      password: !secret wifi_password2
+#      priority: 5  # Secondary network (lower priority)
   
   # WiFi roaming enabled by default in 2026.1.0
   # Devices will scan for better APs after connecting

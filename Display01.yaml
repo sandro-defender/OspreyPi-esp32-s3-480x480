@@ -6,7 +6,7 @@ substitutions:
   bg_color: black
   button_on_color: "ep_orange"
   button_off_color: "slate_blue_gray"
-  icon_on_color: "yellow"
+  icon_on_color: "white"
   icon_off_color: "misty_blue"
   label_on_color: "white"
   label_off_color: "white"
@@ -55,6 +55,8 @@ substitutions:
   touch_mirror_y: "false"
 
 esphome:
+  # ESPHome 2026.9 supplies the supported LVGL 9.5.0 integration.
+  min_version: 2026.9.0
   name: $device_name
   friendly_name: $device_friendly_name
   comment: $device_comment
@@ -253,6 +255,15 @@ packages:
 # LVGL pages and buttons
 # -------------------------------------------------------------------------
 lvgl:
+  # Display 01 overrides only; shared styles for other displays remain reusable.
+  theme:
+    button:
+      radius: 16px
+      shadow_width: 0
+      border_color: slate_blue_gray
+      pressed:
+        border_color: white
+        border_width: 2
   buffer_size: $lvgl_buffer_size
   refresh_interval: $lvgl_refresh_interval
   rotation: $display_rotation
@@ -262,6 +273,8 @@ lvgl:
       layout:
         type: flex
         flex_flow: COLUMN_WRAP
+        pad_row: 10px
+        pad_column: 10px
       width: 100%
       styles: page_style
       # A neutral background keeps cards readable in daylight and at night.
@@ -277,7 +290,7 @@ lvgl:
             vars:
               uid: button_1
               height: $button_height_double
-              text: bedroom
+              text: Bedroom
               icon: $mdi_lightbulb
               entity_id: "light.bedroom_lights" 
 
@@ -287,7 +300,7 @@ lvgl:
             vars:
               uid: button_2
               height: $button_height_single
-              text: fun
+              text: Fan
               icon: $mdi_fan
               entity_id: "switch.fun_group"
 
@@ -297,7 +310,7 @@ lvgl:
             vars:
               uid: button_3
               height: $button_height_single
-              text: pantry light
+              text: Pantry
               icon: $mdi_lightbulb
               entity_id: "light.pantry_light"
 
@@ -307,7 +320,7 @@ lvgl:
             vars:
               uid: button_4_5
               height: $button_height_single
-              text: wled
+              text: WLED
               icon: $mdi_string_lights
               entity_id: "script.wled_light_togle_animated"
 
@@ -337,7 +350,7 @@ lvgl:
             vars:
               uid: button_6
               height: $button_height_single
-              text: sleep
+              text: Sleep
               icon: $mdi_weather_night
               entity_id: "switch.call_sleep_script"
 
@@ -347,16 +360,31 @@ lvgl:
             vars:
               uid: wled_new
               height: $button_height_double
-              text: wled bed
+              text: Bed LEDs
               icon: $mdi_string_lights
               entity_id: "light.wled_new"
 
-        # Button 8 - Empty button moves the buttons below it down one
-        - button: !include
-            file: esphome-modular-lvgl-buttons/buttons/transparent_empty_button.yaml
-            vars:
-              uid: empty_8
-              height: $button_height_single
+        # Connection status and a direct route to device diagnostics.
+        - button:
+            id: display01_status_button
+            height: $button_height_single
+            widgets:
+              - label:
+                  align: top_left
+                  text: "System"
+              - label:
+                  id: display01_connection_status
+                  align: center
+                  text_font: nunito_18
+                  text_color: amber
+                  text: "Connecting"
+              - label:
+                  align: bottom_left
+                  text_font: nunito_14
+                  text_color: misty_blue
+                  text: "Tap for details"
+            on_short_click:
+              - lvgl.page.show: info_screen
 
         # Button 9 - Standard light button with state updates
         - button: !include
@@ -364,7 +392,7 @@ lvgl:
             vars:
               uid: button_9
               height: $button_height_single
-              text: exit
+              text: Leave
               icon: $mdi_location_exit
               entity_id: "switch.call_exit_script"
 # -------------------------------------------------------------------------
@@ -434,3 +462,25 @@ image:
     file: esphome-modular-lvgl-buttons/assets/bg/sync4-dark.jpeg
     id: sync4
     type: RGB565
+
+# Watch the existing HA-specific connection flag, rather than arbitrary API clients.
+binary_sensor:
+  - platform: template
+    id: display01_ha_status
+    internal: true
+    lambda: return id(ha_connected);
+    trigger_on_initial_state: true
+    on_state:
+      - if:
+          condition:
+            binary_sensor.is_on: display01_ha_status
+          then:
+            - lvgl.label.update:
+                id: display01_connection_status
+                text: "Connected"
+                text_color: mint
+          else:
+            - lvgl.label.update:
+                id: display01_connection_status
+                text: "HA offline"
+                text_color: amber
