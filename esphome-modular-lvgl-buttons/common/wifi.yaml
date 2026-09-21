@@ -1,40 +1,28 @@
 ---
 wifi:
-  # Multiple WiFi networks with automatic failover
-  # Priority: higher number = higher priority (default is 1.0)
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_password
-      priority: 10  # Primary network
-    
-#    - ssid: !secret wifi_ssid2
-#      password: !secret wifi_password2
-#      priority: 5  # Secondary network (lower priority)
-  
-  # WiFi roaming enabled by default in 2026.1.0
-  # Devices will scan for better APs after connecting
-  # and switch if a significantly better signal is found
+      priority: 10
 
-  # Reuse the last successful AP after a software restart without adding flash writes.
-  # If it is unavailable, ESPHome falls back to scanning both configured networks.
-  fast_connect:
-    enabled: true
-    storage: rtc
+    # Optional backup network. Uncomment this block and add the matching
+    # secrets only when a second access point is available.
+    # - ssid: !secret wifi_ssid2
+    #   password: !secret wifi_password2
+    #   priority: 5
 
-  # Avoid a reboot loop during a short router outage while retaining automatic recovery.
+  # Scanning keeps roaming/recovery reliable and supports the optional backup.
+  fast_connect: false
   reboot_timeout: 30min
-  
-  # Fallback AP if both networks fail
-  ap:
-    ssid: "Display-Fallback-AP"
-    password: ""
-  
   power_save_mode: none
+
+  ap:
+    ssid: "${fallback_ap_ssid}"
+    password: ""
 
 captive_portal:
 
+# Optional local configuration UI. Home Assistant remains the recommended UI.
 # web_server:
 #   port: 80
 #   version: 3
-# # Uncomment the lines above to enable the web server again.
-  

@@ -1,0 +1,267 @@
+---
+# Default home dashboard shared by Display01 and Display02.
+#
+# QUICK CUSTOMIZATION
+# Override any value below in the `substitutions:` block of a DisplayXX.yaml.
+# Generic cards accept any Home Assistant action (for example light.toggle,
+# switch.toggle, script.turn_on, scene.turn_on) and entity ID. The entity is
+# declared once here and reused by both the button and its state listener.
+
+substitutions:
+  dashboard_button_1_text: "Bedroom"
+  dashboard_button_1_entity: "light.bedroom_lights"
+  dashboard_button_1_action: "light.toggle"
+  dashboard_button_1_icon: "\U000F0335" # mdi-lightbulb
+  dashboard_button_1_height: "228px"
+
+  dashboard_button_2_text: "Fan"
+  dashboard_button_2_entity: "switch.fun_group"
+  dashboard_button_2_action: "switch.toggle"
+  dashboard_button_2_icon: "\U000F0210" # mdi-fan
+  dashboard_button_2_height: "109px"
+
+  dashboard_button_3_text: "Pantry"
+  dashboard_button_3_entity: "light.pantry_light"
+  dashboard_button_3_action: "light.toggle"
+  dashboard_button_3_icon: "\U000F0335" # mdi-lightbulb
+  dashboard_button_3_height: "109px"
+
+  dashboard_button_4_text: "WLED"
+  dashboard_button_4_entity: "script.wled_light_togle_animated"
+  dashboard_button_4_action: "script.turn_on"
+  dashboard_button_4_state_entity: "light.wled_new"
+  dashboard_button_4_icon: "\U000F12BA" # mdi-string-lights
+  dashboard_button_4_height: "109px"
+
+  dashboard_button_5_entity: "switch.media_play_pause"
+  dashboard_button_5_action: "switch.toggle"
+  dashboard_button_5_icon: "\U000F040E" # mdi-play-pause
+  dashboard_button_5_height: "109px"
+
+  dashboard_button_6_text: "Sleep"
+  dashboard_button_6_entity: "switch.call_sleep_script"
+  dashboard_button_6_action: "switch.toggle"
+  dashboard_button_6_icon: "\U000F0594" # mdi-weather-night
+  dashboard_button_6_height: "109px"
+
+  dashboard_button_7_text: "Bed LEDs"
+  dashboard_button_7_entity: "light.wled_new"
+  dashboard_button_7_icon: "\U000F12BA" # mdi-string-lights
+  dashboard_button_7_height: "228px"
+
+  dashboard_button_9_text: "Leave"
+  dashboard_button_9_entity: "switch.call_exit_script"
+  dashboard_button_9_action: "switch.toggle"
+  dashboard_button_9_icon: "\U000F0FC5" # mdi-location-exit
+  dashboard_button_9_height: "109px"
+
+packages:
+  ac_screen: !include
+    file: ../pages/ac_control.yaml
+    vars:
+      widget_name: ac_main
+      climate_entity: "${climate_entity}"
+
+  button_1_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_1
+      entity_id: "${dashboard_button_1_entity}"
+
+  button_2_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_2
+      entity_id: "${dashboard_button_2_entity}"
+
+  button_3_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_3
+      entity_id: "${dashboard_button_3_entity}"
+
+  button_4_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_4
+      entity_id: "${dashboard_button_4_state_entity}"
+
+  button_5_state: !include
+    file: ../sensors/play_pause_button_state.yaml
+    vars:
+      uid: button_5
+      entity_id: "${dashboard_button_5_entity}"
+
+  button_6_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_6
+      entity_id: "${dashboard_button_6_entity}"
+
+  button_7_state: !include
+    file: ../sensors/dimmer_light_state.yaml
+    vars:
+      uid: button_7
+      entity_id: "${dashboard_button_7_entity}"
+
+  button_7_page: !include
+    file: ../pages/light_color.yaml
+    vars:
+      widget_name: button_7
+      light_entity: "${dashboard_button_7_entity}"
+
+  button_9_state: !include
+    file: ../sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: button_9
+      entity_id: "${dashboard_button_9_entity}"
+
+lvgl:
+  pages:
+    - id: main_page
+      layout:
+        type: flex
+        flex_flow: column_wrap
+        pad_row: 10px
+        pad_column: 10px
+      width: 100%
+      styles: page_style
+      <<: !include ../widgets/swipe_navigation.yaml
+      widgets:
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_1
+              height: "${dashboard_button_1_height}"
+              text: "${dashboard_button_1_text}"
+              icon: "${dashboard_button_1_icon}"
+              action: "${dashboard_button_1_action}"
+              entity_id: "${dashboard_button_1_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_2
+              height: "${dashboard_button_2_height}"
+              text: "${dashboard_button_2_text}"
+              icon: "${dashboard_button_2_icon}"
+              action: "${dashboard_button_2_action}"
+              entity_id: "${dashboard_button_2_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_3
+              height: "${dashboard_button_3_height}"
+              text: "${dashboard_button_3_text}"
+              icon: "${dashboard_button_3_icon}"
+              action: "${dashboard_button_3_action}"
+              entity_id: "${dashboard_button_3_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_4
+              height: "${dashboard_button_4_height}"
+              text: "${dashboard_button_4_text}"
+              icon: "${dashboard_button_4_icon}"
+              action: "${dashboard_button_4_action}"
+              entity_id: "${dashboard_button_4_entity}"
+
+        - button: !include
+            file: ../buttons/page_button.yaml
+            vars:
+              uid: ac_nav
+              height: $button_height_single
+              text: AC
+              icon: $mdi_air_conditioner
+              page: ac_main_page
+
+        - button: !include
+            file: ../buttons/fullscreen_entity_button.yaml
+            vars:
+              uid: button_5
+              height: "${dashboard_button_5_height}"
+              icon: "${dashboard_button_5_icon}"
+              font: mdi_icons_80
+              action: "${dashboard_button_5_action}"
+              entity_id: "${dashboard_button_5_entity}"
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_6
+              height: "${dashboard_button_6_height}"
+              text: "${dashboard_button_6_text}"
+              icon: "${dashboard_button_6_icon}"
+              action: "${dashboard_button_6_action}"
+              entity_id: "${dashboard_button_6_entity}"
+
+        - button: !include
+            file: ../buttons/dimmer_light_button.yaml
+            vars:
+              uid: button_7
+              height: "${dashboard_button_7_height}"
+              text: "${dashboard_button_7_text}"
+              icon: "${dashboard_button_7_icon}"
+              entity_id: "${dashboard_button_7_entity}"
+
+        # Settings card also shows the live Home Assistant connection state.
+        - button:
+            id: dashboard_settings_button
+            height: $button_height_single
+            width: $button_width
+            widgets:
+              - label:
+                  align: top_left
+                  text_font: $icon_font
+                  text: $mdi_cog
+              - label:
+                  id: dashboard_connection_status
+                  align: center
+                  text_font: nunito_18
+                  text_color: amber
+                  text: "Connecting"
+              - label:
+                  align: bottom_left
+                  text_font: nunito_14
+                  text_color: misty_blue
+                  text: "Tap · hold for info"
+            on_short_click:
+              - lvgl.page.show: settings_page
+            on_long_press:
+              - lvgl.page.show: info_screen
+
+        - button: !include
+            file: ../buttons/entity_button.yaml
+            vars:
+              uid: button_9
+              height: "${dashboard_button_9_height}"
+              text: "${dashboard_button_9_text}"
+              icon: "${dashboard_button_9_icon}"
+              action: "${dashboard_button_9_action}"
+              entity_id: "${dashboard_button_9_entity}"
+
+
+# Keep the status shown on the Settings card tied specifically to Home
+# Assistant rather than to arbitrary logger/API clients.
+binary_sensor:
+  - platform: template
+    id: dashboard_ha_status
+    internal: true
+    lambda: return id(ha_connected);
+    trigger_on_initial_state: true
+    on_state:
+      - if:
+          condition:
+            binary_sensor.is_on: dashboard_ha_status
+          then:
+            - lvgl.label.update:
+                id: dashboard_connection_status
+                text: "Connected"
+                text_color: mint
+          else:
+            - lvgl.label.update:
+                id: dashboard_connection_status
+                text: "HA offline"
+                text_color: amber

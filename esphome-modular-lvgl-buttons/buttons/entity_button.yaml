@@ -1,0 +1,29 @@
+---
+# Generic Home Assistant action button.
+# Changing action/entity_id in a dashboard profile is enough to repurpose it.
+# vars: uid, height, text, icon, action, entity_id
+
+height: ${height}
+width: $button_width
+id: button_${uid}
+widgets:
+  - label:
+      text_font: $icon_font
+      align: top_left
+      id: icon_${uid}
+      text: ${icon}
+  - label:
+      align: bottom_left
+      id: label_${uid}
+      text: ${text}
+on_short_click:
+  - if:
+      condition:
+        lambda: 'return id(ha_connected);'
+      then:
+        - homeassistant.action:
+            action: ${action}
+            data:
+              entity_id: ${entity_id}
+      else:
+        - logger.log: "Home Assistant is offline; ignored dashboard button press"

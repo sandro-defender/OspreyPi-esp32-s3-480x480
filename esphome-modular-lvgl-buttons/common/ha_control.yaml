@@ -1,3 +1,5 @@
+# LEGACY COMPATIBILITY PACKAGE (not loaded by Display01/Display02).
+# New dashboards use home_assistant.yaml + pages/settings.yaml.
 # Expose simple buzzer control to Home Assistant
 
 esphome:

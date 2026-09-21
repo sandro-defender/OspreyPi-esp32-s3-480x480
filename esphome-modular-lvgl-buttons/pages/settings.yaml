@@ -1,0 +1,420 @@
+---
+# Touchscreen settings page. Every control is also an ESPHome entity, so the
+# same values can be changed from Home Assistant without reflashing.
+
+lvgl:
+  style_definitions:
+    - id: settings_row_style
+      bg_color: 0x252A34
+      bg_opa: cover
+      border_width: 1
+      border_color: 0x3A4352
+      radius: 14
+      pad_left: 14
+      pad_right: 14
+      pad_top: 8
+      pad_bottom: 8
+
+  pages:
+    - id: settings_page
+      bg_color: 0x11151C
+      bg_opa: cover
+      on_load:
+        - lvgl.label.update:
+            id: settings_day_label
+            text:
+              format: "Day brightness · %.0f%%"
+              args: [ 'id(day_brightness).state' ]
+        - lvgl.label.update:
+            id: settings_evening_label
+            text:
+              format: "Evening brightness · %.0f%%"
+              args: [ 'id(evening_brightness).state' ]
+        - lvgl.label.update:
+            id: settings_night_label
+            text:
+              format: "Night brightness · %.0f%%"
+              args: [ 'id(night_brightness).state' ]
+        - lvgl.label.update:
+            id: settings_timeout_label
+            text:
+              format: "Screen timeout · %.0fs"
+              args: [ 'id(screen_timeout).state' ]
+      widgets:
+        - label:
+            align: top_mid
+            y: 10
+            text: "Display settings"
+            text_font: nunito_32
+            text_color: white
+
+        - obj:
+            align: top_mid
+            y: 52
+            width: 460
+            height: 365
+            bg_opa: transp
+            border_width: 0
+            pad_all: 6
+            scrollable: true
+            scrollbar_mode: auto
+            layout:
+              type: flex
+              flex_flow: column
+              flex_align_main: start
+              flex_align_cross: center
+              pad_row: 8
+            widgets:
+              - obj:
+                  width: 440
+                  height: 64
+                  styles: settings_row_style
+                  layout:
+                    type: grid
+                    grid_columns: [FR(45), FR(55)]
+                    grid_rows: [FR(1)]
+                  widgets:
+                    - label:
+                        grid_cell_column_pos: 0
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: start
+                        grid_cell_y_align: center
+                        text: "Brightness mode"
+                        text_font: nunito_20
+                        text_color: white
+                    - dropdown:
+                        id: settings_brightness_mode
+                        grid_cell_column_pos: 1
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: stretch
+                        grid_cell_y_align: center
+                        options: [Day, Evening, Night]
+                        selected_index: "${brightness_mode_index}"
+                        text_font: nunito_20
+
+              - obj:
+                  width: 440
+                  height: 72
+                  styles: settings_row_style
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: space_evenly
+                  widgets:
+                    - label:
+                        id: settings_day_label
+                        text: "Day brightness · ${daytime_brightness_default}%"
+                        text_font: nunito_20
+                        text_color: white
+                    - slider:
+                        id: settings_day_brightness
+                        width: 400
+                        height: 18
+                        min_value: 5
+                        max_value: 100
+                        value: "${daytime_brightness_default}"
+                        knob:
+                          bg_color: 0xFF9F1C
+                        indicator:
+                          bg_color: 0xFF9F1C
+
+              - obj:
+                  width: 440
+                  height: 72
+                  styles: settings_row_style
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: space_evenly
+                  widgets:
+                    - label:
+                        id: settings_evening_label
+                        text: "Evening brightness · ${evening_brightness_default}%"
+                        text_font: nunito_20
+                        text_color: white
+                    - slider:
+                        id: settings_evening_brightness
+                        width: 400
+                        height: 18
+                        min_value: 5
+                        max_value: 100
+                        value: "${evening_brightness_default}"
+                        knob:
+                          bg_color: 0xFF9F1C
+                        indicator:
+                          bg_color: 0xFF9F1C
+
+              - obj:
+                  width: 440
+                  height: 72
+                  styles: settings_row_style
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: space_evenly
+                  widgets:
+                    - label:
+                        id: settings_night_label
+                        text: "Night brightness · ${nighttime_brightness_default}%"
+                        text_font: nunito_20
+                        text_color: white
+                    - slider:
+                        id: settings_night_brightness
+                        width: 400
+                        height: 18
+                        min_value: 5
+                        max_value: 100
+                        value: "${nighttime_brightness_default}"
+                        knob:
+                          bg_color: 0xFF9F1C
+                        indicator:
+                          bg_color: 0xFF9F1C
+
+              - obj:
+                  width: 440
+                  height: 72
+                  styles: settings_row_style
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: space_evenly
+                  widgets:
+                    - label:
+                        id: settings_timeout_label
+                        text: "Screen timeout · ${screen_timeout_default}s"
+                        text_font: nunito_20
+                        text_color: white
+                    - slider:
+                        id: settings_screen_timeout
+                        width: 400
+                        height: 18
+                        min_value: 15
+                        max_value: 600
+                        value: "${screen_timeout_default}"
+                        knob:
+                          bg_color: 0x41BDF5
+                        indicator:
+                          bg_color: 0x41BDF5
+
+              - obj:
+                  width: 440
+                  height: 64
+                  styles: settings_row_style
+                  layout:
+                    type: grid
+                    grid_columns: [FR(75), FR(25)]
+                    grid_rows: [FR(1)]
+                  widgets:
+                    - label:
+                        grid_cell_column_pos: 0
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: start
+                        grid_cell_y_align: center
+                        text: "Screensaver enabled"
+                        text_font: nunito_20
+                        text_color: white
+                    - switch:
+                        id: settings_screensaver_enabled
+                        grid_cell_column_pos: 1
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: end
+                        grid_cell_y_align: center
+                        state:
+                          checked: true
+
+              - obj:
+                  width: 440
+                  height: 64
+                  styles: settings_row_style
+                  layout:
+                    type: grid
+                    grid_columns: [FR(45), FR(55)]
+                    grid_rows: [FR(1)]
+                  widgets:
+                    - label:
+                        grid_cell_column_pos: 0
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: start
+                        grid_cell_y_align: center
+                        text: "Theme"
+                        text_font: nunito_20
+                        text_color: white
+                    - dropdown:
+                        id: settings_theme
+                        grid_cell_column_pos: 1
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: stretch
+                        grid_cell_y_align: center
+                        options: [Dark, Light]
+                        selected_index: "${theme_index}"
+                        text_font: nunito_20
+
+              - obj:
+                  width: 440
+                  height: 64
+                  styles: settings_row_style
+                  layout:
+                    type: grid
+                    grid_columns: [FR(45), FR(55)]
+                    grid_rows: [FR(1)]
+                  widgets:
+                    - label:
+                        grid_cell_column_pos: 0
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: start
+                        grid_cell_y_align: center
+                        text: "Rotation"
+                        text_font: nunito_20
+                        text_color: white
+                    - dropdown:
+                        id: settings_rotation
+                        grid_cell_column_pos: 1
+                        grid_cell_row_pos: 0
+                        grid_cell_x_align: stretch
+                        grid_cell_y_align: center
+                        options: ["0", "90", "180", "270"]
+                        selected_index: "${display_rotation_index}"
+                        text_font: nunito_20
+
+        - button:
+            align: bottom_left
+            x: 12
+            y: -8
+            width: 138
+            height: 46
+            radius: 14
+            bg_color: 0xFF6600
+            widgets:
+              - label:
+                  align: center
+                  text: "Home"
+                  text_font: nunito_20
+                  text_color: white
+            on_click:
+              - lvgl.page.show: main_page
+
+        - button:
+            align: bottom_right
+            x: -12
+            y: -8
+            width: 138
+            height: 46
+            radius: 14
+            bg_color: 0x3A4352
+            widgets:
+              - label:
+                  align: center
+                  text: "Device info"
+                  text_font: nunito_20
+                  text_color: white
+            on_click:
+              - lvgl.page.show: info_screen
+
+number:
+  - platform: lvgl
+    id: day_brightness
+    name: "Day Brightness"
+    widget: settings_day_brightness
+    trigger: on_release
+    restore_value: true
+    entity_category: config
+    on_value:
+      - lvgl.label.update:
+          id: settings_day_label
+          text:
+            format: "Day brightness · %.0f%%"
+            args: [ x ]
+      - if:
+          condition:
+            lambda: 'return id(brightness_mode).current_option() == "Day";'
+          then:
+            - script.execute: apply_display_brightness
+
+  - platform: lvgl
+    id: evening_brightness
+    name: "Evening Brightness"
+    widget: settings_evening_brightness
+    trigger: on_release
+    restore_value: true
+    entity_category: config
+    on_value:
+      - lvgl.label.update:
+          id: settings_evening_label
+          text:
+            format: "Evening brightness · %.0f%%"
+            args: [ x ]
+      - if:
+          condition:
+            lambda: 'return id(brightness_mode).current_option() == "Evening";'
+          then:
+            - script.execute: apply_display_brightness
+
+  - platform: lvgl
+    id: night_brightness
+    name: "Night Brightness"
+    widget: settings_night_brightness
+    trigger: on_release
+    restore_value: true
+    entity_category: config
+    on_value:
+      - lvgl.label.update:
+          id: settings_night_label
+          text:
+            format: "Night brightness · %.0f%%"
+            args: [ x ]
+      - if:
+          condition:
+            lambda: 'return id(brightness_mode).current_option() == "Night";'
+          then:
+            - script.execute: apply_display_brightness
+
+  - platform: lvgl
+    id: screen_timeout
+    name: "Screen Timeout"
+    widget: settings_screen_timeout
+    trigger: on_release
+    restore_value: true
+    entity_category: config
+    unit_of_measurement: s
+    on_value:
+      - lvgl.label.update:
+          id: settings_timeout_label
+          text:
+            format: "Screen timeout · %.0fs"
+            args: [ x ]
+
+select:
+  - platform: lvgl
+    id: brightness_mode
+    name: "Brightness Mode"
+    widget: settings_brightness_mode
+    restore_value: true
+    entity_category: config
+    on_value:
+      - script.execute: apply_display_brightness
+
+  - platform: lvgl
+    id: current_theme
+    name: "Theme"
+    widget: settings_theme
+    restore_value: true
+    entity_category: config
+    on_value:
+      - script.execute: apply_display_theme
+
+  - platform: lvgl
+    id: display_rotation_select
+    name: "Display Rotation"
+    widget: settings_rotation
+    restore_value: true
+    entity_category: config
+    on_value:
+      - script.execute: apply_display_rotation
+
+switch:
+  - platform: lvgl
+    id: screensaver_enabled
+    name: "Screensaver Enabled"
+    widget: settings_screensaver_enabled
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config

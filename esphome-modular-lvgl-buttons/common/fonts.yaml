@@ -17,7 +17,12 @@ font:
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_36
     size: 36
-    bpp: 8  
+    bpp: 8
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
+    id: nunito_32
+    size: 32
+    bpp: 8
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_24
@@ -49,8 +54,7 @@ font:
     size: 120
     bpp: 8
 
-  # PLACEHOLDER: Georgian font is missing, using Nunito as fallback
-  - file: gfonts://Noto Sans Georgian
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/NotoSansGeorgian.ttf"
     id: georgian_48
     size: 48
     bpp: 8

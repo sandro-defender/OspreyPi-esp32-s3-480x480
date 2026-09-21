@@ -1,0 +1,99 @@
+---
+# Shared firmware for every OspreyPi 480x480 display.
+#
+# Device files (Display01.yaml, Display02.yaml, ...) should only contain
+# identity/orientation values, their API key, and a dashboard package.
+# Values here are defaults and can be overridden in a device file.
+
+substitutions:
+  device_comment: "OspreyPi ESP32-S3 480x480 smart display"
+  project_name: "ospreypi.smart-display"
+  # This is also the GitHub release/tag created after a validated main push.
+  project_version: "2.0"
+
+  # Locale and Home Assistant sources
+  timezone: "Asia/Tbilisi"
+  weather_entity: "weather.openweathermap"
+  climate_entity: "climate.midea_ac"
+
+  # Display and UI defaults
+  icon_font: mdi_icons_40
+  text_font: nunito_24
+  text_color: white
+  bg_color: black
+  button_on_color: "ep_orange"
+  button_off_color: "slate_blue_gray"
+  icon_on_color: "white"
+  icon_off_color: "misty_blue"
+  label_on_color: "white"
+  label_off_color: "white"
+  button_text_color: "white"
+  button_height_single: "109px"
+  button_height_double: "228px"
+  button_width: "150px"
+  screen_height: "480"
+  screen_width: "480"
+  byte_order: big_endian
+
+  # Runtime settings start with these values, then persist changes made on the
+  # Settings page or in Home Assistant.
+  daytime_brightness_default: "100"
+  evening_brightness_default: "50"
+  nighttime_brightness_default: "35"
+  screen_timeout_default: "30"
+  brightness_mode_index: "0" # 0 Day, 1 Evening, 2 Night
+  theme_index: "0"           # 0 Dark, 1 Light
+
+  # Boot/performance defaults
+  boot_screen_delay: "60s"
+  screen_night_hour: "0"
+  screen_night_minute: "0"
+  log_level: "WARN"
+  lvgl_buffer_size: "12%"
+  lvgl_refresh_interval: "16ms"
+  fallback_ap_ssid: "OspreyPi Setup"
+
+esphome:
+  name: "${device_name}"
+  friendly_name: "${device_friendly_name}"
+  comment: "${device_comment}"
+  includes:
+    - <sstream>
+    - <algorithm>
+  on_boot:
+    - priority: 400
+      then:
+        - script.execute: update_loading_page
+
+logger:
+  level: "${log_level}"
+  # baud_rate: 0 # Required if UART0 is repurposed for experimental RS485.
+
+api:
+  # A Home Assistant restart must not reboot an otherwise healthy panel.
+  reboot_timeout: 30min
+
+esp32:
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH: "n"
+      CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
+
+packages:
+  wifi: !include wifi.yaml
+  home_assistant: !include home_assistant.yaml
+  ota_screen: !include ota.yaml
+  colors: !include color.yaml
+  fonts: !include fonts.yaml
+  glyphs: !include mdi_glyph_substitutions.yaml
+  weather_icons: !include weather_icons.yaml
+  sensors: !include ../sensors/sensors_base.yaml
+  theme: !include theme_style.yaml
+  display_settings: !include display_settings.yaml
+  hardware: !include ../hardware/osptek-esp32-s3-48x48.yaml
+  assets: !include assets.yaml
+  loading_screen: !include ../pages/loading_480px.yaml
+  info_screen: !include ../pages/info.yaml
+  screensaver: !include ../pages/screensaver.yaml
+  settings_screen: !include ../pages/settings.yaml

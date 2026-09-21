@@ -1,0 +1,68 @@
+---
+# Fonts and images shared by all dashboard profiles.
+
+font:
+  # Material Design Icons. Add every icon used by a dashboard to this list.
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
+    id: mdi_icons_40
+    size: 40
+    bpp: 8
+    glyphs:
+      - $mdi_lightbulb
+      - $mdi_ceiling_light
+      - $mdi_lamp
+      - $mdi_floor_lamp
+      - $mdi_string_lights
+      - $mdi_track_light
+      - $mdi_bulkhead_light
+      - $mdi_led_strip
+      - $mdi_coach_lamp
+      - $mdi_ceiling_fan_light
+      - $mdi_bed
+      - $mdi_white_balance_sunny
+      - $mdi_brightness_6
+      - $mdi_home
+      - $mdi_weather_night
+      - $mdi_movie
+      - $mdi_sofa
+      - $mdi_silverware_fork_knife
+      - $mdi_play_pause
+      - $mdi_play
+      - $mdi_pause
+      - $mdi_location_exit
+      - $mdi_fan
+      - $mdi_air_conditioner
+      - $mdi_cog
+      - $mdi_information_outline
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
+    id: mdi_icons_80
+    size: 80
+    bpp: 8
+    glyphs:
+      - $mdi_play_pause
+      - $mdi_play
+      - $mdi_pause
+
+image:
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/images/light/lightbulb.png
+    id: lightbulb_image
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/ota-dark.jpeg
+    id: screensaver_bg_image2
+    type: RGB565
+
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/bg1.jpg
+    id: screensaver_bg_image3
+    type: RGB565
+
+  - platform: file
+    file: esphome-modular-lvgl-buttons/assets/bg/sync4-dark.jpeg
+    id: sync4
+    type: RGB565

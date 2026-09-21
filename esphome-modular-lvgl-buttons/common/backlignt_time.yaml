@@ -1,4 +1,6 @@
 ---
+# LEGACY COMPATIBILITY PACKAGE (not loaded by Display01/Display02).
+# New dashboards use display_settings.yaml + pages/settings.yaml.
 sun:
   latitude: !secret latitude
   longitude: !secret longitude
