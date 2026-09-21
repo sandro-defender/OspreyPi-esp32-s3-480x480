@@ -4,11 +4,14 @@ wifi:
     - ssid: !secret wifi_ssid
       password: !secret wifi_password
       priority: 10
-    - ssid: !secret wifi_ssid2
-      password: !secret wifi_password2
-      priority: 5
 
-  # Scanning is required for reliable failover between the two configured APs.
+    # Optional backup network. Uncomment this block and add the matching
+    # secrets only when a second access point is available.
+    # - ssid: !secret wifi_ssid2
+    #   password: !secret wifi_password2
+    #   priority: 5
+
+  # Scanning keeps roaming/recovery reliable and supports the optional backup.
   fast_connect: false
   reboot_timeout: 30min
   power_save_mode: none

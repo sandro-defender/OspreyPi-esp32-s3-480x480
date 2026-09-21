@@ -8,25 +8,25 @@
 # declared once here and reused by both the button and its state listener.
 
 substitutions:
-  dashboard_button_1_text: "bedroom"
+  dashboard_button_1_text: "Bedroom"
   dashboard_button_1_entity: "light.bedroom_lights"
   dashboard_button_1_action: "light.toggle"
   dashboard_button_1_icon: "\U000F0335" # mdi-lightbulb
   dashboard_button_1_height: "228px"
 
-  dashboard_button_2_text: "fun"
+  dashboard_button_2_text: "Fan"
   dashboard_button_2_entity: "switch.fun_group"
   dashboard_button_2_action: "switch.toggle"
   dashboard_button_2_icon: "\U000F0210" # mdi-fan
   dashboard_button_2_height: "109px"
 
-  dashboard_button_3_text: "pantry light"
+  dashboard_button_3_text: "Pantry"
   dashboard_button_3_entity: "light.pantry_light"
   dashboard_button_3_action: "light.toggle"
   dashboard_button_3_icon: "\U000F0335" # mdi-lightbulb
   dashboard_button_3_height: "109px"
 
-  dashboard_button_4_text: "wled"
+  dashboard_button_4_text: "WLED"
   dashboard_button_4_entity: "script.wled_light_togle_animated"
   dashboard_button_4_action: "script.turn_on"
   dashboard_button_4_state_entity: "light.wled_new"
@@ -38,18 +38,18 @@ substitutions:
   dashboard_button_5_icon: "\U000F040E" # mdi-play-pause
   dashboard_button_5_height: "109px"
 
-  dashboard_button_6_text: "sleep"
+  dashboard_button_6_text: "Sleep"
   dashboard_button_6_entity: "switch.call_sleep_script"
   dashboard_button_6_action: "switch.toggle"
   dashboard_button_6_icon: "\U000F0594" # mdi-weather-night
   dashboard_button_6_height: "109px"
 
-  dashboard_button_7_text: "wled bed"
+  dashboard_button_7_text: "Bed LEDs"
   dashboard_button_7_entity: "light.wled_new"
   dashboard_button_7_icon: "\U000F12BA" # mdi-string-lights
   dashboard_button_7_height: "228px"
 
-  dashboard_button_9_text: "exit"
+  dashboard_button_9_text: "Leave"
   dashboard_button_9_entity: "switch.call_exit_script"
   dashboard_button_9_action: "switch.toggle"
   dashboard_button_9_icon: "\U000F0FC5" # mdi-location-exit
@@ -122,6 +122,8 @@ lvgl:
       layout:
         type: flex
         flex_flow: column_wrap
+        pad_row: 10px
+        pad_column: 10px
       width: 100%
       styles: page_style
       <<: !include ../widgets/swipe_navigation.yaml
@@ -204,14 +206,31 @@ lvgl:
               icon: "${dashboard_button_7_icon}"
               entity_id: "${dashboard_button_7_entity}"
 
-        - button: !include
-            file: ../buttons/page_button.yaml
-            vars:
-              uid: settings_nav
-              height: $button_height_single
-              text: settings
-              icon: $mdi_cog
-              page: settings_page
+        # Settings card also shows the live Home Assistant connection state.
+        - button:
+            id: dashboard_settings_button
+            height: $button_height_single
+            width: $button_width
+            widgets:
+              - label:
+                  align: top_left
+                  text_font: $icon_font
+                  text: $mdi_cog
+              - label:
+                  id: dashboard_connection_status
+                  align: center
+                  text_font: nunito_18
+                  text_color: amber
+                  text: "Connecting"
+              - label:
+                  align: bottom_left
+                  text_font: nunito_14
+                  text_color: misty_blue
+                  text: "Tap · hold for info"
+            on_short_click:
+              - lvgl.page.show: settings_page
+            on_long_press:
+              - lvgl.page.show: info_screen
 
         - button: !include
             file: ../buttons/entity_button.yaml
@@ -222,3 +241,27 @@ lvgl:
               icon: "${dashboard_button_9_icon}"
               action: "${dashboard_button_9_action}"
               entity_id: "${dashboard_button_9_entity}"
+
+
+# Keep the status shown on the Settings card tied specifically to Home
+# Assistant rather than to arbitrary logger/API clients.
+binary_sensor:
+  - platform: template
+    id: dashboard_ha_status
+    internal: true
+    lambda: return id(ha_connected);
+    trigger_on_initial_state: true
+    on_state:
+      - if:
+          condition:
+            binary_sensor.is_on: dashboard_ha_status
+          then:
+            - lvgl.label.update:
+                id: dashboard_connection_status
+                text: "Connected"
+                text_color: mint
+          else:
+            - lvgl.label.update:
+                id: dashboard_connection_status
+                text: "HA offline"
+                text_color: amber

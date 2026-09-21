@@ -23,19 +23,19 @@ lvgl:
       checkable: false
       press_lock: false
       scroll_on_focus: true
-      radius: 20px
+      radius: 16px
       width: $button_width
       height: $button_height_single
       pad_all: 14px
       border_width: 1
-      border_color: steel_blue
-      shadow_width: 10
-      shadow_color: black
-      shadow_opa: 60%
-      shadow_offset_y: 4
+      border_color: slate_blue_gray
+      shadow_width: 0
       bg_opa: cover
       bg_color: $button_off_color
       text_color: $label_off_color
+      pressed:
+        border_color: white
+        border_width: 2
 
   style_definitions:
     - id: page_style

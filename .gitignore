@@ -6,7 +6,12 @@
 /venv/
 /.venv/
 /.vscode/
-/secrets.yaml
+secrets.yaml
+secrets.yml
+**/secrets.yaml
+**/secrets.yml
+*.bak
+**/*.bak
 /info/
 .DS_Store
 **/.DS_Store

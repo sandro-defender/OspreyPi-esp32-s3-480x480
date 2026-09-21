@@ -22,7 +22,7 @@ substitutions:
   bg_color: black
   button_on_color: "ep_orange"
   button_off_color: "slate_blue_gray"
-  icon_on_color: "yellow"
+  icon_on_color: "white"
   icon_off_color: "misty_blue"
   label_on_color: "white"
   label_off_color: "white"

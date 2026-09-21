@@ -13,7 +13,7 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    container: esphome/esphome:2026.8.2
+    container: esphome/esphome:2026.9.0
     steps:
       - uses: actions/checkout@v4
       - name: Create non-secret validation values
@@ -21,8 +21,6 @@ jobs:
           cat > secrets.yaml <<'EOF'
           wifi_ssid: validation
           wifi_password: validation-password
-          wifi_ssid2: validation
-          wifi_password2: validation-password
           api_encryption_key: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
           api_encryption_key2: 6E5h8zR0kJ7nT2fW4mY9cP3vX8qL1aD6sB5uH0eG7iC=
           latitude: 41.7151

@@ -4,7 +4,7 @@
 
 **A modular 480×480 ESPHome/LVGL dashboard for Home Assistant**
 
-[![ESPHome](https://img.shields.io/badge/ESPHome-2026.8%2B-blue?logo=esphome)](https://esphome.io/)
+[![ESPHome](https://img.shields.io/badge/ESPHome-2026.9%2B-blue?logo=esphome)](https://esphome.io/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Native-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)
 
 </div>
@@ -64,7 +64,7 @@ All common logic now lives in reusable packages. A fix made to the shared displa
 
 ## Requirements
 
-- ESPHome **2026.8.0 or newer**
+- ESPHome **2026.9.0 or newer**
 - Home Assistant with the ESPHome integration for entity control
 - A 2.4 GHz Wi-Fi network
 - OspreyPi ESP32-S3 480×480 display described in [DEVICE_SPECS.md](DEVICE_SPECS.md)
@@ -82,8 +82,6 @@ Edit `secrets.yaml`:
 ```yaml
 wifi_ssid: "Primary WiFi"
 wifi_password: "primary-password"
-wifi_ssid2: "Backup WiFi"
-wifi_password2: "backup-password"
 
 api_encryption_key: "DISPLAY01_BASE64_KEY"
 api_encryption_key2: "DISPLAY02_BASE64_KEY"
@@ -98,7 +96,7 @@ Generate each API key with:
 openssl rand -base64 32
 ```
 
-If there is no second access point, use the primary credentials for both Wi-Fi entries.
+A backup Wi-Fi network is optional. To enable one, uncomment its block in `common/wifi.yaml` and add `wifi_ssid2`/`wifi_password2` to `secrets.yaml`.
 
 ### 2. Validate
 
