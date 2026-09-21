@@ -229,15 +229,27 @@ lvgl:
             widgets:
               - label:
                   align: top_left
-                  text_font: $icon_font
+                  text_font: mdi_icons_22
                   text: $mdi_cog
-              # Live Home Assistant connection state, shown as an icon
-              # (image) instead of the old small text label.
-              - image:
-                  id: dashboard_connection_status
+              # Live Home Assistant connection state: a status icon on a
+              # tinted halo disc instead of the old small text label. The
+              # halo colour follows the state (mint / amber / red).
+              - obj:
+                  id: dashboard_status_halo
                   align: center
-                  y: 4
-                  src: conn_status_connecting
+                  y: -4
+                  width: 68
+                  height: 68
+                  radius: 34
+                  bg_color: amber
+                  bg_opa: 22%
+                  border_width: 0
+                  pad_all: 0
+                  widgets:
+                    - image:
+                        id: dashboard_connection_status
+                        align: center
+                        src: conn_status_connecting
               - label:
                   align: bottom_left
                   text_font: nunito_14
@@ -275,10 +287,13 @@ binary_sensor:
             - lvgl.image.update:
                 id: dashboard_connection_status
                 src: conn_status_connected
+            - lambda: 'lv_obj_set_style_bg_color(id(dashboard_status_halo), lv_color_hex(0x39D19C), 0);'
           else:
             - lvgl.image.update:
                 id: dashboard_connection_status
                 src: conn_status_offline
+            - lambda: 'lv_obj_set_style_bg_color(id(dashboard_status_halo), lv_color_hex(0xE53935), 0);'
+
 
 # Theme handling - defined AFTER all pages so all ids exist (fixes validation)
 script:

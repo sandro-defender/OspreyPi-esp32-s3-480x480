@@ -56,6 +56,7 @@ font:
       - $mdi_home
       - $mdi_thermometer
       - $mdi_weather_windy
+      - $mdi_cog
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
     id: mdi_icons_80
@@ -81,21 +82,21 @@ image:
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/images/connection/connected.png
     id: conn_status_connected
-    resize: 72x72
+    resize: 60x60
     type: RGB565
     transparency: alpha_channel
 
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/images/connection/connecting.png
     id: conn_status_connecting
-    resize: 72x72
+    resize: 60x60
     type: RGB565
     transparency: alpha_channel
 
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/images/connection/offline.png
     id: conn_status_offline
-    resize: 72x72
+    resize: 60x60
     type: RGB565
     transparency: alpha_channel
 
