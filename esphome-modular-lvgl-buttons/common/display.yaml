@@ -117,5 +117,5 @@ packages:
   loading_screen: !include ../pages/loading_480px.yaml
   info_screen: !include ../pages/info.yaml
   screensaver: !include ../pages/screensaver.yaml
-  display_settings: !include display_settings.yaml
   settings_screen: !include ../pages/settings.yaml
+  display_settings: !include display_settings.yaml
