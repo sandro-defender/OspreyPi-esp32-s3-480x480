@@ -135,7 +135,7 @@ lvgl:
         - lvgl.page.show:
             id: ac_main_page
             animation: OUT_LEFT
-            # PERF v2.4: 300ms -> 150ms = navigation feels ~2x more instant.
+            # PERF v2.5: 300ms -> 150ms = navigation feels ~2x more instant.
             #options: stable: 300ms | fast: 150ms (applied)
             time: 150ms
       on_swipe_right:
@@ -506,7 +506,7 @@ script:
           }
 
 touchscreen:
-  # PERF v2.4: wake_display used to restart on EVERY touch report (also while
+  # PERF v2.5: wake_display used to restart on EVERY touch report (also while
   # the panel was already awake), re-running a full brightness service call on
   # every poll while a finger is down. It is now gated to the two states where
   # waking is actually needed: LVGL paused (backlight off) or the screensaver

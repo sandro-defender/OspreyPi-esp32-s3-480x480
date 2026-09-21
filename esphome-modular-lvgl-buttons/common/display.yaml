@@ -10,7 +10,7 @@ substitutions:
   project_name: "ospreypi.smart-display"
   # This is also the GitHub release/tag created after a validated main push.
   # Bump on every meaningful change — see AGENTS.md (Version Policy).
-  project_version: "2.4"
+  project_version: "2.5"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"
@@ -50,7 +50,7 @@ substitutions:
   screen_night_hour: "0"
   screen_night_minute: "0"
   log_level: "ERROR"
-  # PERF v2.4: LVGL draw buffer as a fraction of one 480x480 frame.
+  # PERF v2.5: LVGL draw buffer as a fraction of one 480x480 frame.
   #   50% = stable, good balance (one full-frame flush every 2 draws).
   #   100% = whole frame in one flush -> fewer flush rounds per frame and
   #          cheaper full-page blends (theme switches, page slides). Costs
@@ -66,7 +66,7 @@ esphome:
   name: "${device_name}"
   friendly_name: "${device_friendly_name}"
   comment: "${device_comment}"
-  # NOTE (perf audit v2.4): <sstream>/<algorithm> are system-header includes
+  # NOTE (perf audit v2.5): <sstream>/<algorithm> are system-header includes
   # that make the display_settings.yaml std::clamp/std::string lambdas compile;
   # they have ZERO runtime cost (nothing ends up in the binary), so they are
   # kept on purpose - removing them only risks build breakage.
@@ -81,7 +81,7 @@ esphome:
 
 logger:
   level: "${log_level}"
-  # PERF v2.4: fully disable UART logging (saves the log task + frees pins
+  # PERF v2.5: fully disable UART logging (saves the log task + frees pins
   # 43/44). Do NOT enable the experimental RS485 Modbus on UART0 while this is
   # set to 0 - uncommenting the uart block requires restoring UART logging.
   #options: stable: UART logging active | fast: baud_rate 0 (applied)
@@ -100,7 +100,7 @@ logger:
 api:
   # A Home Assistant restart must not reboot an otherwise healthy panel.
   reboot_timeout: 0s
-  # PERF v2.4: state messages reach HA (and come back) sooner - button press
+  # PERF v2.5: state messages reach HA (and come back) sooner - button press
   # -> HA action -> echoed state repaint feels snappier. Packet overhead is
   # still tiny. (ESPHome default is 100ms; v2.1-v2.3 shipped 50ms.)
   #options: stable: 50ms | fast: 20ms (applied)
@@ -114,7 +114,7 @@ esp32:
       CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
       CONFIG_ESP_MAIN_TASK_STACK_SIZE: "8192"
       CONFIG_FREERTOS_HZ: "1000"
-      # PERF v2.4 group — code/rodata execute from PSRAM (needs the matching
+      # PERF v2.5 group — code/rodata execute from PSRAM (needs the matching
       # `execute_from_psram: true` in hardware/osptek-esp32-s3-48x48.yaml).
       # Trade-off: puts code + font/image rodata on the SAME bus the RGB DMA
       # streams the framebuffer from. Faster cold starts, but on an RGB-panel
@@ -123,7 +123,7 @@ esp32:
       #options: stable: "y"/"y" + execute_from_psram true | alt: "n"/"n" + false
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
       CONFIG_SPIRAM_RODATA: "y"
-      # PERF v2.4: keep in sync with `psram: speed:` in the hardware file.
+      # PERF v2.5: keep in sync with `psram: speed:` in the hardware file.
       #options: stable: SPIRAM_SPEED_80M | fast: SPIRAM_SPEED_120M (test first)
       CONFIG_SPIRAM_SPEED_80M: "y"
       # CONFIG_SPIRAM_SPEED_120M: "y"

@@ -68,7 +68,7 @@ binary_sensor:
     id: ${widget_name}_light_btn_control
     widget: ${widget_name}_lightbulb_btn
     on_click:
-      # PERF v2.4 fix: min_length was 50ms — taps quicker than 50ms (very
+      # PERF v2.5 fix: min_length was 50ms — taps quicker than 50ms (very
       # common with a light flick) were silently DROPPED and read as an
       # unresponsive device. 10ms still separates cleanly from the 800ms
       # long-press threshold below.
@@ -1075,7 +1075,7 @@ script:
           bg_color: !lambda return lv_color_hex(id(${widget_name}_calc_color));
       - lambda: |-
           // live halo: shadow takes the bulb color when ON, disappears when OFF.
-          // PERF v2.4: shadow width 34 -> 16. The halo is re-rendered on every
+          // PERF v2.5: shadow width 34 -> 16. The halo is re-rendered on every
           // slider drag tick; a 34px blurred shadow around the bulb forces a
           // large, expensive repaint per tick. 16px keeps the glow visible at
           // roughly half the redraw cost (visual: tighter halo).

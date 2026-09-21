@@ -2,7 +2,7 @@
 
 # OspreyPi ESP32-S3 Smart Display
 
-**Fast, modular 480×480 ESPHome + LVGL dashboard — v2.3 Themes Edition**
+**Fast, modular 480×480 ESPHome + LVGL dashboard — v2.5 Performance Edition**
 
 [![Release](https://img.shields.io/github/v/release/sandro-defender/OspreyPi-esp32-s3-480x480?sort=semver)](https://github.com/sandro-defender/OspreyPi-esp32-s3-480x480/releases/latest)
 [![ESPHome](https://img.shields.io/badge/ESPHome-2026.9.0-blue?logo=esphome)](https://esphome.io/)
@@ -18,12 +18,12 @@
 
 ---
 
-## ✨ What's New in v2.4 — Performance Edition
+## ✨ What's New in v2.5 — Performance Edition
 
 A response-time and throughput pass across the whole firmware. Every knob now
 carries a `#options:` comment in the YAML marking the **stable** value and the
 **fast** alternative applied (or available commented out for on-device
-testing). Full details: [docs/CHANGELOG-v2.4-PERFORMANCE.md](docs/CHANGELOG-v2.4-PERFORMANCE.md).
+testing). Full details: [docs/CHANGELOG-v2.5-PERFORMANCE.md](docs/CHANGELOG-v2.5-PERFORMANCE.md).
 
 - **Touch polls at 10 ms instead of the 50 ms default** (FT6336 IRQ pin is not
   connected) — taps and swipes register up to 5× sooner
@@ -143,7 +143,7 @@ instant switch, persistent, also exposed as HA select entity `Theme`.
 
 ---
 
-## 📁 Project Layout v2.3
+## 📁 Project Layout v2.5
 
 ```text
 .
@@ -267,7 +267,7 @@ See [DEVICE_SPECS.md](DEVICE_SPECS.md) for the full pinout and init sequence.
 ## 📦 Releases & Version Policy
 
 Version lives in `esphome-modular-lvgl-buttons/common/display.yaml` →
-`project_version` (currently **2.4**). Pushing to `main` validates both display
+`project_version` (currently **2.5**). Pushing to `main` validates both display
 configs and publishes a GitHub release/tag when the version changed.
 
 **On every push / PR merge, bump `project_version`** (and the docs that mention
@@ -282,5 +282,6 @@ it) — the exact checklist is in [`AGENTS.md`](AGENTS.md) § 7 *Version Policy*
 - v2.1 Performance Edition — OspreyPi team
 - v2.2 Themes Edition — Classic / Modern / Performance
 - v2.3 — Daylight theme, 480×480 pixel-accurate mockups, AI-agent guide
+- v2.5 — Response-time & throughput pass, `#options` stable/fast tuning knobs
 
 </div>

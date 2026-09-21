@@ -1,5 +1,5 @@
 ---
-# Optimized font set - v2.4: reduced to the fonts actually referenced in the UI
+# Optimized font set - v2.5: reduced to the fonts actually referenced in the UI
 # (nunito_120, nunito_32, georgian_48 and georgian_32 had zero references and
 # were removed - each compiled font costs flash + rodata cache/PSRAM pressure).
 # Mapping:

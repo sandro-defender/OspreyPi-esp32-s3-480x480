@@ -1,10 +1,10 @@
-# v2.4 — Performance & Response Changelog
+# v2.5 — Performance & Response Changelog
 
-**Date:** 2026-09-22 · **Version:** 2.3 → 2.4 · **Scope:** `esphome-modular-lvgl-buttons/` shared firmware (applies to `Display01` and `Display02`)
+**Date:** 2026-09-22 · **Version:** 2.4 → 2.5 · **Scope:** `esphome-modular-lvgl-buttons/` shared firmware (applies to `Display01` and `Display02`)
 
 Every tuning point in the YAML now carries a `#options:` comment marking the
 **stable** value (what shipped in v2.1–v2.3) and the **fast** value applied in
-v2.4 (or a commented alternative to enable and test on the device). Grep for
+v2.5 (or a commented alternative to enable and test on the device). Grep for
 `#options:` to find them all:
 
 ```bash
@@ -105,7 +105,7 @@ either alone.
 ## 5. Files touched
 
 ```
-esphome-modular-lvgl-buttons/common/display.yaml          # version 2.4, api batch_delay, baud_rate 0, sdkconfig #options, buffer #options, includes note
+esphome-modular-lvgl-buttons/common/display.yaml          # version 2.5, api batch_delay, baud_rate 0, sdkconfig #options, buffer #options, includes note
 esphome-modular-lvgl-buttons/common/wifi.yaml             # fast_connect: true
 esphome-modular-lvgl-buttons/common/fonts.yaml            # removed 4 unused fonts, header updated
 esphome-modular-lvgl-buttons/hardware/osptek-esp32-s3-48x48.yaml  # touch 10ms, PSRAM/PCLK/execute_from_psram #options
@@ -114,5 +114,5 @@ esphome-modular-lvgl-buttons/pages/ac_control.yaml        # 150ms transition
 esphome-modular-lvgl-buttons/pages/light_color.yaml       # 150ms transition, min_length 10ms, halo 34->16
 esphome-modular-lvgl-buttons/pages/info.yaml              # 1s uptime tick gated to info page
 esphome-modular-lvgl-buttons/widgets/swipe_navigation.yaml# 150ms (mixin, kept consistent)
-README.md, docs/wiki/Home.md, AGENTS.md                   # version 2.4 mentions
+README.md, docs/wiki/Home.md, AGENTS.md                   # version 2.5 mentions
 ```

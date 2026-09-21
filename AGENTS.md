@@ -277,9 +277,9 @@ glyph to the right icon font in `common/fonts.yaml` and/or `common/assets.yaml`.
 
 ## 10. Quick facts for agents
 
-- Current version: **2.4** (see `common/display.yaml` → `project_version`)
+- Current version: **2.5** (see `common/display.yaml` → `project_version`)
 - Performance knobs carry `#options:` comments (stable vs fast values) — see
-  `docs/CHANGELOG-v2.4-PERFORMANCE.md`
+  `docs/CHANGELOG-v2.5-PERFORMANCE.md`
 - Themes: **4** — Classic, Modern, Performance, Daylight
 - Pages: home dashboard, AC, light/WLED, settings, info, screensaver,
   loading (top layer), optional weather_simple
