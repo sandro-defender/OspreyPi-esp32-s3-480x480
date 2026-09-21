@@ -135,13 +135,16 @@ lvgl:
         - lvgl.page.show:
             id: ac_main_page
             animation: OUT_LEFT
-            time: 300ms
+            # PERF v2.5: 300ms -> 150ms = navigation feels ~2x more instant.
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       on_swipe_right:
         - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
         - lvgl.page.show:
             id: button_7_light_page
             animation: OUT_RIGHT
-            time: 300ms
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       widgets:
         - button: !include
             file: ../buttons/entity_button.yaml
@@ -236,6 +239,11 @@ lvgl:
               # halo colour follows the state (mint / amber / red).
               - obj:
                   id: dashboard_status_halo
+                  # FIX v2.5: the 68px halo disc (and the status icon inside)
+                  # used to be clickable, so taps and swipes starting on the
+                  # middle of the Settings card died on this obj and never
+                  # reached the button. Pass touches through to the parent.
+                  clickable: false
                   align: center
                   y: -4
                   width: 68
@@ -248,6 +256,7 @@ lvgl:
                   widgets:
                     - image:
                         id: dashboard_connection_status
+                        clickable: false
                         align: center
                         src: conn_status_connecting
               - label:
@@ -503,7 +512,19 @@ script:
           }
 
 touchscreen:
+  # PERF v2.5: wake_display used to restart on EVERY touch report (also while
+  # the panel was already awake), re-running a full brightness service call on
+  # every poll while a finger is down. It is now gated to the two states where
+  # waking is actually needed: LVGL paused (backlight off) or the screensaver
+  # page showing. Behavior on wake is unchanged.
+  #options: stable: wake on every touch | fast: gated wake (applied)
   on_touch:
     then:
-      - script.execute: wake_display
+      - if:
+          condition:
+            or:
+              - lvgl.is_paused
+              - lvgl.page.is_showing: screensaver_page
+          then:
+            - script.execute: wake_display
 

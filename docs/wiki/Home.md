@@ -6,7 +6,7 @@ Welcome to OspreyPi ESP32-S3 480×480 smart display wiki!
 
 OspreyPi is a modular ESPHome + LVGL dashboard for Home Assistant, designed for the 480×480 ST7701S + FT6336 touchscreen powered by ESP32-S3 with 16MB flash and 8MB octal PSRAM.
 
-## Key Features v2.3 Themes Edition
+## Key Features v2.5 Performance Edition
 
 - **4 Themes**: Classic (flat dark), Modern (raised tiles + orange glow), Performance (minimal, fastest), Daylight (warm raised dark cards) — switch on device or from HA, persistent
 - **Fast**: 50% LVGL buffer, bpp4 fonts, no dropdowns, ERROR-only logging, theme-aware repaints

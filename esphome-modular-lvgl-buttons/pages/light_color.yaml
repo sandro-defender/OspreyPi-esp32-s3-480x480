@@ -68,7 +68,12 @@ binary_sensor:
     id: ${widget_name}_light_btn_control
     widget: ${widget_name}_lightbulb_btn
     on_click:
-      - min_length: 50ms
+      # PERF v2.5 fix: min_length was 50ms — taps quicker than 50ms (very
+      # common with a light flick) were silently DROPPED and read as an
+      # unresponsive device. 10ms still separates cleanly from the 800ms
+      # long-press threshold below.
+      #options: stable: 50ms (drops quick taps) | fast: 10ms (applied)
+      - min_length: 10ms
         max_length: 500ms
         then:
           - homeassistant.action:
@@ -259,7 +264,8 @@ lvgl:
         - lvgl.page.show:
             id: main_page
             animation: OUT_LEFT
-            time: 300ms
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       widgets:
         # ── Title ────────────────────────────────────────────────────────
         - label:
@@ -1068,10 +1074,15 @@ script:
           id: ${widget_name}_lightbulb_color
           bg_color: !lambda return lv_color_hex(id(${widget_name}_calc_color));
       - lambda: |-
-          // live halo: shadow takes the bulb color when ON, disappears when OFF
+          // live halo: shadow takes the bulb color when ON, disappears when OFF.
+          // PERF v2.5: shadow width 34 -> 16. The halo is re-rendered on every
+          // slider drag tick; a 34px blurred shadow around the bulb forces a
+          // large, expensive repaint per tick. 16px keeps the glow visible at
+          // roughly half the redraw cost (visual: tighter halo).
+          //options: stable: 34 (wide halo) | fast: 16 (applied)
           if (id(${widget_name}_lightbulb_color)) {
             if (id(${widget_name}_light_state).state) {
-              lv_obj_set_style_shadow_width(id(${widget_name}_lightbulb_color), 34, 0);
+              lv_obj_set_style_shadow_width(id(${widget_name}_lightbulb_color), 16, 0);
               lv_obj_set_style_shadow_opa(id(${widget_name}_lightbulb_color), LV_OPA_60, 0);
               lv_obj_set_style_shadow_color(id(${widget_name}_lightbulb_color),
                   lv_color_hex(id(${widget_name}_calc_color)), 0);

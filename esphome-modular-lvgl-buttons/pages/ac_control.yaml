@@ -380,7 +380,8 @@ lvgl:
         - lvgl.page.show:
             id: main_page
             animation: OUT_RIGHT
-            time: 300ms
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       widgets:
         # ── Header: Back | Climate Control | humidity / room ──────────
         - button:

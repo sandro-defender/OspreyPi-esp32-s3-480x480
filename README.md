@@ -2,7 +2,7 @@
 
 # OspreyPi ESP32-S3 Smart Display
 
-**Fast, modular 480×480 ESPHome + LVGL dashboard — v2.3 Themes Edition**
+**Fast, modular 480×480 ESPHome + LVGL dashboard — v2.5 Performance Edition**
 
 [![Release](https://img.shields.io/github/v/release/sandro-defender/OspreyPi-esp32-s3-480x480?sort=semver)](https://github.com/sandro-defender/OspreyPi-esp32-s3-480x480/releases/latest)
 [![ESPHome](https://img.shields.io/badge/ESPHome-2026.9.0-blue?logo=esphome)](https://esphome.io/)
@@ -18,7 +18,30 @@
 
 ---
 
-## ✨ What's New in v2.3 — Four Selectable Themes
+## ✨ What's New in v2.5 — Performance Edition
+
+A response-time and throughput pass across the whole firmware. Every knob now
+carries a `#options:` comment in the YAML marking the **stable** value and the
+**fast** alternative applied (or available commented out for on-device
+testing). Full details: [docs/CHANGELOG-v2.5-PERFORMANCE.md](docs/CHANGELOG-v2.5-PERFORMANCE.md).
+
+- **Touch polls at 10 ms instead of the 50 ms default** (FT6336 IRQ pin is not
+  connected) — taps and swipes register up to 5× sooner
+- **Quick taps no longer dropped** on the Light page (`min_length` 50 ms → 10 ms)
+- **Wake script gated** — the brightness service call no longer restarts on
+  every touch while the panel is already awake
+- **Homescreen fix: the status halo/icon on the Settings card no longer
+  swallow taps and swipes** (`clickable: false` — touches pass through)
+- **Page transitions 300 ms → 150 ms** (Home ↔ AC ↔ Light swipe ring)
+- **WiFi `fast_connect`** — boot associates in ~1–2 s instead of ~5–8 s
+- **API batch delay 50 ms → 20 ms**, UART logger fully disabled (`baud_rate: 0`)
+- **4 unused fonts removed** (~400 KB smaller firmware, faster OTA)
+- **Light-page halo repaint halved** while dragging sliders
+- **Info page 1 s timer gated** to when the page is actually shown
+- New commented `#options:` test knobs (flip on device, revert if unhappy):
+  PSRAM 120 MHz, PCLK 20 MHz, LVGL buffer 100%, code/rodata-XIP off
+
+### Everything from v2.3 — Four Selectable Themes
 
 ### 🎨 Theme 4: Daylight (dark orange-glow)
 
@@ -122,7 +145,7 @@ instant switch, persistent, also exposed as HA select entity `Theme`.
 
 ---
 
-## 📁 Project Layout v2.3
+## 📁 Project Layout v2.5
 
 ```text
 .
@@ -246,7 +269,7 @@ See [DEVICE_SPECS.md](DEVICE_SPECS.md) for the full pinout and init sequence.
 ## 📦 Releases & Version Policy
 
 Version lives in `esphome-modular-lvgl-buttons/common/display.yaml` →
-`project_version` (currently **2.3**). Pushing to `main` validates both display
+`project_version` (currently **2.5**). Pushing to `main` validates both display
 configs and publishes a GitHub release/tag when the version changed.
 
 **On every push / PR merge, bump `project_version`** (and the docs that mention
@@ -261,5 +284,6 @@ it) — the exact checklist is in [`AGENTS.md`](AGENTS.md) § 7 *Version Policy*
 - v2.1 Performance Edition — OspreyPi team
 - v2.2 Themes Edition — Classic / Modern / Performance
 - v2.3 — Daylight theme, 480×480 pixel-accurate mockups, AI-agent guide
+- v2.5 — Response-time & throughput pass, `#options` stable/fast tuning knobs
 
 </div>

@@ -29,11 +29,21 @@ esp32:
     advanced:
       compiler_optimization: PERF
       # Keeps display drawing responsive during flash writes such as OTA updates.
+      # PERF v2.5: toggle TOGETHER with CONFIG_SPIRAM_FETCH_INSTRUCTIONS /
+      # CONFIG_SPIRAM_RODATA in common/display.yaml (see the note there).
+      #options: stable: true | alt: false (test pair if animations stutter)
       execute_from_psram: true
 
 psram:
   mode: octal
+  # PERF v2.5: the RGB framebuffer + LVGL draw buffer live on the PSRAM bus, so
+  # PSRAM clock is the #1 rendering bandwidth knob. 120 MHz is supported by
+  # most ESP32-S3 octal modules — flash faster and keep ONLY if stable
+  # (boot loops / display artifacts => revert to 80 MHz).
+  # NOTE: keep in sync with CONFIG_SPIRAM_SPEED_* in common/display.yaml.
+  #options: stable: 80MHz | fast: 120MHz (test on device first)
   speed: 80MHz
+  # speed: 120MHz
 
 preferences:
   flash_write_interval: 10min
@@ -100,6 +110,11 @@ touchscreen:
   platform: ft63x6
   id: my_touchscreen
   display: my_display
+  # PERF v2.5: the FT6336 IRQ pin is not connected on this board, so touch is
+  # polled. 10 ms polling makes taps/swipes register up to 5x sooner than the
+  # 50 ms default (a register read costs <1 ms at 400 kHz I2C).
+  #options: stable: 50ms (ESPHome default) | fast: 10ms (applied)
+  update_interval: 10ms
   # LVGL rotates touch coordinates automatically with the display. Keep this
   # transform disabled unless a particular panel has physically mirrored axes.
   transform:
@@ -134,7 +149,13 @@ display:
     hsync_pin: 14
     vsync_pin: 21
     pclk_pin: 48
+    # PERF v2.5: 480x480 + this blanking needs 265,200 pclk cycles/frame.
+    # 16 MHz = ~60.4 fps (zero headroom, any CPU hiccup drops a frame).
+    # 20 MHz = ~75 fps headroom; ST7701S panels of this class generally accept
+    # it — watch for vertical scan artifacts, revert if seen.
+    #options: stable: 16MHz | fast: 20MHz (test on device first)
     pclk_frequency: 16MHz
+    # pclk_frequency: 20MHz
     pclk_inverted: false
     hsync_pulse_width: 10
     hsync_back_porch: 10
