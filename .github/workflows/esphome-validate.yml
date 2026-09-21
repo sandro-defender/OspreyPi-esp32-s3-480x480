@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   validate:
@@ -37,15 +39,31 @@ jobs:
         run: |
           set -o pipefail
           esphome config Display02.yaml > /tmp/display02_full.log 2>&1 || (echo "=== FULL LOG TAIL ==="; tail -n 500 /tmp/display02_full.log; exit 1)
+      - name: Comment PR with logs on failure
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Posting failure logs to PR"
+          {
+            echo "### Display01 validation failure"
+            echo '```'
+            tail -n 200 /tmp/display01_full.log || true
+            echo '```'
+            echo "### Display02 validation failure"
+            echo '```'
+            tail -n 200 /tmp/display02_full.log || true
+            echo '```'
+          } > /tmp/comment.md
+          cat /tmp/comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md || true
       - name: Annotate failure
         if: failure()
         run: |
-          echo "=== DISPLAY01 FULL LOG TAIL ==="
-          tail -n 500 /tmp/display01_full.log || true
-          echo "=== DISPLAY02 FULL LOG TAIL ==="
-          tail -n 500 /tmp/display02_full.log || true
           tail -n 200 /tmp/display01_full.log | while IFS= read -r line; do
-            echo "::error::${line}"
+            # Sanitize for annotation
+            clean=$(echo "$line" | tr -cd '[:print:]\n' | cut -c1-200)
+            echo "::error::${clean}"
           done
           exit 1
 
