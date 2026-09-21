@@ -1,3 +1,5 @@
+---
+# Optimized loading screen - fast boot, minimal delays
 globals:
   - id: ha_connected
     type: bool
@@ -7,122 +9,117 @@ image:
   - platform: file
     file: 'esphome-modular-lvgl-buttons/assets/images/loading/homeassistant.png'
     id: ha_img
-    resize: 400x82
+    resize: 300x61
     type: RGB565
-    transparency: alpha_channel
   - platform: file
     file: 'esphome-modular-lvgl-buttons/assets/images/loading/esphome.png'
     id: esphome_img
-    resize: 320x95
+    resize: 240x71
     type: RGB565
-    transparency: alpha_channel
 
 lvgl:
   top_layer:
     widgets:
-      - button:
+      - obj:
           id: loading_page
-          #bg_color: slate_blue_gray
           bg_image_src: sync4
-          shadow_opa: transp
           width: ${screen_width}
           height: ${screen_height}
           radius: 0
-          on_press:
+          pad_all: 0
+          border_width: 0
+          clickable: true
+          on_click:
             - lvgl.widget.hide: loading_page
           widgets:
             - image:
-                y: 30
+                y: 40
                 align: top_mid
                 src: ha_img
             - obj:
                 id: boot_homeassistant
-                y: 180
+                y: 170
                 width: 350
-                height: 100
+                height: 80
                 pad_all: 0
                 align: top_mid
                 bg_opa: transp
-                shadow_opa: transp
-                border_opa: transp
                 border_width: 0
-                radius: 10
                 widgets:
                   - label:
                       id: boot_homeassistant_label
-                      align: left_mid
+                      align: center
                       text_font: nunito_20
                       text_color: misty_blue
                       text: "Booting..."
                   - spinner:
                       id: boot_homeassistant_spiner
-                      width: 50
-                      height: 50
-                      align: right_mid
-                      spin_time: 2s
+                      y: 35
+                      width: 40
+                      height: 40
+                      align: top_mid
+                      spin_time: 1s
                       arc_length: 60deg
-                      arc_width: 5
+                      arc_width: 4
                       arc_color: steel_blue
                       indicator:
                         arc_color: misty_blue
-                        arc_width: 5
+                        arc_width: 4
             - obj:
                 id: boot_synchronization
-                y: 180
+                y: 170
                 width: 300
                 height: 60
                 pad_all: 0
                 align: top_mid
                 bg_opa: transp
-                shadow_opa: transp
-                border_opa: transp
                 border_width: 0
-                radius: 10
                 hidden: true
                 widgets:
                   - label:
                       id: boot_synchronization_label
                       align: top_mid
-                      y: 0
                       text_font: nunito_20
                       text_color: misty_blue
-                      text: "Sync with HA..."
+                      text: "Sync..."
                   - bar:
                       id: boot_synchronization_bar
-                      y: 0
-                      width: 300
+                      y: 5
+                      width: 260
+                      height: 10
                       value: 0
                       align: bottom_mid
                       min_value: 0
                       max_value: 100
-                      animated: true
                       bg_color: steel_blue
                       indicator:
                         bg_color: misty_blue
             - image:
-                y: -30
+                y: -25
                 align: bottom_mid
                 src: esphome_img
+
 script:
   - id: update_loading_page
     mode: restart
     then:
       - lvgl.label.update:
-          id: boot_synchronization_label
-          text: 'Synchronizing data...'
-      - lvgl.label.update:
           id: boot_homeassistant_label
-          text: 'Connecting to Home Assistant..'
-      - delay: 20s
+          text: 'Connecting to HA...'
+      - lvgl.widget.show: boot_homeassistant
+      - lvgl.widget.hide: boot_synchronization
+      - lvgl.widget.show: boot_homeassistant_spiner
+      - delay: 8s
       - if:
           condition:
             lambda: 'return !id(ha_connected);'
           then:
             - lvgl.label.update:
                 id: boot_homeassistant_label
-                text: 'Offline — reconnecting automatically'
+                text: 'Offline — auto retry'
 
   - id: check_boot_status
+    mode: restart
     then:
       - if:
           condition:
@@ -130,23 +127,24 @@ script:
           then:
             - lvgl.widget.hide: boot_homeassistant
             - lvgl.widget.show: boot_synchronization
-            - script.execute: start_sync_animation
+            - lvgl.bar.update:
+                id: boot_synchronization_bar
+                value: 20
+            - lvgl.page.show: main_page
+            - delay: 150ms
+            - lvgl.bar.update:
+                id: boot_synchronization_bar
+                value: 100
+            - delay: 200ms
+            - lvgl.widget.hide: loading_page
 
   - id: start_sync_animation
+    mode: restart
     then:
-      - lvgl.page.show: main_page
-      - delay: 1s
-      - lvgl.bar.update:
-          id: boot_synchronization_bar
-          value: 50
-      - delay: 1s
-      - lvgl.bar.update:
-          id: boot_synchronization_bar
-          value: 100
-      - delay: 500ms
-      - lvgl.widget.hide: loading_page
+      - script.execute: check_boot_status
 
   - id: on_ha_connected
+    mode: restart
     then:
       - if:
           condition:
@@ -157,17 +155,24 @@ script:
                 value: 'true'
             - lvgl.label.update:
                 id: boot_homeassistant_label
-                text: "Home Assistant Connected!"
+                text: "Connected!"
             - lvgl.label.update:
                 id: ha_connection_label
                 text: "Connected"
+            - lvgl.widget.hide: boot_homeassistant_spiner
+            - lambda: |-
+                // Enable all AC controls
+                auto enable = [](lv_obj_t* o){ if(o) lv_obj_clear_flag(o, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_HIDDEN); };
+                // Actually use lvgl.widget.enable via id list is safer, but do via lambda for new buttons
             - lvgl.widget.enable:
                 - ac_main_temp_arc
                 - ac_main_power_btn
                 - ac_main_mode_btn
                 - ac_main_fan_btn
+                - ac_main_swing_btn
+                - ac_main_eco_btn
+                - ac_main_sleep_btn
                 - ac_main_turbo_btn
-            - lvgl.widget.hide: boot_homeassistant_spiner
             - script.execute: check_boot_status
 
 api:
@@ -176,10 +181,6 @@ api:
         condition:
           lambda: 'return (0 == client_info.find("Home Assistant "));'
         then:
-          - script.execute: update_loading_page
-          # - lvgl.label.update: 
-              # id: ha_status
-              # text_color: blue
           - script.execute: on_ha_connected
 
   on_client_disconnected:
@@ -191,17 +192,21 @@ api:
               id: ha_connected
               value: 'false'
           - lvgl.label.update:
-              id: boot_homeassistant_label
-              text: 'Home Assistant disconnected — reconnecting'
-          - lvgl.label.update:
               id: ha_connection_label
               text: "Offline"
+          - lvgl.label.update:
+              id: boot_homeassistant_label
+              text: 'HA disconnected'
+          - lvgl.widget.show: loading_page
+          - lvgl.widget.show: boot_homeassistant
+          - lvgl.widget.hide: boot_synchronization
           - lvgl.widget.disable:
               - ac_main_temp_arc
               - ac_main_power_btn
               - ac_main_mode_btn
               - ac_main_fan_btn
+              - ac_main_swing_btn
+              - ac_main_eco_btn
+              - ac_main_sleep_btn
               - ac_main_turbo_btn
-          # - lvgl.label.update: 
-              # id: ha_status
-              # text_color: steel_blue
+          - script.execute: update_loading_page

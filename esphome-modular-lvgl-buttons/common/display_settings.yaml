@@ -1,6 +1,6 @@
 ---
-# Runtime display behaviour. The setting entities themselves live in
-# pages/settings.yaml because they are backed directly by LVGL widgets.
+# Runtime display behaviour - brightness, rotation, time
+# Theme logic in theme_apply.yaml (included after settings)
 
 sun:
   latitude: !secret latitude
@@ -47,124 +47,39 @@ script:
   - id: apply_display_brightness
     mode: restart
     then:
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Day";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(day_brightness).state;
-                  if (std::isnan(value)) value = ${daytime_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Evening";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(evening_brightness).state;
-                  if (std::isnan(value)) value = ${evening_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Night";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(night_brightness).state;
-                  if (std::isnan(value)) value = ${nighttime_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
+      - lambda: |-
+          float brightness = 1.0f;
+          std::string mode = id(brightness_mode).current_option();
+          if (mode == "Day") {
+            float v = id(day_brightness).state;
+            if (std::isnan(v)) v = ${daytime_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.05f, 1.0f);
+          } else if (mode == "Evening") {
+            float v = id(evening_brightness).state;
+            if (std::isnan(v)) v = ${evening_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.05f, 1.0f);
+          } else {
+            float v = id(night_brightness).state;
+            if (std::isnan(v)) v = ${nighttime_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.01f, 1.0f);
+          }
+          auto call = id(display_backlight).turn_on();
+          call.set_brightness(brightness);
+          call.perform();
 
   - id: wake_display
     mode: restart
     then:
       - lvgl.resume
-      - lvgl.widget.redraw
       - script.execute: apply_display_brightness
-
-  - id: apply_display_theme
-    mode: restart
-    then:
-      - if:
-          condition:
-            lambda: 'return id(current_theme).current_option() == "Dark";'
-          then:
-            - lvgl.style.update:
-                id: page_style
-                bg_color: black
-                text_color: white
-            - lvgl.widget.redraw
-      - if:
-          condition:
-            lambda: 'return id(current_theme).current_option() == "Light";'
-          then:
-            - lvgl.style.update:
-                id: page_style
-                bg_color: 0xE8EEF5
-                text_color: black
-            - lvgl.widget.redraw
 
   - id: apply_display_rotation
     mode: restart
     then:
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "0";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 0
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "90";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 90
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "180";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 180
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "270";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 270
-
-lvgl:
-  buffer_size: "${lvgl_buffer_size}"
-  refresh_interval: "${lvgl_refresh_interval}"
-  rotation: "${display_rotation}"
-  on_boot:
-    - script.execute: apply_display_theme
-    - script.execute: apply_display_rotation
-    - script.execute: apply_display_brightness
-  on_idle:
-    timeout: !lambda |-
-      float seconds = id(screen_timeout).state;
-      if (std::isnan(seconds) || seconds < 5.0f) seconds = ${screen_timeout_default};
-      return static_cast<uint32_t>(seconds * 1000.0f);
-    then:
-      - if:
-          condition:
-            switch.is_on: screensaver_enabled
-          then:
-            - logger.log: "Showing screensaver after display timeout"
-            - lvgl.page.show: screensaver_page
-            - script.execute: time_update
-            - if:
-                condition:
-                  lambda: 'return id(brightness_mode).current_option() == "Night";'
-                then:
-                  - light.turn_off: display_backlight
-                else:
-                  - script.execute: apply_display_brightness
-
-touchscreen:
-  on_touch:
-    then:
-      - script.execute: wake_display
+      - lambda: |-
+          std::string r = id(display_rotation_select).current_option();
+          lvgl::RotationType rot = lvgl::ROTATION_0_DEGREES;
+          if (r == "90") rot = lvgl::ROTATION_90_DEGREES;
+          else if (r == "180") rot = lvgl::ROTATION_180_DEGREES;
+          else if (r == "270") rot = lvgl::ROTATION_270_DEGREES;
+          id(lvgl_component).set_rotation(rot);

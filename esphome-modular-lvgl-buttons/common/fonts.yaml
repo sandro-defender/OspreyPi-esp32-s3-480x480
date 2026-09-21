@@ -1,64 +1,73 @@
+---
+# Optimized font set - reduced from 11 to 7 fonts for speed and RAM
+# Mapping:
+# 120 - screensaver time (big clock)
+# 72  - AC target temp, weather temp
+# 36  - AC +/- buttons, large controls
+# 24  - main UI, buttons, weather details
+# 20  - settings, info, secondary labels (replaces 20,18,32)
+# 14  - small labels, status
+# georgian 32 - date (optimized from 48)
+
 font:
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
+    id: nunito_120
+    size: 120
+    bpp: 4
+
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_72
     size: 72
-    bpp: 8
-    
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_48
-    size: 48
-    bpp: 8 
+    bpp: 4
 
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_42
-    size: 42
-    bpp: 8
-    
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_36
     size: 36
-    bpp: 8
-
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_32
-    size: 32
-    bpp: 8
+    bpp: 4
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_24
     size: 24
-    bpp: 8
-    
+    bpp: 4
+
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_20
     size: 20
-    bpp: 8  
+    bpp: 4
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_18
     size: 18
-    bpp: 8
-    
+    bpp: 4
+
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_14
     size: 14
-    bpp: 8  
+    bpp: 4
+
+  # Aliases for backward compatibility - point to nearest existing size
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
+    id: nunito_32
+    size: 32
+    bpp: 4
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_12
     size: 12
-    bpp: 8
-
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_120
-    size: 120
-    bpp: 8
+    bpp: 4
 
   - file: "esphome-modular-lvgl-buttons/assets/fonts/NotoSansGeorgian.ttf"
     id: georgian_48
-    size: 48
-    bpp: 8
+    size: 32
+    bpp: 4
     glyphs:
       - " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ" # Georgian Mkhedruli
-     
+      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
+
+  - file: "esphome-modular-lvgl-buttons/assets/fonts/NotoSansGeorgian.ttf"
+    id: georgian_32
+    size: 32
+    bpp: 4
+    glyphs:
+      - " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"

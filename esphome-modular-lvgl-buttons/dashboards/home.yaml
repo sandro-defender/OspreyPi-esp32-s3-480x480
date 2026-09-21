@@ -122,10 +122,12 @@ lvgl:
       layout:
         type: flex
         flex_flow: column_wrap
-        pad_row: 10px
-        pad_column: 10px
+        pad_row: 8px
+        pad_column: 8px
       width: 100%
       styles: page_style
+      bg_color: black
+      bg_opa: cover
       <<: !include ../widgets/swipe_navigation.yaml
       widgets:
         - button: !include
@@ -265,3 +267,194 @@ binary_sensor:
                 id: dashboard_connection_status
                 text: "HA offline"
                 text_color: amber
+
+# Theme handling - defined AFTER all pages so all ids exist (fixes validation)
+script:
+  - id: apply_display_theme
+    mode: restart
+    then:
+      - lambda: |-
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme = "Classic";
+          uint32_t page_bg = 0x000000;
+          uint32_t settings_bg = 0x11151C;
+          uint32_t info_bg = 0x11151C;
+          if (theme == "Classic") { page_bg = 0x000000; settings_bg = 0x11151C; info_bg = 0x11151C; }
+          else if (theme == "Modern") { page_bg = 0x0A0E14; settings_bg = 0x121A26; info_bg = 0x0F141E; }
+          else if (theme == "Performance") { page_bg = 0x000000; settings_bg = 0x000000; info_bg = 0x000000; }
+
+          if (id(main_page)) {
+            lv_obj_set_style_bg_color(id(main_page), lv_color_hex(page_bg), 0);
+            lv_obj_set_style_bg_opa(id(main_page), LV_OPA_COVER, 0);
+            lv_obj_set_style_pad_all(id(main_page), theme=="Performance" ? 2 : (theme=="Modern" ? 6 : 4), 0);
+          }
+          if (id(settings_page)) {
+            lv_obj_set_style_bg_color(id(settings_page), lv_color_hex(settings_bg), 0);
+            lv_obj_set_style_bg_opa(id(settings_page), LV_OPA_COVER, 0);
+          }
+          if (id(info_screen)) {
+            lv_obj_set_style_bg_color(id(info_screen), lv_color_hex(info_bg), 0);
+            lv_obj_set_style_bg_opa(id(info_screen), LV_OPA_COVER, 0);
+          }
+          if (id(ac_main_page)) {
+            uint32_t ac_bg = (theme=="Modern") ? 0x080A0F : 0x0F1115;
+            if (theme=="Performance") ac_bg = 0x000000;
+            lv_obj_set_style_bg_color(id(ac_main_page), lv_color_hex(ac_bg), 0);
+            lv_obj_set_style_bg_opa(id(ac_main_page), LV_OPA_COVER, 0);
+          }
+          if (id(ac_main_top_bar)) {
+            uint32_t top_bg = (theme=="Modern") ? 0x12151E : 0x1A1D26;
+            if (theme=="Performance") top_bg = 0x000000;
+            lv_obj_set_style_bg_color(id(ac_main_top_bar), lv_color_hex(top_bg), 0);
+          }
+          if (theme=="Modern") {
+            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 16, 0);
+            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 16, 0);
+            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 16, 0);
+            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 16, 0);
+            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 16, 0);
+            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 16, 0);
+            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 16, 0);
+            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 16, 0);
+          } else if (theme=="Performance") {
+            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 6, 0);
+            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 6, 0);
+            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 6, 0);
+            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 6, 0);
+            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 6, 0);
+            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 6, 0);
+            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 6, 0);
+            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 6, 0);
+          } else {
+            if (id(ac_main_power_btn)) lv_obj_set_style_radius(id(ac_main_power_btn), 12, 0);
+            if (id(ac_main_mode_btn)) lv_obj_set_style_radius(id(ac_main_mode_btn), 12, 0);
+            if (id(ac_main_fan_btn)) lv_obj_set_style_radius(id(ac_main_fan_btn), 12, 0);
+            if (id(ac_main_swing_btn)) lv_obj_set_style_radius(id(ac_main_swing_btn), 12, 0);
+            if (id(ac_main_eco_btn)) lv_obj_set_style_radius(id(ac_main_eco_btn), 12, 0);
+            if (id(ac_main_sleep_btn)) lv_obj_set_style_radius(id(ac_main_sleep_btn), 12, 0);
+            if (id(ac_main_turbo_btn)) lv_obj_set_style_radius(id(ac_main_turbo_btn), 12, 0);
+            if (id(ac_main_preset_box)) lv_obj_set_style_radius(id(ac_main_preset_box), 12, 0);
+          }
+      - lvgl.style.update:
+          id: page_style
+          bg_color: !lambda |-
+            std::string t = id(current_theme).current_option();
+            if (t=="Modern") return 0x0A0E14;
+            if (t=="Performance") return 0x000000;
+            return 0x000000;
+          text_color: !lambda |-
+            return 0xFFFFFF;
+      - script.execute: update_settings_highlight
+      - script.execute: apply_dashboard_theme
+      - lvgl.widget.redraw:
+
+  - id: update_settings_highlight
+    mode: restart
+    then:
+      - lambda: |-
+          auto set_btn = [](lv_obj_t* btn, bool active, std::string theme) {
+            if (!btn) return;
+            uint32_t active_bg = 0xFF9F1C;
+            uint32_t inactive_bg = 0x3A4352;
+            if (theme=="Modern") { active_bg = 0xFF8C00; inactive_bg = 0x1E232E; }
+            else if (theme=="Performance") { active_bg = 0x444444; inactive_bg = 0x1A1A1A; }
+            if (active) {
+              lv_obj_set_style_bg_color(btn, lv_color_hex(active_bg), 0);
+              lv_obj_set_style_text_color(btn, lv_color_white(), 0);
+            } else {
+              lv_obj_set_style_bg_color(btn, lv_color_hex(inactive_bg), 0);
+              lv_obj_set_style_text_color(btn, lv_color_hex(0xCCCCCC), 0);
+            }
+          };
+          std::string bmode = id(brightness_mode).current_option();
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme="Classic";
+          set_btn(id(settings_btn_day), bmode=="Day", theme);
+          set_btn(id(settings_btn_evening), bmode=="Evening", theme);
+          set_btn(id(settings_btn_night), bmode=="Night", theme);
+          set_btn(id(settings_btn_classic), theme=="Classic", theme);
+          set_btn(id(settings_btn_modern), theme=="Modern", theme);
+          set_btn(id(settings_btn_performance), theme=="Performance", theme);
+          std::string rot = id(display_rotation_select).current_option();
+          set_btn(id(settings_btn_rot0), rot=="0", theme);
+          set_btn(id(settings_btn_rot90), rot=="90", theme);
+          set_btn(id(settings_btn_rot180), rot=="180", theme);
+          set_btn(id(settings_btn_rot270), rot=="270", theme);
+
+  - id: apply_dashboard_theme
+    mode: restart
+    then:
+      - lambda: |-
+          std::string theme = id(current_theme).current_option();
+          if (theme.empty()) theme = "Classic";
+          uint32_t button_bg = 0x343645;
+          uint32_t button_radius = 14;
+          if (theme == "Classic") { button_bg = 0x343645; button_radius = 14; }
+          else if (theme == "Modern") { button_bg = 0x1E232E; button_radius = 20; }
+          else if (theme == "Performance") { button_bg = 0x1A1A1A; button_radius = 4; }
+
+          lv_obj_t* buttons[] = {
+            id(button_button_1),
+            id(button_button_2),
+            id(button_button_3),
+            id(button_button_4),
+            id(button_ac_nav),
+            id(button_button_5),
+            id(button_button_6),
+            id(button_button_7),
+            id(dashboard_settings_button),
+            id(button_button_9)
+          };
+          lv_obj_t* icons[] = {
+            id(icon_button_1),
+            id(icon_button_2),
+            id(icon_button_3),
+            id(icon_button_4),
+            id(icon_ac_nav),
+            id(icon_button_5),
+            id(icon_button_6),
+            id(icon_button_7),
+            nullptr,
+            id(icon_button_9)
+          };
+          lv_obj_t* labels[] = {
+            id(label_button_1),
+            id(label_button_2),
+            id(label_button_3),
+            id(label_button_4),
+            id(label_ac_nav),
+            nullptr,
+            id(label_button_6),
+            id(label_button_7),
+            nullptr,
+            id(label_button_9)
+          };
+          for (int i=0;i<10;i++) {
+            auto btn = buttons[i];
+            if (!btn) continue;
+            lv_obj_set_style_bg_color(btn, lv_color_hex(button_bg), 0);
+            lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, 0);
+            lv_obj_set_style_radius(btn, button_radius, 0);
+            lv_obj_set_style_border_width(btn, 0, 0);
+            lv_obj_set_style_shadow_width(btn, 0, 0);
+            lv_obj_set_style_pad_all(btn, theme=="Performance" ? 6 : (theme=="Modern" ? 14 : 10), 0);
+            if (theme=="Modern") lv_obj_set_style_text_color(btn, lv_color_hex(0xCCCCCC), 0);
+            else lv_obj_set_style_text_color(btn, lv_color_hex(0xFFFFFF), 0);
+            auto icon = icons[i];
+            if (icon) {
+              if (theme=="Modern") lv_obj_set_style_text_color(icon, lv_color_hex(0xFF8C00), 0);
+              else lv_obj_set_style_text_color(icon, lv_color_hex(0xFFFFFF), 0);
+            }
+            auto lbl = labels[i];
+            if (lbl) {
+              if (theme=="Modern") lv_obj_set_style_text_color(lbl, lv_color_hex(0x9BA2BC), 0);
+              else if (theme=="Performance") lv_obj_set_style_text_color(lbl, lv_color_hex(0xCCCCCC), 0);
+              else lv_obj_set_style_text_color(lbl, lv_color_hex(0xFFFFFF), 0);
+            }
+          }
+
+touchscreen:
+  on_touch:
+    then:
+      - script.execute: wake_display
+
