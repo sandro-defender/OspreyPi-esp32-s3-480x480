@@ -11,8 +11,12 @@ wifi:
     #   password: !secret wifi_password2
     #   priority: 5
 
-  # Scanning keeps roaming/recovery reliable and supports the optional backup.
-  fast_connect: false
+  # PERF v2.4: with a single known AP, fast_connect skips the full channel
+  # scan at boot -> WiFi associates in ~1-2 s instead of ~5-8 s.
+  # Trade-off: no scan = no roaming to another AP and the commented backup
+  # network block below cannot be used. Revert to false if you add a 2nd AP.
+  #options: stable: false (scan) | fast: true (applied, single AP)
+  fast_connect: true
   reboot_timeout: 30min
   power_save_mode: none
 

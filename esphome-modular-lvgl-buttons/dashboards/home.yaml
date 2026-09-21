@@ -135,13 +135,16 @@ lvgl:
         - lvgl.page.show:
             id: ac_main_page
             animation: OUT_LEFT
-            time: 300ms
+            # PERF v2.4: 300ms -> 150ms = navigation feels ~2x more instant.
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       on_swipe_right:
         - lambda: 'lv_indev_wait_release(lv_indev_get_act());'
         - lvgl.page.show:
             id: button_7_light_page
             animation: OUT_RIGHT
-            time: 300ms
+            #options: stable: 300ms | fast: 150ms (applied)
+            time: 150ms
       widgets:
         - button: !include
             file: ../buttons/entity_button.yaml
@@ -503,7 +506,19 @@ script:
           }
 
 touchscreen:
+  # PERF v2.4: wake_display used to restart on EVERY touch report (also while
+  # the panel was already awake), re-running a full brightness service call on
+  # every poll while a finger is down. It is now gated to the two states where
+  # waking is actually needed: LVGL paused (backlight off) or the screensaver
+  # page showing. Behavior on wake is unchanged.
+  #options: stable: wake on every touch | fast: gated wake (applied)
   on_touch:
     then:
-      - script.execute: wake_display
+      - if:
+          condition:
+            or:
+              - lvgl.is_paused
+              - lvgl.page.is_showing: screensaver_page
+          then:
+            - script.execute: wake_display
 

@@ -10,7 +10,7 @@ substitutions:
   project_name: "ospreypi.smart-display"
   # This is also the GitHub release/tag created after a validated main push.
   # Bump on every meaningful change — see AGENTS.md (Version Policy).
-  project_version: "2.3"
+  project_version: "2.4"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"
@@ -50,7 +50,15 @@ substitutions:
   screen_night_hour: "0"
   screen_night_minute: "0"
   log_level: "ERROR"
+  # PERF v2.4: LVGL draw buffer as a fraction of one 480x480 frame.
+  #   50% = stable, good balance (one full-frame flush every 2 draws).
+  #   100% = whole frame in one flush -> fewer flush rounds per frame and
+  #          cheaper full-page blends (theme switches, page slides). Costs
+  #          another ~450 KB of PSRAM; 8 MB has plenty. Internal heap drops a
+  #          little - watch the Info page, revert if it ever runs low.
+  #options: stable: 50% | fast: 100% (test on device first)
   lvgl_buffer_size: "50%"
+  # lvgl_buffer_size: "100%"
   lvgl_refresh_interval: "16ms"
   fallback_ap_ssid: "OspreyPi Setup"
 
@@ -58,6 +66,10 @@ esphome:
   name: "${device_name}"
   friendly_name: "${device_friendly_name}"
   comment: "${device_comment}"
+  # NOTE (perf audit v2.4): <sstream>/<algorithm> are system-header includes
+  # that make the display_settings.yaml std::clamp/std::string lambdas compile;
+  # they have ZERO runtime cost (nothing ends up in the binary), so they are
+  # kept on purpose - removing them only risks build breakage.
   includes:
     - <sstream>
     - <algorithm>
@@ -69,6 +81,11 @@ esphome:
 
 logger:
   level: "${log_level}"
+  # PERF v2.4: fully disable UART logging (saves the log task + frees pins
+  # 43/44). Do NOT enable the experimental RS485 Modbus on UART0 while this is
+  # set to 0 - uncommenting the uart block requires restoring UART logging.
+  #options: stable: UART logging active | fast: baud_rate 0 (applied)
+  baud_rate: 0
   logs:
     lvgl: ERROR
     sensor: ERROR
@@ -79,12 +96,15 @@ logger:
     ft63x6: ERROR
     api: ERROR
     wifi: ERROR
-  # baud_rate: 0 # Required if UART0 is repurposed for experimental RS485.
 
 api:
   # A Home Assistant restart must not reboot an otherwise healthy panel.
   reboot_timeout: 0s
-  batch_delay: 50ms
+  # PERF v2.4: state messages reach HA (and come back) sooner - button press
+  # -> HA action -> echoed state repaint feels snappier. Packet overhead is
+  # still tiny. (ESPHome default is 100ms; v2.1-v2.3 shipped 50ms.)
+  #options: stable: 50ms | fast: 20ms (applied)
+  batch_delay: 20ms
 
 esp32:
   framework:
@@ -94,9 +114,19 @@ esp32:
       CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
       CONFIG_ESP_MAIN_TASK_STACK_SIZE: "8192"
       CONFIG_FREERTOS_HZ: "1000"
+      # PERF v2.4 group — code/rodata execute from PSRAM (needs the matching
+      # `execute_from_psram: true` in hardware/osptek-esp32-s3-48x48.yaml).
+      # Trade-off: puts code + font/image rodata on the SAME bus the RGB DMA
+      # streams the framebuffer from. Faster cold starts, but on an RGB-panel
+      # build it can also cost animation smoothness. If animations stutter,
+      # flip BOTH sides to the "off" variants and compare on the device.
+      #options: stable: "y"/"y" + execute_from_psram true | alt: "n"/"n" + false
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
       CONFIG_SPIRAM_RODATA: "y"
+      # PERF v2.4: keep in sync with `psram: speed:` in the hardware file.
+      #options: stable: SPIRAM_SPEED_80M | fast: SPIRAM_SPEED_120M (test first)
       CONFIG_SPIRAM_SPEED_80M: "y"
+      # CONFIG_SPIRAM_SPEED_120M: "y"
       CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
       CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
       CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB: "y"

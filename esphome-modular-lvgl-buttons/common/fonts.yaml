@@ -1,21 +1,21 @@
 ---
-# Optimized font set - reduced from 11 to 7 fonts for speed and RAM
+# Optimized font set - v2.4: reduced to the fonts actually referenced in the UI
+# (nunito_120, nunito_32, georgian_48 and georgian_32 had zero references and
+# were removed - each compiled font costs flash + rodata cache/PSRAM pressure).
 # Mapping:
-# 120 - screensaver time (big clock)
 # 72  - AC target temp, weather temp
 # 36  - AC +/- buttons, large controls
 # 24  - main UI, buttons, weather details
-# 20  - settings, info, secondary labels (replaces 20,18,32)
+# 20  - settings, info, secondary labels
+# 18  - small buttons/captions
 # 14  - small labels, status
-# georgian 32 - date (optimized from 48)
+# 12  - tiny status line on the settings page
+# georgian - covered by DejaVu Sans Bold below (bold_geo_32, used by the
+#            screensaver date); the standalone NotoSansGeorgian fonts were
+#            unused and removed
 # bold_* - screensaver (clock, Georgian date, weather) - DejaVu Sans Bold
 
 font:
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_120
-    size: 120
-    bpp: 4
-
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_72
     size: 72
@@ -46,32 +46,10 @@ font:
     size: 14
     bpp: 4
 
-  # Aliases for backward compatibility - point to nearest existing size
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
-    id: nunito_32
-    size: 32
-    bpp: 4
-
   - file: "esphome-modular-lvgl-buttons/assets/fonts/Nunito-SemiBold.ttf"
     id: nunito_12
     size: 12
     bpp: 4
-
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/NotoSansGeorgian.ttf"
-    id: georgian_48
-    size: 32
-    bpp: 4
-    glyphs:
-      - " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
-
-  - file: "esphome-modular-lvgl-buttons/assets/fonts/NotoSansGeorgian.ttf"
-    id: georgian_32
-    size: 32
-    bpp: 4
-    glyphs:
-      - " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-      - "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
 
   # ── Bold screensaver set (DejaVu Sans Bold) ────────────────────────────────
   # Used by the screensaver: big clock + Georgian date + weather readout.

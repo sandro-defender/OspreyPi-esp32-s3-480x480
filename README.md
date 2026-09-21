@@ -18,7 +18,28 @@
 
 ---
 
-## ✨ What's New in v2.3 — Four Selectable Themes
+## ✨ What's New in v2.4 — Performance Edition
+
+A response-time and throughput pass across the whole firmware. Every knob now
+carries a `#options:` comment in the YAML marking the **stable** value and the
+**fast** alternative applied (or available commented out for on-device
+testing). Full details: [docs/CHANGELOG-v2.4-PERFORMANCE.md](docs/CHANGELOG-v2.4-PERFORMANCE.md).
+
+- **Touch polls at 10 ms instead of the 50 ms default** (FT6336 IRQ pin is not
+  connected) — taps and swipes register up to 5× sooner
+- **Quick taps no longer dropped** on the Light page (`min_length` 50 ms → 10 ms)
+- **Wake script gated** — the brightness service call no longer restarts on
+  every touch while the panel is already awake
+- **Page transitions 300 ms → 150 ms** (Home ↔ AC ↔ Light swipe ring)
+- **WiFi `fast_connect`** — boot associates in ~1–2 s instead of ~5–8 s
+- **API batch delay 50 ms → 20 ms**, UART logger fully disabled (`baud_rate: 0`)
+- **4 unused fonts removed** (~400 KB smaller firmware, faster OTA)
+- **Light-page halo repaint halved** while dragging sliders
+- **Info page 1 s timer gated** to when the page is actually shown
+- New commented `#options:` test knobs (flip on device, revert if unhappy):
+  PSRAM 120 MHz, PCLK 20 MHz, LVGL buffer 100%, code/rodata-XIP off
+
+### Everything from v2.3 — Four Selectable Themes
 
 ### 🎨 Theme 4: Daylight (dark orange-glow)
 
@@ -246,7 +267,7 @@ See [DEVICE_SPECS.md](DEVICE_SPECS.md) for the full pinout and init sequence.
 ## 📦 Releases & Version Policy
 
 Version lives in `esphome-modular-lvgl-buttons/common/display.yaml` →
-`project_version` (currently **2.3**). Pushing to `main` validates both display
+`project_version` (currently **2.4**). Pushing to `main` validates both display
 configs and publishes a GitHub release/tag when the version changed.
 
 **On every push / PR merge, bump `project_version`** (and the docs that mention

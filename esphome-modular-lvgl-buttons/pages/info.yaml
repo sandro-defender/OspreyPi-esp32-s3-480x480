@@ -536,6 +536,14 @@ lvgl:
                   text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
 
 interval:
+  # PERF v2.4: the 1 s tick used to run update_uptime unconditionally (forever,
+  # even with the Info page hidden). It is now gated to the Info page, so the
+  # other ~95% of the time this timer does nothing.
+  #options: stable: 1s ungated | fast: 1s only while info page showing (applied)
   - interval: 1s
     then:
-      - script.execute: update_uptime
+      - if:
+          condition:
+            lvgl.page.is_showing: info_screen
+          then:
+            - script.execute: update_uptime
