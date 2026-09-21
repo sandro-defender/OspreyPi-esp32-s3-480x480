@@ -1,7 +1,5 @@
 ---
-# Runtime display behaviour. The setting entities themselves live in
-# pages/settings.yaml because they are backed directly by LVGL widgets.
-
+# Optimized runtime display behaviour - faster, leaner
 sun:
   latitude: !secret latitude
   longitude: !secret longitude
@@ -47,98 +45,100 @@ script:
   - id: apply_display_brightness
     mode: restart
     then:
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Day";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(day_brightness).state;
-                  if (std::isnan(value)) value = ${daytime_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Evening";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(evening_brightness).state;
-                  if (std::isnan(value)) value = ${evening_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
-      - if:
-          condition:
-            lambda: 'return id(brightness_mode).current_option() == "Night";'
-          then:
-            - light.turn_on:
-                id: display_backlight
-                brightness: !lambda |-
-                  float value = id(night_brightness).state;
-                  if (std::isnan(value)) value = ${nighttime_brightness_default};
-                  return std::clamp(value / 100.0f, 0.01f, 1.0f);
+      - lambda: |-
+          float brightness = 1.0f;
+          std::string mode = id(brightness_mode).current_option();
+          if (mode == "Day") {
+            float v = id(day_brightness).state;
+            if (std::isnan(v)) v = ${daytime_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.05f, 1.0f);
+          } else if (mode == "Evening") {
+            float v = id(evening_brightness).state;
+            if (std::isnan(v)) v = ${evening_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.05f, 1.0f);
+          } else {
+            float v = id(night_brightness).state;
+            if (std::isnan(v)) v = ${nighttime_brightness_default};
+            brightness = std::clamp(v / 100.0f, 0.01f, 1.0f);
+          }
+          auto call = id(display_backlight).turn_on();
+          call.set_brightness(brightness);
+          call.perform();
+      - script.execute: update_settings_highlight
 
   - id: wake_display
     mode: restart
     then:
       - lvgl.resume
-      - lvgl.widget.redraw
       - script.execute: apply_display_brightness
 
   - id: apply_display_theme
     mode: restart
     then:
-      - if:
-          condition:
-            lambda: 'return id(current_theme).current_option() == "Dark";'
-          then:
-            - lvgl.style.update:
-                id: page_style
-                bg_color: black
-                text_color: white
-            - lvgl.widget.redraw
-      - if:
-          condition:
-            lambda: 'return id(current_theme).current_option() == "Light";'
-          then:
-            - lvgl.style.update:
-                id: page_style
-                bg_color: 0xE8EEF5
-                text_color: black
-            - lvgl.widget.redraw
+      - lambda: |-
+          bool is_dark = (id(current_theme).current_option() == "Dark");
+          if (is_dark) {
+            lv_obj_set_style_bg_color(id(main_page), lv_color_hex(0x000000), 0);
+            lv_obj_set_style_text_color(id(main_page), lv_color_white(), 0);
+          } else {
+            lv_obj_set_style_bg_color(id(main_page), lv_color_hex(0xE8EEF5), 0);
+            lv_obj_set_style_text_color(id(main_page), lv_color_black(), 0);
+          }
+      - lvgl.style.update:
+          id: page_style
+          bg_color: !lambda |-
+            return (id(current_theme).current_option() == "Dark") ? 0x000000 : 0xE8EEF5;
+          text_color: !lambda |-
+            return (id(current_theme).current_option() == "Dark") ? 0xFFFFFF : 0x000000;
+      - script.execute: update_settings_highlight
 
   - id: apply_display_rotation
     mode: restart
     then:
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "0";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 0
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "90";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 90
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "180";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 180
-      - if:
-          condition:
-            lambda: 'return id(display_rotation_select).current_option() == "270";'
-          then:
-            - lvgl.display.set_rotation:
-                rotation: 270
+      - lambda: |-
+          std::string r = id(display_rotation_select).current_option();
+          lvgl::RotationType rot = lvgl::ROTATION_0_DEGREES;
+          if (r == "90") rot = lvgl::ROTATION_90_DEGREES;
+          else if (r == "180") rot = lvgl::ROTATION_180_DEGREES;
+          else if (r == "270") rot = lvgl::ROTATION_270_DEGREES;
+          id(lvgl_component).set_rotation(rot);
+      - script.execute: update_settings_highlight
+
+  - id: update_settings_highlight
+    mode: restart
+    then:
+      - lambda: |-
+          // Highlight active buttons in fast settings UI
+          auto set_btn = [](lv_obj_t* btn, bool active) {
+            if (!btn) return;
+            if (active) {
+              lv_obj_set_style_bg_color(btn, lv_color_hex(0xFF9F1C), 0);
+              lv_obj_set_style_text_color(btn, lv_color_white(), 0);
+            } else {
+              lv_obj_set_style_bg_color(btn, lv_color_hex(0x3A4352), 0);
+              lv_obj_set_style_text_color(btn, lv_color_hex(0xCCCCCC), 0);
+            }
+          };
+          std::string bmode = id(brightness_mode).current_option();
+          set_btn(id(settings_btn_day), bmode=="Day");
+          set_btn(id(settings_btn_evening), bmode=="Evening");
+          set_btn(id(settings_btn_night), bmode=="Night");
+
+          std::string theme = id(current_theme).current_option();
+          set_btn(id(settings_btn_dark), theme=="Dark");
+          set_btn(id(settings_btn_light), theme=="Light");
+
+          std::string rot = id(display_rotation_select).current_option();
+          set_btn(id(settings_btn_rot0), rot=="0");
+          set_btn(id(settings_btn_rot90), rot=="90");
+          set_btn(id(settings_btn_rot180), rot=="180");
+          set_btn(id(settings_btn_rot270), rot=="270");
 
 lvgl:
   buffer_size: "${lvgl_buffer_size}"
   refresh_interval: "${lvgl_refresh_interval}"
   rotation: "${display_rotation}"
+  log_level: NONE
   on_boot:
     - script.execute: apply_display_theme
     - script.execute: apply_display_rotation
@@ -153,7 +153,6 @@ lvgl:
           condition:
             switch.is_on: screensaver_enabled
           then:
-            - logger.log: "Showing screensaver after display timeout"
             - lvgl.page.show: screensaver_page
             - script.execute: time_update
             - if:

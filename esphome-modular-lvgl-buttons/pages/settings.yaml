@@ -1,311 +1,458 @@
 ---
-# Touchscreen settings page. Every control is also an ESPHome entity, so the
-# same values can be changed from Home Assistant without reflashing.
+# Fast, simplified settings page - optimized for speed
+# No dropdowns, no scrollable containers, minimal nesting, button-based controls
 
 lvgl:
-  style_definitions:
-    - id: settings_row_style
-      bg_color: 0x252A34
-      bg_opa: cover
-      border_width: 1
-      border_color: 0x3A4352
-      radius: 14
-      pad_left: 14
-      pad_right: 14
-      pad_top: 8
-      pad_bottom: 8
-
   pages:
     - id: settings_page
       bg_color: 0x11151C
       bg_opa: cover
-      on_load:
-        - lvgl.label.update:
-            id: settings_day_label
-            text:
-              format: "Day brightness · %.0f%%"
-              args: [ 'id(day_brightness).state' ]
-        - lvgl.label.update:
-            id: settings_evening_label
-            text:
-              format: "Evening brightness · %.0f%%"
-              args: [ 'id(evening_brightness).state' ]
-        - lvgl.label.update:
-            id: settings_night_label
-            text:
-              format: "Night brightness · %.0f%%"
-              args: [ 'id(night_brightness).state' ]
-        - lvgl.label.update:
-            id: settings_timeout_label
-            text:
-              format: "Screen timeout · %.0fs"
-              args: [ 'id(screen_timeout).state' ]
       widgets:
         - label:
             align: top_mid
-            y: 10
-            text: "Display settings"
-            text_font: nunito_32
+            y: 8
+            text: "Settings"
+            text_font: nunito_24
             text_color: white
 
+        # Main container - fixed, no scroll, fast layout
         - obj:
             align: top_mid
-            y: 52
+            y: 38
             width: 460
-            height: 365
+            height: 380
             bg_opa: transp
             border_width: 0
-            pad_all: 6
-            scrollable: true
-            scrollbar_mode: auto
+            pad_all: 0
             layout:
               type: flex
               flex_flow: column
-              flex_align_main: start
-              flex_align_cross: center
-              pad_row: 8
+              pad_row: 6
             widgets:
+              # Brightness Mode - 3 fast buttons
               - obj:
-                  width: 440
-                  height: 64
-                  styles: settings_row_style
+                  width: 100%
+                  height: 46
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
-                    type: grid
-                    grid_columns: [FR(45), FR(55)]
-                    grid_rows: [FR(1)]
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
                   widgets:
                     - label:
-                        grid_cell_column_pos: 0
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: start
-                        grid_cell_y_align: center
-                        text: "Brightness mode"
-                        text_font: nunito_20
-                        text_color: white
-                    - dropdown:
-                        id: settings_brightness_mode
-                        grid_cell_column_pos: 1
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: stretch
-                        grid_cell_y_align: center
-                        options: [Day, Evening, Night]
-                        selected_index: "${brightness_mode_index}"
-                        text_font: nunito_20
+                        text: "Mode"
+                        text_font: nunito_18
+                        text_color: 0xAAAAAA
+                    - obj:
+                        width: 300
+                        height: 34
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: row
+                          pad_column: 4
+                        widgets:
+                          - button:
+                              id: settings_btn_day
+                              width: 90
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Day"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: brightness_mode
+                                    option: "Day"
+                          - button:
+                              id: settings_btn_evening
+                              width: 90
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Eve"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: brightness_mode
+                                    option: "Evening"
+                          - button:
+                              id: settings_btn_night
+                              width: 90
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Night"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: brightness_mode
+                                    option: "Night"
 
+              # Day Brightness - single slider
               - obj:
-                  width: 440
-                  height: 72
-                  styles: settings_row_style
+                  width: 100%
+                  height: 52
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
                     type: flex
                     flex_flow: column
-                    flex_align_main: space_evenly
+                    pad_row: 2
                   widgets:
                     - label:
                         id: settings_day_label
-                        text: "Day brightness · ${daytime_brightness_default}%"
-                        text_font: nunito_20
-                        text_color: white
+                        text: "Day · ${daytime_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
                     - slider:
                         id: settings_day_brightness
-                        width: 400
-                        height: 18
+                        width: 430
+                        height: 14
                         min_value: 5
                         max_value: 100
                         value: "${daytime_brightness_default}"
-                        knob:
-                          bg_color: 0xFF9F1C
+                        bg_color: 0x2A303E
                         indicator:
                           bg_color: 0xFF9F1C
+                        knob:
+                          bg_color: 0xFFFFFF
+                          radius: 8
+                          width: 16
+                          height: 16
 
+              # Evening Brightness
               - obj:
-                  width: 440
-                  height: 72
-                  styles: settings_row_style
+                  width: 100%
+                  height: 52
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
                     type: flex
                     flex_flow: column
-                    flex_align_main: space_evenly
+                    pad_row: 2
                   widgets:
                     - label:
                         id: settings_evening_label
-                        text: "Evening brightness · ${evening_brightness_default}%"
-                        text_font: nunito_20
-                        text_color: white
+                        text: "Evening · ${evening_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
                     - slider:
                         id: settings_evening_brightness
-                        width: 400
-                        height: 18
+                        width: 430
+                        height: 14
                         min_value: 5
                         max_value: 100
                         value: "${evening_brightness_default}"
-                        knob:
-                          bg_color: 0xFF9F1C
+                        bg_color: 0x2A303E
                         indicator:
                           bg_color: 0xFF9F1C
+                        knob:
+                          bg_color: 0xFFFFFF
+                          radius: 8
+                          width: 16
+                          height: 16
 
+              # Night Brightness
               - obj:
-                  width: 440
-                  height: 72
-                  styles: settings_row_style
+                  width: 100%
+                  height: 52
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
                     type: flex
                     flex_flow: column
-                    flex_align_main: space_evenly
+                    pad_row: 2
                   widgets:
                     - label:
                         id: settings_night_label
-                        text: "Night brightness · ${nighttime_brightness_default}%"
-                        text_font: nunito_20
-                        text_color: white
+                        text: "Night · ${nighttime_brightness_default}%"
+                        text_font: nunito_14
+                        text_color: 0xCCCCCC
                     - slider:
                         id: settings_night_brightness
-                        width: 400
-                        height: 18
+                        width: 430
+                        height: 14
                         min_value: 5
                         max_value: 100
                         value: "${nighttime_brightness_default}"
-                        knob:
-                          bg_color: 0xFF9F1C
+                        bg_color: 0x2A303E
                         indicator:
                           bg_color: 0xFF9F1C
+                        knob:
+                          bg_color: 0xFFFFFF
+                          radius: 8
+                          width: 16
+                          height: 16
 
+              # Timeout + Screensaver row
               - obj:
-                  width: 440
-                  height: 72
-                  styles: settings_row_style
+                  width: 100%
+                  height: 52
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
                     type: flex
-                    flex_flow: column
-                    flex_align_main: space_evenly
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
                   widgets:
-                    - label:
-                        id: settings_timeout_label
-                        text: "Screen timeout · ${screen_timeout_default}s"
-                        text_font: nunito_20
-                        text_color: white
-                    - slider:
-                        id: settings_screen_timeout
-                        width: 400
-                        height: 18
-                        min_value: 15
-                        max_value: 600
-                        value: "${screen_timeout_default}"
-                        knob:
-                          bg_color: 0x41BDF5
-                        indicator:
-                          bg_color: 0x41BDF5
+                    - obj:
+                        width: 320
+                        height: 40
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: column
+                          pad_row: 1
+                        widgets:
+                          - label:
+                              id: settings_timeout_label
+                              text: "Timeout · ${screen_timeout_default}s"
+                              text_font: nunito_14
+                              text_color: 0xCCCCCC
+                          - slider:
+                              id: settings_screen_timeout
+                              width: 300
+                              height: 12
+                              min_value: 15
+                              max_value: 300
+                              value: "${screen_timeout_default}"
+                              bg_color: 0x2A303E
+                              indicator:
+                                bg_color: 0x41BDF5
+                              knob:
+                                bg_color: 0xFFFFFF
+                                radius: 6
+                                width: 14
+                                height: 14
+                    - obj:
+                        width: 100
+                        height: 40
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: column
+                          flex_align_main: center
+                          flex_align_cross: center
+                        widgets:
+                          - label:
+                              text: "Saver"
+                              text_font: nunito_12
+                              text_color: 0x888888
+                          - switch:
+                              id: settings_screensaver_enabled
+                              width: 44
+                              height: 22
+                              bg_color: 0x3A4352
+                              knob:
+                                bg_color: white
+                              indicator:
+                                bg_color: 0x4CAF50
+                              state:
+                                checked: true
 
+              # Theme + Rotation combined row for speed
               - obj:
-                  width: 440
-                  height: 64
-                  styles: settings_row_style
+                  width: 100%
+                  height: 46
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 6
                   layout:
-                    type: grid
-                    grid_columns: [FR(75), FR(25)]
-                    grid_rows: [FR(1)]
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
                   widgets:
-                    - label:
-                        grid_cell_column_pos: 0
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: start
-                        grid_cell_y_align: center
-                        text: "Screensaver enabled"
-                        text_font: nunito_20
-                        text_color: white
-                    - switch:
-                        id: settings_screensaver_enabled
-                        grid_cell_column_pos: 1
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: end
-                        grid_cell_y_align: center
-                        state:
-                          checked: true
-
-              - obj:
-                  width: 440
-                  height: 64
-                  styles: settings_row_style
-                  layout:
-                    type: grid
-                    grid_columns: [FR(45), FR(55)]
-                    grid_rows: [FR(1)]
-                  widgets:
-                    - label:
-                        grid_cell_column_pos: 0
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: start
-                        grid_cell_y_align: center
-                        text: "Theme"
-                        text_font: nunito_20
-                        text_color: white
-                    - dropdown:
-                        id: settings_theme
-                        grid_cell_column_pos: 1
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: stretch
-                        grid_cell_y_align: center
-                        options: [Dark, Light]
-                        selected_index: "${theme_index}"
-                        text_font: nunito_20
-
-              - obj:
-                  width: 440
-                  height: 64
-                  styles: settings_row_style
-                  layout:
-                    type: grid
-                    grid_columns: [FR(45), FR(55)]
-                    grid_rows: [FR(1)]
-                  widgets:
-                    - label:
-                        grid_cell_column_pos: 0
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: start
-                        grid_cell_y_align: center
-                        text: "Rotation"
-                        text_font: nunito_20
-                        text_color: white
-                    - dropdown:
-                        id: settings_rotation
-                        grid_cell_column_pos: 1
-                        grid_cell_row_pos: 0
-                        grid_cell_x_align: stretch
-                        grid_cell_y_align: center
-                        options: ["0", "90", "180", "270"]
-                        selected_index: "${display_rotation_index}"
-                        text_font: nunito_20
+                    - obj:
+                        width: 150
+                        height: 34
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: row
+                          pad_column: 4
+                        widgets:
+                          - button:
+                              id: settings_btn_dark
+                              width: 65
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Dark"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: current_theme
+                                    option: "Dark"
+                          - button:
+                              id: settings_btn_light
+                              width: 65
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Light"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: current_theme
+                                    option: "Light"
+                    - obj:
+                        width: 260
+                        height: 34
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: row
+                          pad_column: 3
+                        widgets:
+                          - button:
+                              id: settings_btn_rot0
+                              width: 58
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "0°"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: display_rotation_select
+                                    option: "0"
+                          - button:
+                              id: settings_btn_rot90
+                              width: 58
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "90°"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: display_rotation_select
+                                    option: "90"
+                          - button:
+                              id: settings_btn_rot180
+                              width: 58
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "180°"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: display_rotation_select
+                                    option: "180"
+                          - button:
+                              id: settings_btn_rot270
+                              width: 58
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "270°"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: display_rotation_select
+                                    option: "270"
 
         - button:
             align: bottom_left
-            x: 12
-            y: -8
-            width: 138
-            height: 46
-            radius: 14
+            x: 10
+            y: -6
+            width: 110
+            height: 40
+            radius: 10
             bg_color: 0xFF6600
+            border_width: 0
             widgets:
               - label:
                   align: center
                   text: "Home"
-                  text_font: nunito_20
+                  text_font: nunito_18
                   text_color: white
             on_click:
               - lvgl.page.show: main_page
 
         - button:
             align: bottom_right
-            x: -12
-            y: -8
-            width: 138
-            height: 46
-            radius: 14
+            x: -10
+            y: -6
+            width: 110
+            height: 40
+            radius: 10
             bg_color: 0x3A4352
+            border_width: 0
             widgets:
               - label:
                   align: center
-                  text: "Device info"
-                  text_font: nunito_20
+                  text: "Info"
+                  text_font: nunito_18
                   text_color: white
             on_click:
               - lvgl.page.show: info_screen
@@ -322,7 +469,7 @@ number:
       - lvgl.label.update:
           id: settings_day_label
           text:
-            format: "Day brightness · %.0f%%"
+            format: "Day · %.0f%%"
             args: [ x ]
       - if:
           condition:
@@ -341,7 +488,7 @@ number:
       - lvgl.label.update:
           id: settings_evening_label
           text:
-            format: "Evening brightness · %.0f%%"
+            format: "Evening · %.0f%%"
             args: [ x ]
       - if:
           condition:
@@ -360,7 +507,7 @@ number:
       - lvgl.label.update:
           id: settings_night_label
           text:
-            format: "Night brightness · %.0f%%"
+            format: "Night · %.0f%%"
             args: [ x ]
       - if:
           condition:
@@ -380,34 +527,40 @@ number:
       - lvgl.label.update:
           id: settings_timeout_label
           text:
-            format: "Screen timeout · %.0fs"
+            format: "Timeout · %.0fs"
             args: [ x ]
 
 select:
-  - platform: lvgl
+  - platform: template
     id: brightness_mode
     name: "Brightness Mode"
-    widget: settings_brightness_mode
+    options: [Day, Evening, Night]
+    initial_option: Day
     restore_value: true
     entity_category: config
+    optimistic: true
     on_value:
       - script.execute: apply_display_brightness
 
-  - platform: lvgl
+  - platform: template
     id: current_theme
     name: "Theme"
-    widget: settings_theme
+    options: [Dark, Light]
+    initial_option: Dark
     restore_value: true
     entity_category: config
+    optimistic: true
     on_value:
       - script.execute: apply_display_theme
 
-  - platform: lvgl
+  - platform: template
     id: display_rotation_select
     name: "Display Rotation"
-    widget: settings_rotation
+    options: ["0", "90", "180", "270"]
+    initial_option: "${display_rotation}"
     restore_value: true
     entity_category: config
+    optimistic: true
     on_value:
       - script.execute: apply_display_rotation
 

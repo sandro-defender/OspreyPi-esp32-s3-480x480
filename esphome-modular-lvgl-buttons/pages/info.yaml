@@ -1,407 +1,344 @@
 ---
-# Script to update uptime display
+# Optimized info page - faster rendering, less frequent updates
 script:
   - id: update_uptime
     then:
       - lvgl.label.update:
           id: uptime_label
           text: !lambda |-
-            int seconds = millis() / 1000;
-            int days = seconds / 86400;
-            int hours = (seconds % 86400) / 3600;
-            int minutes = (seconds % 3600) / 60;
-            char buffer[32];
-            if (days > 0) {
-              snprintf(buffer, sizeof(buffer), "%dd %dh %dm", days, hours, minutes);
-            } else if (hours > 0) {
-              snprintf(buffer, sizeof(buffer), "%dh %dm", hours, minutes);
-            } else {
-              snprintf(buffer, sizeof(buffer), "%dm", minutes);
-            }
-            return std::string(buffer);
+            int s = millis()/1000;
+            int d = s/86400; int h = (s%86400)/3600; int m = (s%3600)/60;
+            char b[24];
+            if (d>0) snprintf(b,sizeof(b),"%dd %dh %dm",d,h,m);
+            else if (h>0) snprintf(b,sizeof(b),"%dh %dm",h,m);
+            else snprintf(b,sizeof(b),"%dm",m);
+            return std::string(b);
 
-# Binary sensor to detect AP mode
 binary_sensor:
   - platform: status
     id: wifi_status
     internal: true
     on_state:
-      then:
-        - if:
-            condition:
-              # AP mode is active when WiFi is NOT connected
-              lambda: 'return !id(wifi_status).state;'
-            then:
-              - lvgl.widget.show: ap_mode_qr_container
-              - lvgl.qrcode.update:
-                  id: ap_mode_qr
-                  text: !lambda |-
-                    char buffer[64];
-                    snprintf(buffer, sizeof(buffer), "WIFI:S:${fallback_ap_ssid};T:nopass;;");
-                    return std::string(buffer);
-            else:
-              - lvgl.widget.hide: ap_mode_qr_container
+      - if:
+          condition:
+            lambda: 'return !id(wifi_status).state;'
+          then:
+            - lvgl.widget.show: ap_mode_qr_container
+            - lvgl.qrcode.update:
+                id: ap_mode_qr
+                text: !lambda |-
+                  char b[64]; snprintf(b,sizeof(b),"WIFI:S:${fallback_ap_ssid};T:nopass;;"); return std::string(b);
+          else:
+            - lvgl.widget.hide: ap_mode_qr_container
 
-# Sensors for info page
 sensor:
-  # Free heap memory sensor
   - platform: template
     id: free_heap_sensor
-    name: "Free Heap"
     internal: true
     lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-    update_interval: 10s
-    unit_of_measurement: "bytes"
-    accuracy_decimals: 0
+    update_interval: 30s
     on_value:
-      then:
-        - lvgl.label.update:
-            id: free_heap_label
-            text: !lambda |-
-              float kb = x / 1024.0;
-              char buffer[16];
-              snprintf(buffer, sizeof(buffer), "%.1f KB", kb);
-              return std::string(buffer);
-  
-  # Free PSRAM sensor
+      - lvgl.label.update:
+          id: free_heap_label
+          text: !lambda |-
+            char b[16]; snprintf(b,sizeof(b),"%.0f KB",x/1024.0); return std::string(b);
   - platform: template
     id: free_psram_sensor
-    name: "Free PSRAM"
     internal: true
     lambda: return heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
-    update_interval: 10s
-    unit_of_measurement: "bytes"
-    accuracy_decimals: 0
+    update_interval: 30s
     on_value:
-      then:
-        - lvgl.label.update:
-            id: free_psram_label
-            text: !lambda |-
-              float mb = x / 1024.0 / 1024.0;
-              char buffer[16];
-              snprintf(buffer, sizeof(buffer), "%.2f MB", mb);
-              return std::string(buffer);
+      - lvgl.label.update:
+          id: free_psram_label
+          text: !lambda |-
+            char b[16]; snprintf(b,sizeof(b),"%.1f MB",x/1024.0/1024.0); return std::string(b);
 
 lvgl:
   style_definitions:
-    - id: boot_screen_style
-      text_font: nunito_20
-      text_color: white
-      pad_all: 2
-    
-    - id: info_header_style
-      text_font: nunito_24
-      text_color: 0xFFA500  # Orange color for headers
-      pad_all: 4
-    
     - id: info_label_style
-      text_font: nunito_20
-      text_color: 0xCCCCCC  # Light gray for labels
-      
+      text_font: nunito_18
+      text_color: 0x888888
     - id: info_value_style
-      text_font: nunito_20
+      text_font: nunito_18
       text_color: white
-  
+
   pages:
     - id: info_screen
-      bg_color: 0x1a1a1a  # Dark background
-      <<: !include
-        file: ../widgets/swipe_navigation.yaml
+      bg_color: 0x11151C
       widgets:
-        # Main scrollable container
         - obj:
             width: 100%
-            height: 460
-            scrollable: true
-            scrollbar_mode: "auto"
-            border_width: 0
+            height: 430
             bg_opa: transp
-            pad_all: 10
+            border_width: 0
+            pad_all: 8
             layout:
-              type: GRID
-              grid_rows: [ content, content, content, content, content, content, content, content, content, content, content, content, content, content ]
-              grid_columns: [ FR(42), FR(58) ]
-              pad_column: 6
-              pad_row: 8
+              type: flex
+              flex_flow: column
+              pad_row: 4
             widgets:
-              # Device Name
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 0
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Device Name:"
-              - label:
-                  id: device_name_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 0
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # ESPHome Version
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 1
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "ESPHome:"
-              - label:
-                  id: esphome_version_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 1
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  text_font: nunito_18
-                  styles: info_value_style
-                  text: "..."
-              
-              # Build Date
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 2
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Build Date:"
-              - label:
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 2
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text:
-                    format: "%s"
-                    args: [__DATE__]
-              
-              # Uptime
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 3
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Uptime:"
-              - label:
-                  id: uptime_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 3
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # WiFi SSID
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 4
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "WiFi SSID:"
-              - label:
-                  id: connected_ssid_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 4
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # IP Address
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 5
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "IP Address:"
-              - label:
-                  id: ip_address_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 5
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "0.0.0.0"
-              
-              # MAC Address
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 6
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "MAC Address:"
-              - label:
-                  id: connected_mac_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 6
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # WiFi Signal
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 7
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "WiFi Signal:"
-              - label:
-                  id: wifi_signal_db_percent_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 7
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # CPU Temperature
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 8
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "CPU Temp:"
-              - label:
-                  id: cpu_temp_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 8
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # Free Memory
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 9
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Free Memory:"
-              - label:
-                  id: free_heap_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 9
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-              
-              # Free PSRAM
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 10
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Free PSRAM:"
-              - label:
-                  id: free_psram_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 10
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "..."
-
-              # Home Assistant API state
-              - label:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 11
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_label_style
-                  text: "Home Assistant:"
-              - label:
-                  id: ha_connection_label
-                  grid_cell_column_pos: 1
-                  grid_cell_row_pos: 11
-                  grid_cell_x_align: START
-                  grid_cell_y_align: CENTER
-                  styles: info_value_style
-                  text: "Connecting..."
-
-              - button:
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 12
-                  grid_cell_column_span: 2
-                  grid_cell_x_align: CENTER
-                  grid_cell_y_align: CENTER
-                  width: 180
-                  height: 42
-                  bg_color: 0x555555
-                  radius: 12
-                  widgets:
-                    - label:
-                        align: center
-                        text: "Restart Display"
-                        text_color: white
-                        text_font: nunito_20
-                  on_click:
-                    - button.press: restart_device
-              
-              # AP Mode QR Code (hidden by default)
               - obj:
-                  id: ap_mode_qr_container
-                  grid_cell_column_pos: 0
-                  grid_cell_row_pos: 13
-                  grid_cell_column_span: 2
-                  grid_cell_x_align: CENTER
-                  grid_cell_y_align: CENTER
-                  width: 200
-                  height: 150
+                  width: 100%
+                  height: 28
                   bg_opa: transp
                   border_width: 0
-                  hidden: true
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
                   widgets:
                     - label:
-                        align: top_mid
-                        y: 0
-                        text_font: nunito_24
-                        text_color: 0xFF6600
-                        text: "⚠ AP MODE ACTIVE"
-                    - qrcode:
-                        id: ap_mode_qr
-                        align: center
-                        y: 15
-                        size: 100
-                        text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
+                        styles: info_label_style
+                        text: "Device:"
                     - label:
-                        align: bottom_mid
-                        y: 0
-                        text_font: nunito_18
-                        text_color: 0xCCCCCC
-                        text: "Scan to connect"
-        
-        # Exit button
+                        id: device_name_label
+                        styles: info_value_style
+                        text: "${device_name}"
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "ESPHome:"
+                    - label:
+                        id: esphome_version_label
+                        styles: info_value_style
+                        text: "${project_version}"
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "Build:"
+                    - label:
+                        styles: info_value_style
+                        text:
+                          format: "%s"
+                          args: [__DATE__]
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "Uptime:"
+                    - label:
+                        id: uptime_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "WiFi:"
+                    - label:
+                        id: connected_ssid_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "IP:"
+                    - label:
+                        id: ip_address_label
+                        styles: info_value_style
+                        text: "0.0.0.0"
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "MAC:"
+                    - label:
+                        id: connected_mac_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "Signal:"
+                    - label:
+                        id: wifi_signal_db_percent_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "CPU:"
+                    - label:
+                        id: cpu_temp_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "Heap:"
+                    - label:
+                        id: free_heap_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "PSRAM:"
+                    - label:
+                        id: free_psram_label
+                        styles: info_value_style
+                        text: "..."
+              - obj:
+                  width: 100%
+                  height: 28
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                  widgets:
+                    - label:
+                        styles: info_label_style
+                        text: "HA:"
+                    - label:
+                        id: ha_connection_label
+                        styles: info_value_style
+                        text: "Connecting..."
+
+              - obj:
+                  width: 100%
+                  height: 50
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_evenly
+                    flex_align_cross: center
+                  widgets:
+                    - button:
+                        width: 140
+                        height: 38
+                        radius: 10
+                        bg_color: 0x555555
+                        border_width: 0
+                        widgets:
+                          - label:
+                              align: center
+                              text: "Restart"
+                              text_font: nunito_18
+                        on_click:
+                          - button.press: restart_device
+                    - obj:
+                        id: ap_mode_qr_container
+                        width: 120
+                        height: 120
+                        bg_opa: transp
+                        border_width: 0
+                        hidden: true
+                        widgets:
+                          - qrcode:
+                              id: ap_mode_qr
+                              align: center
+                              size: 90
+                              text: "WIFI:S:${fallback_ap_ssid};T:nopass;;"
+
         - button:
             align: bottom_right
-            radius: 20
-            width: 90
-            height: 45
+            x: -10
+            y: -8
+            width: 80
+            height: 38
+            radius: 10
             bg_color: 0xFF6600
-            shadow_width: 8
-            shadow_color: 0x000000
-            shadow_opa: 50%
+            border_width: 0
             widgets:
-             - label:
-                 text_color: white
-                 align: center
-                 text_font: nunito_24
-                 text: "Exit"
-            on_press:
+              - label:
+                  align: center
+                  text: "Exit"
+                  text_font: nunito_18
+                  text_color: white
+            on_click:
               - lvgl.page.show: main_page
 
-# On-boot and interval actions
 interval:
   - interval: 60s
     then:

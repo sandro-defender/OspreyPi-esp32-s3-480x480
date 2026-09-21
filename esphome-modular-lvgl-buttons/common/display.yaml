@@ -9,7 +9,7 @@ substitutions:
   device_comment: "OspreyPi ESP32-S3 480x480 smart display"
   project_name: "ospreypi.smart-display"
   # This is also the GitHub release/tag created after a validated main push.
-  project_version: "2.0"
+  project_version: "2.1"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"
@@ -44,12 +44,12 @@ substitutions:
   brightness_mode_index: "0" # 0 Day, 1 Evening, 2 Night
   theme_index: "0"           # 0 Dark, 1 Light
 
-  # Boot/performance defaults
-  boot_screen_delay: "60s"
+  # Boot/performance defaults - optimized for speed
+  boot_screen_delay: "8s"
   screen_night_hour: "0"
   screen_night_minute: "0"
-  log_level: "WARN"
-  lvgl_buffer_size: "12%"
+  log_level: "ERROR"
+  lvgl_buffer_size: "20%"
   lvgl_refresh_interval: "16ms"
   fallback_ap_ssid: "OspreyPi Setup"
 
@@ -61,17 +61,29 @@ esphome:
     - <sstream>
     - <algorithm>
   on_boot:
-    - priority: 400
+    - priority: 800
       then:
+        - lvgl.resume:
         - script.execute: update_loading_page
 
 logger:
   level: "${log_level}"
+  logs:
+    lvgl: ERROR
+    sensor: ERROR
+    binary_sensor: ERROR
+    text_sensor: ERROR
+    display: ERROR
+    st7701s: ERROR
+    ft63x6: ERROR
+    api: ERROR
+    wifi: ERROR
   # baud_rate: 0 # Required if UART0 is repurposed for experimental RS485.
 
 api:
   # A Home Assistant restart must not reboot an otherwise healthy panel.
-  reboot_timeout: 30min
+  reboot_timeout: 0s
+  batch_delay: 50ms
 
 esp32:
   framework:
@@ -79,6 +91,15 @@ esp32:
     sdkconfig_options:
       CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH: "n"
       CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH: "n"
+      CONFIG_ESP_MAIN_TASK_STACK_SIZE: "8192"
+      CONFIG_FREERTOS_HZ: "1000"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      CONFIG_SPIRAM_RODATA: "y"
+      CONFIG_SPIRAM_SPEED_80M: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB: "y"
+      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
 
 packages:
   wifi: !include wifi.yaml

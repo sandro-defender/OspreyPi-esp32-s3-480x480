@@ -122,10 +122,12 @@ lvgl:
       layout:
         type: flex
         flex_flow: column_wrap
-        pad_row: 10px
-        pad_column: 10px
+        pad_row: 8px
+        pad_column: 8px
       width: 100%
       styles: page_style
+      bg_color: black
+      bg_opa: cover
       <<: !include ../widgets/swipe_navigation.yaml
       widgets:
         - button: !include

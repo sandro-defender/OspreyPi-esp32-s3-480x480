@@ -1,45 +1,44 @@
-# Time update script - This is run once per second. Use it to update any time related labels.
+---
+# Optimized screensaver - lean, fast
 script:
   - id: time_update
+    mode: restart
     then:
       - lvgl.label.update:
           id: screensaver_time
           text: !lambda 'return id(system_time).now().strftime("%H:%M");'
       - lvgl.label.update:
           id: screensaver_date
-          text_font: georgian_48
           text: !lambda |-
-            static const char *const DAYS_GE[] = {"შაბ", "კვი", "ორშ", "სამ", "ოთხ", "ხუთ", "პარ"};
-            static const char *const MONTHS_GE[] = {"იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"};
-            auto time = id(system_time).now();
-            char buffer[64];
-            snprintf(buffer, sizeof(buffer), "%s, %02d %s", DAYS_GE[time.day_of_week % 7], time.day_of_month, MONTHS_GE[time.month - 1]);
-            return std::string(buffer);
+            static const char *DAYS[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+            static const char *MONTHS[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+            auto t = id(system_time).now();
+            char b[48]; snprintf(b,sizeof(b),"%s, %02d %s", DAYS[t.day_of_week%7], t.day_of_month, MONTHS[t.month-1]);
+            return std::string(b);
 
   - id: update_weather_image
+    mode: restart
     then:
       - lvgl.image.update:
           id: screensaver_icon
           src: !lambda |-
-            std::string condition = id(weather_condition).state;
-            if (condition == "clear-night") return id(weather_clear_night);
-            if (condition == "cloudy") return id(weather_cloudy);
-            if (condition == "fog") return id(weather_fog);
-            if (condition == "hail") return id(weather_hail);
-            if (condition == "lightning") return id(weather_lightning);
-            if (condition == "lightning-rainy") return id(weather_lightning_rainy);
-            if (condition == "partlycloudy") return id(weather_partlycloudy_sun);
-            if (condition == "pouring") return id(weather_pouring);
-            if (condition == "rainy") return id(weather_rainy);
-            if (condition == "snowy") return id(weather_snowy);
-            if (condition == "snowy-rainy") return id(weather_snowy_rainy);
-            if (condition == "sunny") return id(weather_sunny);
-            if (condition == "windy") return id(weather_windy);
-            if (condition == "windy-variant") return id(weather_windy_variant);
-            return id(weather_sunny); // Default
-  # Sensors for Screensaver
-  # Sensors for Screensaver
-# Sensors for Screensaver
+            std::string c = id(weather_condition).state;
+            if (c=="clear-night") return id(weather_clear_night);
+            if (c=="cloudy") return id(weather_cloudy);
+            if (c=="fog") return id(weather_fog);
+            if (c=="hail") return id(weather_hail);
+            if (c=="lightning") return id(weather_lightning);
+            if (c=="lightning-rainy") return id(weather_lightning_rainy);
+            if (c=="partlycloudy") return id(weather_partlycloudy_sun);
+            if (c=="pouring") return id(weather_pouring);
+            if (c=="rainy") return id(weather_rainy);
+            if (c=="snowy") return id(weather_snowy);
+            if (c=="snowy-rainy") return id(weather_snowy_rainy);
+            if (c=="sunny") return id(weather_sunny);
+            if (c=="windy") return id(weather_windy);
+            if (c=="windy-variant") return id(weather_windy_variant);
+            return id(weather_sunny);
+
 sensor:
   - platform: homeassistant
     entity_id: "${weather_entity}"
@@ -47,36 +46,33 @@ sensor:
     id: weather_temp
     internal: true
     on_value:
-      then:
-        - lvgl.label.update:
-            id: screensaver_temp
-            text:
-              format: "%.1f°"
-              args: [ 'id(weather_temp).state' ]
+      - lvgl.label.update:
+          id: screensaver_temp
+          text:
+            format: "%.0f°"
+            args: [ 'id(weather_temp).state' ]
   - platform: homeassistant
     entity_id: "${weather_entity}"
     attribute: humidity
     id: weather_humidity
     internal: true
     on_value:
-      then:
-        - lvgl.label.update:
-            id: screensaver_humidity
-            text:
-              format: "%.0f%%"
-              args: [ 'id(weather_humidity).state' ]
+      - lvgl.label.update:
+          id: screensaver_humidity
+          text:
+            format: "%.0f%%"
+            args: [ 'id(weather_humidity).state' ]
   - platform: homeassistant
     entity_id: "${weather_entity}"
     attribute: wind_speed
     id: weather_wind
     internal: true
     on_value:
-      then:
-        - lvgl.label.update:
-            id: screensaver_wind
-            text:
-              format: "%.1f km/h"
-              args: [ 'id(weather_wind).state' ]
+      - lvgl.label.update:
+          id: screensaver_wind
+          text:
+            format: "%.0f km/h"
+            args: [ 'id(weather_wind).state' ]
 
 text_sensor:
   - platform: homeassistant
@@ -84,96 +80,74 @@ text_sensor:
     id: weather_condition
     internal: true
     on_value:
-      then:
-        - script.execute: update_weather_image
-            
+      - script.execute: update_weather_image
+
 lvgl:
   pages:
     - id: screensaver_page
-      #bg_color: black
       bg_image_src: screensaver_bg_image3
       bg_opa: cover
       widgets:
-        # Time and Date Area (Top)
-        - obj: 
-            id: datetime_area
-            y: 60
-            width: 440
-            height: 220
+        - label:
+            id: screensaver_time
+            text: "--:--"
+            text_font: nunito_120
             align: top_mid
-            bg_opa: transp
-            border_width: 0
-            shadow_opa: transp
-            widgets:
-              - label:
-                  id: screensaver_time
-                  text: "--:--"
-                  text_font: nunito_120
-                  align: top_mid
-                  y: 0
-                  text_color: white
-              - label:
-                  id: screensaver_date
-                  text: "..."
-                  text_font: georgian_48
-                  align: top_mid
-                  y: 130
-                  text_color: white
-
-        # Weather Area (Bottom)
+            y: 50
+            text_color: white
+        - label:
+            id: screensaver_date
+            text: "..."
+            text_font: nunito_24
+            align: top_mid
+            y: 180
+            text_color: white
         - obj:
-            id: weather_area
-            y: 300
+            y: 280
             width: 440
-            height: 180
+            height: 140
             align: top_mid
             bg_opa: transp
             border_width: 0
-            shadow_opa: transp
+            layout:
+              type: flex
+              flex_flow: row
+              flex_align_main: space_between
+              flex_align_cross: center
             widgets:
-              # Temperature (Left)
               - label:
                   id: screensaver_temp
                   text: "--°"
                   text_font: nunito_72
-                  align: left_mid
-                  x: 35
                   text_color: white
-
-              # Weather Icon (Center)
               - image:
                   id: screensaver_icon
-                  align: center
-                  x: 0
                   src: weather_sunny
-                  
-              # Humidity (Right, above wind)
-              - label:
-                  id: screensaver_humidity
-                  text: "--%"
-                  text_font: nunito_24
-                  align: right_mid
-                  x: -30
-                  y: -15
-                  text_color: white
-              # Wind (Right, below humidity)
-              - label:
-                  id: screensaver_wind
-                  text: "-- km/h"
-                  text_font: nunito_24
-                  align: right_mid
-                  x: -30
-                  y: 15
-                  text_color: white
-
-        # Transparent overlay to catch clicks for exiting
+              - obj:
+                  width: 100
+                  height: 80
+                  bg_opa: transp
+                  border_width: 0
+                  layout:
+                    type: flex
+                    flex_flow: column
+                    flex_align_main: center
+                  widgets:
+                    - label:
+                        id: screensaver_humidity
+                        text: "--%"
+                        text_font: nunito_20
+                        text_color: white
+                    - label:
+                        id: screensaver_wind
+                        text: "--"
+                        text_font: nunito_18
+                        text_color: 0xCCCCCC
         - button:
             id: screensaver_exit_btn
             width: 100%
             height: 100%
             bg_opa: transp
-            shadow_opa: transp
             border_width: 0
             on_click:
               - lvgl.page.show: main_page
-

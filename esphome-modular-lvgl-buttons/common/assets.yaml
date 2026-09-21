@@ -1,12 +1,11 @@
 ---
-# Fonts and images shared by all dashboard profiles.
+# Optimized assets - reduced image sizes for speed
 
 font:
-  # Material Design Icons. Add every icon used by a dashboard to this list.
   - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
     id: mdi_icons_40
     size: 40
-    bpp: 8
+    bpp: 4
     glyphs:
       - $mdi_lightbulb
       - $mdi_ceiling_light
@@ -38,7 +37,7 @@ font:
   - file: "esphome-modular-lvgl-buttons/assets/fonts/materialdesignicons-webfont.ttf"
     id: mdi_icons_80
     size: 80
-    bpp: 8
+    bpp: 4
     glyphs:
       - $mdi_play_pause
       - $mdi_play
@@ -48,21 +47,23 @@ image:
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/images/light/lightbulb.png
     id: lightbulb_image
-    resize: 100x100
+    resize: 80x80
     type: RGB565
-    transparency: alpha_channel
 
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/bg/ota-dark.jpeg
     id: screensaver_bg_image2
+    resize: 480x480
     type: RGB565
 
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/bg/bg1.jpg
     id: screensaver_bg_image3
+    resize: 480x480
     type: RGB565
 
   - platform: file
     file: esphome-modular-lvgl-buttons/assets/bg/sync4-dark.jpeg
     id: sync4
+    resize: 480x480
     type: RGB565

@@ -1,9 +1,8 @@
 ---
-# Shared LVGL theme. Runtime Dark/Light switching is handled by
-# common/display_settings.yaml and the select on pages/settings.yaml.
-
+# Optimized theme - minimal shadows, fast rendering
 lvgl:
   page_wrap: true
+  log_level: NONE
   theme:
     obj:
       border_width: 0
@@ -11,36 +10,39 @@ lvgl:
       pad_all: 0
       radius: 0
       bg_opa: transp
+      shadow_width: 0
     label:
       border_width: 0
       scrollable: false
-      text_color: black
+      text_color: white
+      shadow_width: 0
     image:
       border_width: 0
       scrollable: false
+      shadow_width: 0
     button:
       text_font: $text_font
       checkable: false
       press_lock: false
-      scroll_on_focus: true
-      radius: 16px
+      scroll_on_focus: false
+      radius: 14px
       width: $button_width
       height: $button_height_single
-      pad_all: 14px
-      border_width: 1
-      border_color: slate_blue_gray
+      pad_all: 10px
+      border_width: 0
       shadow_width: 0
       bg_opa: cover
       bg_color: $button_off_color
       text_color: $label_off_color
       pressed:
-        border_color: white
-        border_width: 2
+        bg_color: 0xFF9F1C
+        border_width: 0
 
   style_definitions:
     - id: page_style
       bg_color: black
       bg_opa: cover
       text_color: white
-      # Fixed 150px cards preserve the original 3-column layout.
-      pad_all: 5px
+      pad_all: 4px
+      shadow_width: 0
+      border_width: 0
