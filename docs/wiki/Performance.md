@@ -79,7 +79,8 @@ File: `pages/loading_480px.yaml`
 ### 7. Settings Rewrite — Biggest Win
 
 **Before:** 3 dropdowns, scrollable container, grid layout, 421 lines
-**After:** 0 dropdowns, 15 buttons, fixed 460 px non-scrolling flex layout,
+**After:** 0 dropdowns, 15 buttons (17 since v2.6 — Saver-lang GE/EN row),
+fixed 460 px non-scrolling flex layout,
 template selects (no LVGL widget), highlight via `update_settings_highlight`,
 sliders 12 px / knobs 14×14, ~830 lines including 4-theme repaint logic
 (see [Settings.md](Settings.md))

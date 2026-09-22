@@ -10,8 +10,11 @@ script:
       - lvgl.label.update:
           id: screensaver_date
           text: !lambda |-
-            // Georgian (ka_GE) weekday + month names, UTF-8 hex escapes.
+            // Screensaver date in Georgian (ka_GE, default) or English.
+            // Georgian names use UTF-8 hex escapes; English is plain ASCII.
             // t.day_of_week is 1..7 (Sunday == 7), so % 7 indexes Sunday first.
+            // Language comes from the `screensaver_language` select
+            // (Settings page "Saver lang" row, or HA select entity).
             static const char *DAYS[] = {
               "\xE1\x83\x99\xE1\x83\x95\xE1\x83\x98\xE1\x83\xA0\xE1\x83\x90",  // kvira - Sunday
               "\xE1\x83\x9D\xE1\x83\xA0\xE1\x83\xA8\xE1\x83\x90\xE1\x83\x91\xE1\x83\x90\xE1\x83\x97\xE1\x83\x98",  // orshabati - Monday
@@ -35,10 +38,24 @@ script:
               "\xE1\x83\x9C\xE1\x83\x9D\xE1\x83\x94\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98",  // noemberi
               "\xE1\x83\x93\xE1\x83\x94\xE1\x83\x99\xE1\x83\x94\xE1\x83\x9B\xE1\x83\x91\xE1\x83\x94\xE1\x83\xA0\xE1\x83\x98"  // dekemberi
             };
+            static const char *DAYS_EN[] = {
+              "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+            };
+            // Months abbreviated: full "Wednesday, 28 September" is 487px at
+            // 32px DejaVu Bold (screen is 480px). Abbreviated longest
+            // "Wednesday, 28 May" is 363px - fits with margin.
+            static const char *MONTHS_EN[] = {
+              "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            };
             auto t = id(system_time).now();
+            // Empty before first boot restore == Georgian (factory default).
+            bool english = (id(screensaver_language).current_option() == "English");
+            const char **days = english ? DAYS_EN : DAYS;
+            const char **months = english ? MONTHS_EN : MONTHS;
             int m = (t.month >= 1 && t.month <= 12) ? (t.month - 1) : 0;
             char b[64];
-            snprintf(b, sizeof(b), "%s, %d %s", DAYS[t.day_of_week % 7], t.day_of_month, MONTHS[m]);
+            snprintf(b, sizeof(b), "%s, %d %s", days[t.day_of_week % 7], t.day_of_month, months[m]);
             return std::string(b);
 
   - id: update_weather_image
@@ -106,6 +123,22 @@ text_sensor:
     internal: true
     on_value:
       - script.execute: update_weather_image
+
+# Screensaver date language: Georgian (default) or English.
+# On-device: Settings page "Saver lang" row (GE/EN buttons).
+# Home Assistant: select.<device>_screensaver_language. Persistent (restore_value).
+select:
+  - platform: template
+    id: screensaver_language
+    name: "Screensaver Language"
+    options: [Georgian, English]
+    initial_option: Georgian
+    restore_value: true
+    entity_category: config
+    optimistic: true
+    on_value:
+      - script.execute: time_update
+      - script.execute: update_settings_highlight
 
 lvgl:
   pages:

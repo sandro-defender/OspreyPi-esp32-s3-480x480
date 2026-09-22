@@ -555,6 +555,72 @@ lvgl:
                                     id: display_rotation_select
                                     option: "270"
 
+              # Screensaver language selector (Georgian default, English optional)
+              - obj:
+                  id: settings_row_lang
+                  width: 100%
+                  height: 42
+                  bg_color: 0x1E232E
+                  bg_opa: cover
+                  radius: 10
+                  border_width: 0
+                  pad_all: 5
+                  layout:
+                    type: flex
+                    flex_flow: row
+                    flex_align_main: space_between
+                    flex_align_cross: center
+                  widgets:
+                    - label:
+                        id: settings_lang_label
+                        text: "Saver lang"
+                        text_font: nunito_14
+                        text_color: 0xAAAAAA
+                        width: 96
+                    - obj:
+                        width: 334
+                        height: 32
+                        bg_opa: transp
+                        border_width: 0
+                        pad_all: 0
+                        layout:
+                          type: flex
+                          flex_flow: row
+                          pad_column: 4
+                        widgets:
+                          - button:
+                              id: settings_btn_lang_ge
+                              width: 165
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "Georgian"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: screensaver_language
+                                    option: "Georgian"
+                          - button:
+                              id: settings_btn_lang_en
+                              width: 165
+                              height: 32
+                              radius: 8
+                              bg_color: 0x3A4352
+                              border_width: 0
+                              widgets:
+                                - label:
+                                    align: center
+                                    text: "English"
+                                    text_font: nunito_14
+                              on_click:
+                                - select.set:
+                                    id: screensaver_language
+                                    option: "English"
+
         - button:
             id: settings_home_btn
             align: bottom_left
@@ -748,7 +814,8 @@ script:
 
           lv_obj_t* rows[] = { id(settings_row_mode), id(settings_row_day), id(settings_row_eve),
                                id(settings_row_night), id(settings_row_timeout),
-                               id(settings_row_theme), id(settings_row_rotation) };
+                               id(settings_row_theme), id(settings_row_rotation),
+                               id(settings_row_lang) };
           for (auto r : rows) {
             if (!r) continue;
             lv_obj_set_style_bg_color(r, lv_color_hex(row_bg), 0);
@@ -789,6 +856,7 @@ script:
           lab(id(settings_mode_label), label_c);
           lab(id(settings_theme_label), label_c);
           lab(id(settings_rotate_label), label_c);
+          lab(id(settings_lang_label), label_c);
           lab(id(settings_saver_label), perf ? 0x888888 : 0x888888);
           lab(id(settings_day_label), value_c);
           lab(id(settings_evening_label), value_c);

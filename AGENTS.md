@@ -60,7 +60,7 @@ esphome-modular-lvgl-buttons/       # the shared firmware package tree
 │   ├── light_color.yaml            # WLED/Bed-LEDs page (vertical sliders + 12-segment hue ring)
 │   ├── settings.yaml               # settings page + apply_settings_theme
 │   ├── info.yaml                   # diagnostics page + apply_info_theme
-│   ├── screensaver.yaml            # clock + Georgian date + weather
+│   ├── screensaver.yaml            # clock + GE/EN date + weather + saver-language select
 │   ├── loading_480px.yaml          # boot/loading top layer
 │   └── weather_simple.yaml         # optional simple weather page
 ├── buttons/                        # reusable LVGL button widgets (entity, dimmer, scene, …)
@@ -287,4 +287,6 @@ glyph to the right icon font in `common/fonts.yaml` and/or `common/assets.yaml`.
   Sleep, Bed LEDs (tall dimmer), Settings (with HA status halo), Leave
 - Swipe ring: **Home ↔ AC ↔ Light** (swipe left/right, 300 ms)
 - Default HA entities: `weather.openweathermap`, `climate.midea_ac`
-- Timezone default: `Asia/Tbilisi`; screensaver date is Georgian (ka)
+- Timezone default: `Asia/Tbilisi`; screensaver date language is selectable
+  (Georgian default, English optional) via `screensaver_language` select —
+  Settings “Saver lang” row + HA entity, persistent

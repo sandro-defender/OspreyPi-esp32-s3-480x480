@@ -66,8 +66,10 @@ select:
 
 No LVGL widget binding, so no dropdown rendering. HA can still set it, and on_value triggers brightness.
 
-Same for theme (`current_theme`: Classic / Modern / Performance / Daylight)
-and rotation (`display_rotation_select`: 0/90/180/270).
+Same for theme (`current_theme`: Classic / Modern / Performance / Daylight),
+rotation (`display_rotation_select`: 0/90/180/270) and screensaver language
+(`screensaver_language` in `pages/screensaver.yaml`: Georgian / English,
+default Georgian — its `on_value` re-runs `time_update` + highlight).
 
 ### Highlight Script
 

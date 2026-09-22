@@ -87,7 +87,9 @@ Hardware, settings, OTA, weather remain.
 (`apply_display_theme`, `update_settings_highlight`, `apply_dashboard_theme`
 and the `repaint_button_*` calls) in the new profile — that is the 4-theme
 repaint engine. Without it the device boots Classic-colored and on/off skins
-stop updating.
+stop updating. (`update_settings_highlight` is also called by the
+`screensaver_language` select in `pages/screensaver.yaml`, so a custom
+dashboard that keeps the screensaver page needs it too.)
 
 ## Button Templates
 

@@ -52,11 +52,14 @@ font:
     bpp: 4
 
   # ── Bold screensaver set (DejaVu Sans Bold) ────────────────────────────────
-  # Used by the screensaver: big clock + Georgian date + weather readout.
+  # Used by the screensaver: big clock + Georgian/English date + weather readout.
   # DejaVu Sans Bold covers the full Georgian Mkhedruli block and Latin.
   # Sizes are the measured maxima that still fit 480px:
   #   clock  148px -> ink 458px widest "00:00"   (~11px margin each side)
   #   date    32px -> ink 458px longest "ოთხშაბათი, 10 თებერვალი"
+  #                   (English uses abbreviated months; longest
+  #                    "Wednesday, 28 May" is 363px - full "September"
+  #                    would be 487px, wider than the 480px screen)
   - file: "esphome-modular-lvgl-buttons/assets/fonts/DejaVuSans-Bold.ttf"
     id: bold_time_148
     size: 148

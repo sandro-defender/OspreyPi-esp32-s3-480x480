@@ -207,6 +207,7 @@ already owns them.
 | File | Content |
 |---|---|
 | `PINOUT.md` | This file — full used-vs-free pinout |
+| `PINOUT.xlsx` | Excel version: GPIO · used? · where connected · for what · my mapping · official docs · notes + connectors sheet (built by `../tools/generate_pinout_xlsx.py`) |
 | `README.md` | Folder index + official vendor repo/store/support links |
 | `SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf` | Official full schematic (7 pages, R2 2025-02-05) |
 | `ESP32-S3-Touch-LCD-4_User-Guide_CN.pdf` | Vendor user guide, Chinese (board intro + component table + schematics) |

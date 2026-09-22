@@ -18,7 +18,26 @@
 
 ---
 
-## ✨ What's New in v2.5 — Performance Edition
+## ✨ What's New in v2.6 — Language Edition
+
+- **Screensaver language select — Georgian (default) or English**: the date
+  line (`ოთხშაბათი, 10 თებერვალი` ↔ `Wednesday, 10 Sep`) switches
+  instantly, on device via Settings → Saver lang → [ Georgian ] [ English ]
+  or from Home Assistant (`select.display01_screensaver_language`), persistent
+  across reboots. Same DejaVu Bold font already covers both alphabets.
+- **Settings page grows to 17 buttons** — new `Saver lang` row, same instant
+  highlight + per-theme repaint as the other selector rows.
+- **Excel pinout sheet**: [`hardware/PINOUT.xlsx`](hardware/PINOUT.xlsx) —
+  every GPIO in real `.xlsx` columns (pin · used? · where connected · for
+  what · **my mapping** · **official docs** · notes) + a connectors sheet,
+  regenerable with `python3 tools/generate_pinout_xlsx.py`.
+- **More vendor docs in `hardware/`**: ST7701S spec, panel datasheet + CAD,
+  init-sequence text, official board/schematic images — indexed in
+  [`hardware/README.md`](hardware/README.md) with official repo links.
+
+Full details: [docs/CHANGELOG-v2.6.md](docs/CHANGELOG-v2.6.md).
+
+## 📦 What's in v2.5 — Performance Edition
 
 A response-time and throughput pass across the whole firmware. Every knob now
 carries a `#options:` comment in the YAML marking the **stable** value and the
@@ -161,6 +180,11 @@ example (`ESP32S3_3.95In_Box_rev2`, same pins as this firmware) and the MCU-shee
 excerpt (`hardware/img/schematic-mcu.png`: `IO1/485_TX`, `IO2/485_RX`,
 `IO42/BUZZER`, `MCU_TXD/RXD`, `IO40/IO41` = no-connect). Full GPIO0–GPIO48 table
 with connector pinouts: [`hardware/PINOUT.md`](hardware/PINOUT.md).
+
+📊 **Excel version:** [`hardware/PINOUT.xlsx`](hardware/PINOUT.xlsx) — the same
+map as a real spreadsheet (GPIO · used? · where connected · for what ·
+**my mapping** · **official docs** · notes) + a connectors sheet.
+Regenerate: `python3 tools/generate_pinout_xlsx.py`.
 
 **Short answer — the whole chip at a glance:**
 
