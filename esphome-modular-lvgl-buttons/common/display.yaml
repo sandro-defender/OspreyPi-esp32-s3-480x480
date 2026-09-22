@@ -10,7 +10,7 @@ substitutions:
   project_name: "ospreypi.smart-display"
   # This is also the GitHub release/tag created after a validated main push.
   # Bump on every meaningful change — see AGENTS.md (Version Policy).
-  project_version: "2.5"
+  project_version: "2.6"
 
   # Locale and Home Assistant sources
   timezone: "Asia/Tbilisi"

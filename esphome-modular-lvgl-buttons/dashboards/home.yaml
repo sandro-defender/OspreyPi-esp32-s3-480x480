@@ -425,6 +425,10 @@ script:
           set_btn(id(settings_btn_rot90), rot=="90", theme);
           set_btn(id(settings_btn_rot180), rot=="180", theme);
           set_btn(id(settings_btn_rot270), rot=="270", theme);
+          std::string slang = id(screensaver_language).current_option();
+          if (slang.empty()) slang = "Georgian";
+          set_btn(id(settings_btn_lang_ge), slang=="Georgian", theme);
+          set_btn(id(settings_btn_lang_en), slang=="English", theme);
 
   - id: apply_dashboard_theme
     mode: restart

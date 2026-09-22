@@ -587,6 +587,13 @@ def settings_screen(theme: str, out_px=480, k=3, active_theme=None) -> Screen:
     for i, lbl in enumerate(["0°", "90°", "180°", "270°"]):
         sel_button(170 + i * 75, y + 7, 70, 32, lbl, i == 0)
 
+    # Row: screensaver language (pages/settings.yaml settings_row_lang)
+    y = 381
+    row_bg((10, y, 470, y + 42))
+    s.text(22, y + 21, "Saver lang", "nunito", 14, t["label"], anchor="lm")
+    sel_button(131, y + 5, 165, 32, "Georgian", True)
+    sel_button(300, y + 5, 165, 32, "English", False)
+
     # bottom buttons
     s.rrect((10, 438, 110, 474), 10 if theme != "performance" else 4, fill=0xFF6600)
     s.text(60, 456, "Home", "nunito", 18, 0xFFFFFF, anchor="mm")

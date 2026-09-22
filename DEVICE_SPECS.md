@@ -1,5 +1,12 @@
 # osptek esp32-s3-48x48 Device Specifications
 
+> Full used-vs-free GPIO map with connector pinouts: **[hardware/PINOUT.md](hardware/PINOUT.md)**.
+> Official schematic: [hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf](hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf).
+> All datasheets indexed in [hardware/README.md](hardware/README.md).
+>
+> 🏭 Official vendor repo: [osptek/esp32-s3-touch-lcd-4](https://github.com/osptek/esp32-s3-touch-lcd-4)
+> (this board = [`versions/ESP32-S3-Touch-LCD-4/`](https://github.com/osptek/esp32-s3-touch-lcd-4/tree/main/versions/ESP32-S3-Touch-LCD-4)).
+
 ## Hardware Overview
 - **MCU**: ESP32-S3 (16MB Flash, PSRAM)
 - **Display**: 3.95" / 4.0" IPS TFT 480x480
@@ -88,13 +95,27 @@
 ### Other
 - **Flash Size**: 16MB
 - **PSRAM**: Octal, 80MHz
-- **UART0 TX**: 43
-- **UART0 Rx**: 44
-- **Buzzer**: 42
-- **RS485/Modbus (Testing)**:
-    - **TX**: 43 (Inverted)
-    - **RX**: 44 (Inverted)
-    - **EN**: 40 (Inverted)
-    - *Note: These pins are unverified but suggested by schematic/board specs.*
+- **UART0 TX**: 43 (→ CH340K USB-UART, flashing/logs)
+- **UART0 Rx**: 44 (← CH340K USB-UART)
+- **Buzzer**: 42 (active HIGH, passive 2700Hz element — see PINOUT.md)
+- **RS485/Modbus (SP3485EEN + SN74HC14 auto-direction, no flow-control pin)**:
+    - **TX**: GPIO1 (`IO1/485_TX` on MCU sheet)
+    - **RX**: GPIO2 (`IO2/485_RX`, via HC14 buffer)
+    - **Direction**: automatic in hardware (TX-low-drive: DI tied to GND by design,
+      MARK held by 10kΩ fail-safe bias) — keep bus short, ≤38400 baud (9600 recommended)
+    - **Terminal P1**: 1:VCC (12–24VDC) 2:GND 3:RS485_A 4:RS485_B
+    - *Verified against official schematic R2 (2025-02-05). Older notes claiming
+      UART0 43/44 + EN 40 were wrong — 43/44 are the CH340K USB-UART.*
+
+### Free / Reusable GPIOs (see hardware/PINOUT.md for details)
+- **GPIO40, GPIO41**: not connected anywhere — the only truly free pins
+  (solder-only, module pads, no connector).
+- **GPIO1/GPIO2**: hardwired to RS485, but unused by current firmware
+  (no `uart:` enabled) — reclaimable only if you give up RS485.
+- **GPIO4/GPIO5**: I²C bus shared with touch, broken out to the MX1.25 sensor
+  header — best option for adding sensors / port expanders.
+- **GPIO43/44**: USB-UART (CH340K) — keep for flashing, do not reuse.
+- **GPIO22–25**: don't exist on ESP32-S3. **GPIO26–34**: in-package flash/no pads.
+  **GPIO35–37**: reserved for onboard octal Flash/PSRAM (N16R8).
 
 
