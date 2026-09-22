@@ -130,18 +130,21 @@ instant switch, persistent, also exposed as HA select entity `Theme`.
 
 ---
 
-## 📸 Device Gallery — Hardware Photos
+## 📸 Hardware Docs — Board Guide & Schematics
 
-<p align="center">
-  <img src="hardware/img/IMG_4671.jpeg" width="30%" />
-  <img src="hardware/img/IMG_4672.jpeg" width="30%" />
-  <img src="hardware/img/IMG_4678.jpeg" width="30%" />
-</p>
-<p align="center">
-  <img src="hardware/img/Image.jpg" width="30%" />
-  <img src="hardware/img/Image%201.jpg" width="30%" />
-  <img src="hardware/img/Image%202.jpg" width="30%" />
-</p>
+Screenshots from the vendor user guide (`hardware/ESP32-S3-Touch-LCD-4_User-Guide_CN.pdf`).
+Full vector schematic: [`hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf`](hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf) ·
+Pin-by-pin map (used vs free): [`hardware/PINOUT.md`](hardware/PINOUT.md).
+
+| PCB component callouts | Main components table | Product page |
+|---|---|---|
+| ![PCB callouts](hardware/img/IMG_4671.jpeg) | ![Components table](hardware/img/IMG_4672.jpeg) | ![Product page](hardware/img/IMG_4678.jpeg) |
+| Buzzer, ESP32-S3-WROOM-1-N16R8, power LED, IP5306 BMS, 5.08 mm wiring port, SP3485EEN RS485, SN74HC14 auto-direction, CH340K USB-UART, SGM6132 DCDC, USB-C, I²C sensor header, LCD FPC. HW/SW setup + power (USB 5 V / terminal 12–24 V) below. | What each chip does: N16R8 module (16 MB Flash + 8 MB PSRAM), IP5306 2.1 A charge / 2.4 A discharge, SP3485EEN half-duplex RS485, SN74HC14 auto TX/RX switching, CH340K (≤2 Mbaud), SGM6132 12–24 V→5 V, I²C sensor port, 0.5 mm LCD FPC. | ESP32-S3-Touch-LCD-4: mainboard ESP32-TPCB4, ESP32-S3-WROOM-1-N16R8, 4″ 480×480 RGB capacitive touch. For smart panels, gateways, HMI, industrial control, lighting. |
+
+| System + LCD FPC schematic | Power + I²C schematic | UART + backlight + RS485 schematic |
+|---|---|---|
+| ![FPC schematic](hardware/img/Image.jpg) | ![Power schematic](hardware/img/Image%201.jpg) | ![UART schematic](hardware/img/Image%202.jpg) |
+| **The pinout page**: FPC 40-pin map — IO39/MOSI, IO38/SCLK, IO45/CS, IO48/PCLK, IO47/DE, IO21/VSYNC, IO14/HSYNC, DB1–DB17 (IO0/12/11/10/9/46/3/20/19/8/18/…/17/16/15/7/6), IO5/SDA, IO4/SCL, TP-INT (pull-up only). Plus buzzer (IO42 → AO3400) and USB-C blocks. | I²C sensor header U9 (3V3/GND/SDA/SCL, 4.7 kΩ pull-ups — shared with touch), AMS1117-3.3 LDO, IP5306 battery BMS (BAT+/BAT− pads), SGM6132 DCDC (terminal 12–28.5 V → 5 V/3 A). | CH340K USB-UART (MCU_TXD/RXD = GPIO43/44) with DTR/RTS auto-download to EN + IO0; SY7200 boost backlight driver (LCD_BK = GPIO13 PWM); SP3485EEN RS485 with 120 Ω termination, bias + TVS (MCU side = GPIO1 TX / GPIO2 RX, auto-direction, no EN pin). |
 
 ---
 
@@ -261,8 +264,11 @@ temperature. Colors adapt to the active theme automatically.
 | Touch | FT6336 I²C 400 kHz |
 | Backlight | GPIO13 PWM 1 kHz |
 | Buzzer | GPIO42 PWM |
+| RS485 | GPIO1 TX / GPIO2 RX, auto-direction (no EN pin), terminal 12–24 V + A/B |
+| Free GPIOs | GPIO40 + GPIO41 (solder-only) · GPIO4/5 I²C sensor header (shared with touch) |
 
-See [DEVICE_SPECS.md](DEVICE_SPECS.md) for the full pinout and init sequence.
+See [DEVICE_SPECS.md](DEVICE_SPECS.md) for specs + init sequence and
+[`hardware/PINOUT.md`](hardware/PINOUT.md) for the full used-vs-free GPIO map.
 
 ---
 

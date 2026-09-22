@@ -57,7 +57,10 @@ Wiki linked from main README.md.
 
 ## Hardware Photos
 
-Original device photos in `../hardware/img/` — 6 images shown in the README gallery.
+Vendor user-guide screenshots in `../hardware/img/` — 6 images with captions in
+the README gallery (PCB callouts, component table, product page, 3× schematic
+sheets). Full schematic: `../hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf`;
+per-pin map: `../hardware/PINOUT.md`.
 
 ## For AI agents
 

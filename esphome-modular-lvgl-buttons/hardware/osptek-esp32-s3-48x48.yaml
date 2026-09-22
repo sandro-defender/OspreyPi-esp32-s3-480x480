@@ -226,24 +226,24 @@ display:
 # -------------------------------------------
 # RS485 Modbus (Experimental / Testing Only)
 # -------------------------------------------
-# The following configuration is for testing RS485 Modbus support.
-# Pin assignments are based on schematic analysis but are NOT verified to work for certain.
-# UART0 (GPIO 43/44) is used, which will conflict with default UART logging.
+# Verified against official schematic R2 (2025-02-05), MCU sheet:
+#   TX = GPIO1 (IO1/485_TX -> SN74HC14 -> SP3485 DE/#RE)
+#   RX = GPIO2 (IO2/485_RX <- SP3485 RO via HC14 buffer, non-inverted)
+# Direction is AUTOMATIC in hardware - there is NO flow-control pin
+# (DI is tied to GND by design: TX drives SPACE bits, MARK bits are held
+# by the 10k fail-safe bias - keep the bus short, <=38400 baud).
+# Do NOT use UART0 (GPIO 43/44): those are the CH340K USB-UART used for
+# flashing/logs. Terminal P1: 1:VCC (12-24VDC) 2:GND 3:RS485_A 4:RS485_B.
+# Full details: hardware/PINOUT.md
 
 # uart:
 #   - id: modbus_uart
-#     tx_pin: 
-#       number: 43
-#       inverted: true
-#     rx_pin: 
-#       number: 44
-#       inverted: true
+#     tx_pin: GPIO1
+#     rx_pin: GPIO2
 #     baud_rate: 9600
 #     stop_bits: 1
+#     # No flow_control_pin - direction is automatic (SN74HC14).
 
 # modbus:
 #   id: modbus_bus
 #   uart_id: modbus_uart
-#   flow_control_pin: 
-#     number: 40
-#     inverted: true
