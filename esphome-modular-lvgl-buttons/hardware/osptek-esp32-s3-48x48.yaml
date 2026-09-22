@@ -63,7 +63,7 @@ output:
   - platform: ledc
     id: buzzer_output
     pin: GPIO42
-    frequency: 1000Hz
+    frequency: 2700Hz
 
   # Virtual relays (no physical GPIO) - for devices without built-in relays
   - id: internal_relay_1
