@@ -134,7 +134,14 @@ instant switch, persistent, also exposed as HA select entity `Theme`.
 
 Screenshots from the vendor user guide (`hardware/ESP32-S3-Touch-LCD-4_User-Guide_CN.pdf`).
 Full vector schematic: [`hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf`](hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf) ·
-Pin-by-pin map (used vs free): [`hardware/PINOUT.md`](hardware/PINOUT.md).
+Pin-by-pin map (used vs free): [`hardware/PINOUT.md`](hardware/PINOUT.md) ·
+All datasheets indexed in [`hardware/README.md`](hardware/README.md).
+
+🏭 **Official vendor repo (OSPTEK):**
+[osptek/esp32-s3-touch-lcd-4](https://github.com/osptek/esp32-s3-touch-lcd-4) —
+full materials for this exact board revision (ESP32-TPCB4) live in
+[`versions/ESP32-S3-Touch-LCD-4/`](https://github.com/osptek/esp32-s3-touch-lcd-4/tree/main/versions/ESP32-S3-Touch-LCD-4)
+(schematic, user guide, panel + IC datasheets, ESP-IDF examples, factory firmware).
 
 | PCB component callouts | Main components table | Product page |
 |---|---|---|
@@ -145,6 +152,95 @@ Pin-by-pin map (used vs free): [`hardware/PINOUT.md`](hardware/PINOUT.md).
 |---|---|---|
 | ![FPC schematic](hardware/img/Image.jpg) | ![Power schematic](hardware/img/Image%201.jpg) | ![UART schematic](hardware/img/Image%202.jpg) |
 | **The pinout page**: FPC 40-pin map — IO39/MOSI, IO38/SCLK, IO45/CS, IO48/PCLK, IO47/DE, IO21/VSYNC, IO14/HSYNC, DB1–DB17 (IO0/12/11/10/9/46/3/20/19/8/18/…/17/16/15/7/6), IO5/SDA, IO4/SCL, TP-INT (pull-up only). Plus buzzer (IO42 → AO3400) and USB-C blocks. | I²C sensor header U9 (3V3/GND/SDA/SCL, 4.7 kΩ pull-ups — shared with touch), AMS1117-3.3 LDO, IP5306 battery BMS (BAT+/BAT− pads), SGM6132 DCDC (terminal 12–28.5 V → 5 V/3 A). | CH340K USB-UART (MCU_TXD/RXD = GPIO43/44) with DTR/RTS auto-download to EN + IO0; SY7200 boost backlight driver (LCD_BK = GPIO13 PWM); SP3485EEN RS485 with 120 Ω termination, bias + TVS (MCU side = GPIO1 TX / GPIO2 RX, auto-direction, no EN pin). |
+
+### 🔌 ESP32-S3 Pinout — which GPIO is used, which is free
+
+Module **ESP32-S3-WROOM-1-N16R8** (16 MB Flash + 8 MB octal PSRAM) on mainboard
+**ESP32-TPCB4**. Verified against the official schematic R2, the vendor ESP-IDF
+example (`ESP32S3_3.95In_Box_rev2`, same pins as this firmware) and the MCU-sheet
+excerpt (`hardware/img/schematic-mcu.png`: `IO1/485_TX`, `IO2/485_RX`,
+`IO42/BUZZER`, `MCU_TXD/RXD`, `IO40/IO41` = no-connect). Full GPIO0–GPIO48 table
+with connector pinouts: [`hardware/PINOUT.md`](hardware/PINOUT.md).
+
+**Short answer — the whole chip at a glance:**
+
+| Status | GPIOs | Count |
+|---|---|---:|
+| ✅ **FREE** (no PCB net, module pad only — solder a wire to use) | **40, 41** | 2 |
+| 🟡 Wired to RS485 but unused by this firmware (no `uart:` enabled) | 1 (TX), 2 (RX) | 2 |
+| 🟡 Shared I²C bus, expandable via sensor header (no soldering) | 4 (SCL), 5 (SDA) | 2 |
+| 🔴 Used by display / touch / backlight / buzzer / USB | 0, 3, 6–21, 38, 39, 42–48 | 27 |
+| ⛔ Not usable (chip/module reserved) | 22–25 (don't exist on S3), 26–34 (in-package flash, no pads), 35–37 (octal Flash/PSRAM) | — |
+
+**Display control + 3-wire SPI init (ST7701S)** — all outputs, hardwired to the LCD FPC:
+
+| GPIO | Schematic net | Function | Firmware key |
+|---|---|---|---|
+| 45 | IO45/CS | SPI chip-select ⚠️ strapping pin | `cs_pin` |
+| 38 | IO38/SCLK | SPI clock (init commands, 2 MHz) | `spi.clk_pin` |
+| 39 | IO39/MOSI | SPI data | `spi.mosi_pin` |
+| 48 | IO48/PCLK | Pixel clock 16 MHz | `pclk_pin` |
+| 47 | IO47/DE | Data enable | `de_pin` |
+| 21 | IO21/VSYNC | Vertical sync | `vsync_pin` |
+| 14 | IO14/HSYNC | Horizontal sync | `hsync_pin` |
+
+**RGB data bus, 16-bit** (panel DB12 skipped, DB1–DB17 → U16 bits B0–B4 / G0–G5 / R0–R4):
+
+| Color bits | GPIOs (low → high bit) |
+|---|---|
+| Blue B0–B4 | 0 · 12 · 11 · 10 · 9 |
+| Green G0–G5 | 46 · 3 · 20 · 19 · 8 · 18 |
+| Red R0–R4 | 17 · 16 · 15 · 7 · 6 |
+
+> GPIO19/20 are LCD data, so the ESP32-S3 **native USB is unavailable** — USB
+> works through the CH340K serial bridge only.
+
+**Touch (FT6336U, I²C 400 kHz, addr `0x38`) + sensor header:**
+
+| GPIO | Schematic net | Function |
+|---|---|---|
+| 5 | IO5/I2C-SDA | Touch SDA + MX1.25 sensor header pin 3 (4.7 kΩ pull-up) |
+| 4 | IO4/I2C-SCL | Touch SCL + sensor header pin 4 (4.7 kΩ pull-up) |
+
+TP_INT and TP_RST are **not routed to the MCU** (INT has a 2 kΩ pull-up to 3V3
+only) — firmware polls touch every 10 ms. Hang extra 3.3 V I²C devices on the
+sensor header (`+3.3V / GND / SDA / SCL`, top→bottom on schematic — verify
+against PCB silkscreen).
+
+**Backlight + buzzer (PWM outputs):**
+
+| GPIO | Schematic net | Function |
+|---|---|---|
+| 13 | IO13/LCD_BK | Backlight → SY7200 boost EN/PWM, 1 kHz, active HIGH (10 kΩ pull-down, OFF at boot) |
+| 42 | IO42/BUZZER | Buzzer → AO3400 MOSFET, passive 2.7 kHz element, active HIGH |
+
+**USB-UART + auto-download (CH340K, ≤2 Mbaud) — keep, do not reuse:**
+
+| GPIO | Schematic net | Function |
+|---|---|---|
+| 43 | MCU_TXD (TXD0) | Serial TX → CH340K (flashing + logs) |
+| 44 | MCU_RXD (RXD0) | Serial RX ← CH340K output (never drive as output) |
+
+DTR/RTS auto-download drives EN + IO0 — no boot buttons needed.
+
+**RS485 port (SP3485EEN + SN74HC14 auto-direction, half-duplex):**
+
+| GPIO | Schematic net | Function |
+|---|---|---|
+| 1 | IO1/485_TX | MCU TX → HC14 inverter → DE/#RE (TX-low-drive scheme, 470 Ω pull-up) |
+| 2 | IO2/485_RX | SP3485 RO → HC14 double-inverter → MCU (**input only** — buffer output) |
+
+No direction/flow-control GPIO exists — direction is fully automatic in hardware.
+Terminal P1: `1:VCC (12–24 VDC) 2:GND 3:A 4:B`. TX rising edges are passive
+(10 kΩ bias) → keep the bus short, **≤38400 baud (9600 recommended)**.
+Enable in firmware with a `uart:` on GPIO1/2 (commented example in
+`esphome-modular-lvgl-buttons/hardware/osptek-esp32-s3-48x48.yaml`).
+
+**If you need more GPIOs:** (1) I²C header GPIO4/5 — easiest, no soldering:
+sensors, port expanders (PCF8574/TCA9554), PWM drivers; (2) GPIO40/41 — the only
+truly free pins, solder-only module pads (digital I/O, ADC2, LEDC PWM); (3)
+GPIO1/2 — only by giving up RS485 (GPIO2 must stay an input). Never touch
+GPIO0/3/45/46 (strapping: must float/HIGH at reset — LCD already owns them).
 
 ---
 
@@ -166,7 +262,8 @@ Pin-by-pin map (used vs free): [`hardware/PINOUT.md`](hardware/PINOUT.md).
 │   └── wiki/                        # Home, Themes, Installation, Performance,
 │                                    # AC-Control, Settings, Hardware,
 │                                    # Custom-Dashboard, Troubleshooting
-├── hardware/                        # datasheets + device photos
+├── hardware/                        # schematic, datasheets, pinout map, board photos
+│                                # (indexed in hardware/README.md)
 └── esphome-modular-lvgl-buttons/    # shared firmware
     ├── common/
     │   ├── display.yaml             # firmware entry: substitutions + packages

@@ -121,15 +121,24 @@ psram:
 
 ## Photos
 
-All 6 vendor user-guide screenshots in `hardware/img/` (captioned in the README gallery):
+`hardware/img/` holds the official vendor images plus 6 user-guide screenshots
+(captioned in the [README gallery](../../README.md#-hardware-docs--board-guide--schematics)):
 
+- board-layout.png (official hi-res PCB callouts), schematic-mcu.png (MCU sheet:
+  `IO1/485_TX`, `IO2/485_RX`, `IO42/BUZZER`, `MCU_TXD/RXD`, `IO40/41` = NC),
+  schematic-rs485.png, product.png
 - IMG_4671.jpeg (PCB component callouts), IMG_4672.jpeg (component table),
   IMG_4678.jpeg (product page)
 - Image.jpg (system + LCD FPC schematic), Image 1.jpg (power + I²C schematic),
   Image 2.jpg (UART + backlight + RS485 schematic)
 
-## Datasheet
+## Datasheets
 
-- `hardware/D_FT_6336_U_Data_Sheet_V1_1_410131a74f.pdf`
+Full index with vendor-original links: [`hardware/README.md`](../../hardware/README.md).
+
+- `hardware/D_FT_6336_U_Data_Sheet_V1_1_410131a74f.pdf` (FT6336U touch)
 - `hardware/ESP32-S3-Touch-LCD-4_User-Guide_CN.pdf` (vendor user guide, Chinese)
 - `hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf` (official full schematic, 7 pages)
+- `hardware/ST7701S_SPEC_V1.3.pdf` (display driver)
+- `hardware/YDP395BT003-V4.pdf` / `.dwg` (LCD panel datasheet + CAD)
+- `hardware/BOE3.95_480x480_ST7701S_init.txt` (vendor init sequence)

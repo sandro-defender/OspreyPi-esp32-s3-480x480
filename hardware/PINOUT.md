@@ -207,7 +207,11 @@ already owns them.
 | File | Content |
 |---|---|
 | `PINOUT.md` | This file — full used-vs-free pinout |
+| `README.md` | Folder index + official vendor repo/store/support links |
 | `SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf` | Official full schematic (7 pages, R2 2025-02-05) |
 | `ESP32-S3-Touch-LCD-4_User-Guide_CN.pdf` | Vendor user guide, Chinese (board intro + component table + schematics) |
+| `ST7701S_SPEC_V1.3.pdf` | ST7701S display-driver datasheet (from vendor repo) |
+| `YDP395BT003-V4.pdf` / `.dwg` | LCD panel datasheet + assembly CAD (from vendor repo) |
+| `BOE3.95_480x480_ST7701S_init.txt` | Vendor init sequence (matches firmware `init_sequence`) |
 | `D_FT_6336_U_Data_Sheet_V1_1_410131a74f.pdf` | FT6336U touch controller datasheet |
-| `img/` | Screenshots from the user guide: product page, component callouts, component table, 3× schematic sheets (see README gallery captions) |
+| `img/` | Official board photo (`board-layout.png`), MCU/RS485 schematic excerpts, product render + 6 user-guide screenshots (see README gallery captions) |

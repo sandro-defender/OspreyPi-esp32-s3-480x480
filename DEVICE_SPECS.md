@@ -2,6 +2,10 @@
 
 > Full used-vs-free GPIO map with connector pinouts: **[hardware/PINOUT.md](hardware/PINOUT.md)**.
 > Official schematic: [hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf](hardware/SCH_Esp32s3_3.95in_RS485_R2_2025-02-05.pdf).
+> All datasheets indexed in [hardware/README.md](hardware/README.md).
+>
+> 🏭 Official vendor repo: [osptek/esp32-s3-touch-lcd-4](https://github.com/osptek/esp32-s3-touch-lcd-4)
+> (this board = [`versions/ESP32-S3-Touch-LCD-4/`](https://github.com/osptek/esp32-s3-touch-lcd-4/tree/main/versions/ESP32-S3-Touch-LCD-4)).
 
 ## Hardware Overview
 - **MCU**: ESP32-S3 (16MB Flash, PSRAM)
