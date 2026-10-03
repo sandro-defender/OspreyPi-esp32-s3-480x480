@@ -333,11 +333,14 @@ Full guide: [docs/wiki/Installation.md](docs/wiki/Installation.md).
 | Day/Eve/Night brightness | 3 sliders | Yes | Yes |
 | Timeout 15–300 s | Slider | Yes | Yes |
 | Screensaver | Switch | Yes | Yes |
+| Weather icons: Makin Things / Classic / Weather Underground | — | Yes | Yes |
 | **Theme Classic/Modern/Perf/Daylight** | **4 buttons** | **Yes** | **Yes** |
 | Rotation 0/90/180/270 | 4 buttons | Yes | Yes |
 | Backlight | — | Yes | Restore |
 
 **Theme select HA entity:** `select.display01_theme` → Classic / Modern / Performance / Daylight
+
+**Weather icon style HA entity:** `select.display01_weather_icon_style` → Makin Things / Classic / Weather Underground. All three bundled artwork sets are retained; changing the selector immediately repaints the screensaver weather icon.
 
 Sunrise/sunset automation switches brightness mode automatically; 00:00 switches to Night.
 
