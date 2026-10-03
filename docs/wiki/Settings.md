@@ -71,6 +71,11 @@ rotation (`display_rotation_select`: 0/90/180/270) and screensaver language
 (`screensaver_language` in `pages/screensaver.yaml`: Georgian / English,
 default Georgian — its `on_value` re-runs `time_update` + highlight).
 
+Weather artwork is also selectable from Home Assistant through
+`weather_icon_style`: `Makin Things` (default SVG artwork) or `Classic`
+(the original bundled PNG artwork). Both choices persist across reboot, and
+changing the selector immediately refreshes the screensaver icon.
+
 ### Highlight Script
 
 `update_settings_highlight` (in `dashboards/home.yaml`):
