@@ -66,21 +66,22 @@ script:
           src: !lambda |-
             std::string c = id(weather_condition).state;
             bool classic = id(weather_icon_style).current_option() == "Classic";
-            if (c=="clear-night") return classic ? id(weather_classic_clear_night) : id(weather_clear_night);
-            if (c=="cloudy") return classic ? id(weather_classic_cloudy) : id(weather_cloudy);
-            if (c=="fog") return classic ? id(weather_classic_fog) : id(weather_fog);
-            if (c=="hail") return classic ? id(weather_classic_hail) : id(weather_hail);
-            if (c=="lightning") return classic ? id(weather_classic_lightning) : id(weather_lightning);
-            if (c=="lightning-rainy") return classic ? id(weather_classic_lightning_rainy) : id(weather_lightning_rainy);
-            if (c=="partlycloudy") return classic ? id(weather_classic_partlycloudy_sun) : id(weather_partlycloudy_sun);
-            if (c=="pouring") return classic ? id(weather_classic_pouring) : id(weather_pouring);
-            if (c=="rainy") return classic ? id(weather_classic_rainy) : id(weather_rainy);
-            if (c=="snowy") return classic ? id(weather_classic_snowy) : id(weather_snowy);
-            if (c=="snowy-rainy") return classic ? id(weather_classic_snowy_rainy) : id(weather_snowy_rainy);
-            if (c=="sunny") return classic ? id(weather_classic_sunny) : id(weather_sunny);
-            if (c=="windy") return classic ? id(weather_classic_windy) : id(weather_windy);
-            if (c=="windy-variant") return classic ? id(weather_classic_windy_variant) : id(weather_windy_variant);
-            return classic ? id(weather_classic_sunny) : id(weather_sunny);
+            bool underground = id(weather_icon_style).current_option() == "Weather Underground";
+            if (c=="clear-night") return classic ? id(weather_classic_clear_night) : underground ? id(weather_underground_clear_night) : id(weather_clear_night);
+            if (c=="cloudy") return classic ? id(weather_classic_cloudy) : underground ? id(weather_underground_cloudy) : id(weather_cloudy);
+            if (c=="fog") return classic ? id(weather_classic_fog) : underground ? id(weather_underground_fog) : id(weather_fog);
+            if (c=="hail") return classic ? id(weather_classic_hail) : underground ? id(weather_underground_hail) : id(weather_hail);
+            if (c=="lightning") return classic ? id(weather_classic_lightning) : underground ? id(weather_underground_lightning) : id(weather_lightning);
+            if (c=="lightning-rainy") return classic ? id(weather_classic_lightning_rainy) : underground ? id(weather_underground_lightning_rainy) : id(weather_lightning_rainy);
+            if (c=="partlycloudy") return classic ? id(weather_classic_partlycloudy_sun) : underground ? id(weather_underground_partlycloudy_sun) : id(weather_partlycloudy_sun);
+            if (c=="pouring") return classic ? id(weather_classic_pouring) : underground ? id(weather_underground_pouring) : id(weather_pouring);
+            if (c=="rainy") return classic ? id(weather_classic_rainy) : underground ? id(weather_underground_rainy) : id(weather_rainy);
+            if (c=="snowy") return classic ? id(weather_classic_snowy) : underground ? id(weather_underground_snowy) : id(weather_snowy);
+            if (c=="snowy-rainy") return classic ? id(weather_classic_snowy_rainy) : underground ? id(weather_underground_snowy_rainy) : id(weather_snowy_rainy);
+            if (c=="sunny") return classic ? id(weather_classic_sunny) : underground ? id(weather_underground_sunny) : id(weather_sunny);
+            if (c=="windy") return classic ? id(weather_classic_windy) : underground ? id(weather_underground_windy) : id(weather_windy);
+            if (c=="windy-variant") return classic ? id(weather_classic_windy_variant) : underground ? id(weather_underground_windy_variant) : id(weather_windy_variant);
+            return classic ? id(weather_classic_sunny) : underground ? id(weather_underground_sunny) : id(weather_sunny);
 
 sensor:
   - platform: homeassistant
@@ -133,7 +134,7 @@ select:
   - platform: template
     id: weather_icon_style
     name: "Weather Icon Style"
-    options: [Makin Things, Classic]
+    options: [Makin Things, Classic, Weather Underground]
     initial_option: Makin Things
     restore_value: true
     entity_category: config

@@ -171,3 +171,89 @@ image:
     resize: 100x100
     type: RGB565
     transparency: alpha_channel
+
+  # Weather Underground SVG artwork already bundled with this project.
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/nt_clear.svg
+    id: weather_underground_clear_night
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/cloudy.svg
+    id: weather_underground_cloudy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/fog.svg
+    id: weather_underground_fog
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/sleet.svg
+    id: weather_underground_hail
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/chancetstorms.svg
+    id: weather_underground_lightning
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/tstorms.svg
+    id: weather_underground_lightning_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/partlycloudy.svg
+    id: weather_underground_partlycloudy_sun
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/rain.svg
+    id: weather_underground_pouring
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/chancerain.svg
+    id: weather_underground_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/snow.svg
+    id: weather_underground_snowy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/chancesleet.svg
+    id: weather_underground_snowy_rainy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/sunny.svg
+    id: weather_underground_sunny
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/windy.svg
+    id: weather_underground_windy
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
+  - platform: file
+    file: esphome-modular-lvgl-buttons/weather/assets/images/windy.svg
+    id: weather_underground_windy_variant
+    resize: 100x100
+    type: RGB565
+    transparency: alpha_channel
