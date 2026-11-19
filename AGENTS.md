@@ -15,7 +15,7 @@ An ESPHome + LVGL 9 smart-display dashboard for Home Assistant, targeting the
 - **MCU**: ESP32-S3, 16 MB flash (custom partition table `partitions_16mb.csv`), 8 MB octal PSRAM @ 80 MHz
 - **Display**: 3.95" IPS 480×480, ST7701S driver (3-wire SPI init + 16-bit RGB bus)
 - **Touch**: FT6336 I²C
-- **Firmware**: ESPHome **2026.9.0** (`min_version: 2026.9.0`), esp-idf framework, LVGL 9.5 integration
+- **Firmware**: ESPHome **2026.11.0** (`min_version: 2026.11.0`), esp-idf framework, LVGL 9.5 integration
 - **UI**: modular — one shared firmware, per-device YAML files, 4 selectable
   themes (Classic / Modern / Performance / Daylight), swipe navigation,
   screensaver, OTA with boot screen
@@ -134,7 +134,7 @@ dashboards/home.yaml ── includes ──► pages/ac_control.yaml (widget ac_
 # one-time
 cp 'secrets(example).yaml' secrets.yaml   # then edit wifi/keys/lat/lon
 
-# validate (CI does exactly this, in the esphome/esphome:2026.9.0 container)
+# validate (CI does exactly this, in the esphome/esphome:2026.11.0 container)
 esphome config Display01.yaml
 esphome config Display02.yaml
 
@@ -269,7 +269,7 @@ glyph to the right icon font in `common/fonts.yaml` and/or `common/assets.yaml`.
 - Style IDs and page IDs are cross-referenced from C++ lambdas — rename with care.
 - `theme_index` / `brightness_mode_index` substitutions document option order —
   keep the comments accurate (0 Classic, 1 Modern, 2 Performance, 3 Daylight).
-- ESPHome version is pinned in CI (2026.9.0) and `min_version` — bump both together.
+- ESPHome version is pinned in CI (2026.11.0) and `min_version` — bump both together.
 - Screenshots are committed (not generated in CI) so the repo stays usable
   offline; regenerate them locally with the tool.
 - Fix typos in existing filenames only with redirects/links updated everywhere

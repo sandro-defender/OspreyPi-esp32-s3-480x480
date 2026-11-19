@@ -15,7 +15,7 @@ Targets: `Display01.yaml`, `Display02.yaml` on ESP32-S3 (ST7701S 480×480, FT633
 | 2 | **Theme 2 (Modern) depth** | Raised buttons: vertical gradient face + 1px bevel border + drop shadow (`depth_dark`), colored glows for active fills (`glow_green/blue/orange`), soft halo on −/+ (`glow_soft`), orange ring-glow for active dashboard tiles (matches `screen_ac.png` mockup) |
 | 3 | **Info page** redesigned to `screen_settings.png` | Alternating dark rows, device header, richer values (`-61dBm / 78%`, `160 MHz / 55.4°C`, heap/PSRAM with % used, build date), green `● Connected` HA status, Restart + Exit buttons |
 | 4 | **WLED page** redesigned to `screen_home.png` | “Bed LEDs” title, labeled vertical sliders (orange Brightness, red Saturation) with live `%%` readouts, glowing bulb, rainbow **C-ring** (270°, gap on the left) with knob marker, HOME button |
-| 5 | Validation | Both device configs pass `esphome config` on the pinned **ESPHome 2026.9.0** exactly as CI runs it |
+| 5 | Validation | Both device configs pass `esphome config` on the pinned **ESPHome 2026.11.0** exactly as CI runs it |
 
 ---
 
@@ -35,9 +35,9 @@ Targets: `Display01.yaml`, `Display02.yaml` on ESP32-S3 (ST7701S 480×480, FT633
 
 ### 2.2 Watch list (not blocking)
 - **`lvgl: refresh_interval` is version-sensitive.** ESPHome 2026.6.x renamed it to
-  `update_interval`, 2026.9.x uses `refresh_interval` again and maps it to
-  `set_refresh_interval()`. `update_interval` still *validates* on 2026.9.0 but does **not**
-  drive the LVGL refresh — don't “clean it up”. The `min_version: 2026.9.0` pin is what keeps
+  `update_interval`, 2026.9.x/2026.11.x uses `refresh_interval` again and maps it to
+  `set_refresh_interval()`. `update_interval` still *validates* on 2026.11.0 but does **not**
+  drive the LVGL refresh — don't “clean it up”. The `min_version: 2026.11.0` pin is what keeps
   this consistent; keep it.
 - **Mockup images are mislabeled** in `docs/images/`: `screen_ac.png` shows the Home grid,
   `screen_home.png` shows the light page, `screen_info.png` shows AC, `screen_light.png` and
@@ -155,4 +155,4 @@ Targets: `Display01.yaml`, `Display02.yaml` on ESP32-S3 (ST7701S 480×480, FT633
 | Info page | `esphome-modular-lvgl-buttons/pages/info.yaml` |
 | WLED / light page | `esphome-modular-lvgl-buttons/pages/light_color.yaml` |
 | Compact icon font (AC/info) | `esphome-modular-lvgl-buttons/common/assets.yaml` (`mdi_icons_22`) |
-| Validation | `esphome config Display01.yaml && esphome config Display02.yaml` (ESPHome 2026.9.0) |
+| Validation | `esphome config Display01.yaml && esphome config Display02.yaml` (ESPHome 2026.11.0) |
