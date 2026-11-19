@@ -5,7 +5,7 @@
 **Fast, modular 480×480 ESPHome + LVGL dashboard — v2.5 Performance Edition**
 
 [![Release](https://img.shields.io/github/v/release/sandro-defender/OspreyPi-esp32-s3-480x480?sort=semver)](https://github.com/sandro-defender/OspreyPi-esp32-s3-480x480/releases/latest)
-[![ESPHome](https://img.shields.io/badge/ESPHome-2026.9.0-blue?logo=esphome)](https://esphome.io/)
+[![ESPHome](https://img.shields.io/badge/ESPHome-2026.11.0-blue?logo=esphome)](https://esphome.io/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Native-41BDF5?logo=home-assistant)](https://www.home-assistant.io/)
 [![Themes](https://img.shields.io/badge/Themes-4%20Selectable-orange)]()
 [![Performance](https://img.shields.io/badge/Performance-Optimized-success)]()

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- ESPHome 2026.9.0+
+- ESPHome 2026.11.0+
 - Home Assistant with ESPHome integration
 - 2.4GHz WiFi
 - OspreyPi hardware (ESP32-S3 480×480)

@@ -85,7 +85,7 @@ Try true/false combos if axes mirrored.
 
 ## Validation Fails in CI
 
-- GitHub Actions uses ESPHome 2026.9.0 pinned
+- GitHub Actions uses ESPHome 2026.11.0 pinned
 - Run locally `esphome config Display01.yaml` — fix errors
 - Common: missing glyph in mdi_icons_40, wrong font id (nunito_32 exists as alias now)
 

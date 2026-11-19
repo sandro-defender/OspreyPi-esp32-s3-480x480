@@ -16,7 +16,7 @@ Validation: both `Display01.yaml` and `Display02.yaml` pass `esphome config`
 sandbox — after neutralizing only the three documented 2026.6↔2026.9 schema
 differences in the scratch copy: the `min_version` pin, the `lvgl:
 refresh_interval` key name, and the `image: platform: file` key. CI still
-validates on 2026.9.0 and the repo files use 2026.9 syntax).
+validates on 2026.11.0 and the repo files use 2026.11 syntax).
 
 ---
 
