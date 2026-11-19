@@ -96,6 +96,7 @@ logger:
     ft63x6: ERROR
     api: ERROR
     wifi: ERROR
+    boot_log_level: ERROR
 
 api:
   # A Home Assistant restart must not reboot an otherwise healthy panel.
