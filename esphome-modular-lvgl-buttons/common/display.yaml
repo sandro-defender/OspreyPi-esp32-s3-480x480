@@ -81,6 +81,7 @@ esphome:
 
 logger:
   level: "${log_level}"
+  boot_log_level: ERROR
   # PERF v2.5: fully disable UART logging (saves the log task + frees pins
   # 43/44). Do NOT enable the experimental RS485 Modbus on UART0 while this is
   # set to 0 - uncommenting the uart block requires restoring UART logging.
