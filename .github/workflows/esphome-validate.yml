@@ -16,7 +16,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    container: esphome/esphome:2026.9.0
+    container: esphome/esphome:2026.11.0
     steps:
       - uses: actions/checkout@v4
       - name: Create non-secret validation values
