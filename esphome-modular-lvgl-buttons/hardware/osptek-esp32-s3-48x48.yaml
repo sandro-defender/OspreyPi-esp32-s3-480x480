@@ -5,7 +5,7 @@
 
 esphome:
   # Tested against the ESPHome 2026.11 configuration schema.
-  # ESPHome 2026.11 supplies the supported LVGL 9.5 integration.
+  # ESPHome 2026.11 supplies the supported LVGL 9.6 integration.
   min_version: 2026.11.0
 
       

@@ -49,7 +49,7 @@ substitutions:
   boot_screen_delay: "8s"
   screen_night_hour: "0"
   screen_night_minute: "0"
-  log_level: "WARN"
+  log_level: "ERROR"
   # PERF v2.5: LVGL draw buffer as a fraction of one 480x480 frame.
   #   50% = stable, good balance (one full-frame flush every 2 draws).
   #   100% = whole frame in one flush -> fewer flush rounds per frame and
@@ -81,6 +81,7 @@ esphome:
 
 logger:
   level: "${log_level}"
+  boot_log_level: ERROR
   # PERF v2.5: fully disable UART logging (saves the log task + frees pins
   # 43/44). Do NOT enable the experimental RS485 Modbus on UART0 while this is
   # set to 0 - uncommenting the uart block requires restoring UART logging.
