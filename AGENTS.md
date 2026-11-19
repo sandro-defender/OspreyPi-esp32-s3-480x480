@@ -15,7 +15,7 @@ An ESPHome + LVGL 9 smart-display dashboard for Home Assistant, targeting the
 - **MCU**: ESP32-S3, 16 MB flash (custom partition table `partitions_16mb.csv`), 8 MB octal PSRAM @ 80 MHz
 - **Display**: 3.95" IPS 480×480, ST7701S driver (3-wire SPI init + 16-bit RGB bus)
 - **Touch**: FT6336 I²C
-- **Firmware**: ESPHome **2026.11.0** (`min_version: 2026.11.0`), esp-idf framework, LVGL 9.5 integration
+- **Firmware**: ESPHome **2026.11.0** (`min_version: 2026.11.0`), esp-idf framework, LVGL 9.6 integration
 - **UI**: modular — one shared firmware, per-device YAML files, 4 selectable
   themes (Classic / Modern / Performance / Daylight), swipe navigation,
   screensaver, OTA with boot screen
