@@ -49,7 +49,7 @@ substitutions:
   boot_screen_delay: "8s"
   screen_night_hour: "0"
   screen_night_minute: "0"
-  log_level: "ERROR"
+  log_level: "WARN"
   # PERF v2.5: LVGL draw buffer as a fraction of one 480x480 frame.
   #   50% = stable, good balance (one full-frame flush every 2 draws).
   #   100% = whole frame in one flush -> fewer flush rounds per frame and
